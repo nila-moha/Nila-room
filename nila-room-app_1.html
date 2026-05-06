@@ -1,0 +1,953 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#070709">
+<title>NILA ROOM</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --bg: #070709;
+  --card: #0f0f13;
+  --card2: #161619;
+  --gold: #C5973A;
+  --gold2: #D4AF67;
+  --text: #F7F1E6;
+  --dim: #8a8070;
+  --dim2: #5a5248;
+  --border: rgba(197,151,58,0.15);
+  --r2: https://pub-4812a6387ff34d099272e7020be40861.r2.dev;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Jost', sans-serif;
+  font-weight: 300;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── LOGIN ── */
+#login-screen {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  background: radial-gradient(ellipse at 50% 0%, rgba(197,151,58,0.08) 0%, transparent 70%);
+}
+
+.login-logo {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 3.5rem;
+  font-weight: 300;
+  letter-spacing: 0.3em;
+  color: var(--gold2);
+  margin-bottom: 0.3rem;
+}
+
+.login-sub {
+  font-size: 0.65rem;
+  letter-spacing: 0.35em;
+  color: var(--dim);
+  text-transform: uppercase;
+  margin-bottom: 3rem;
+}
+
+.login-box {
+  width: 100%;
+  max-width: 360px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  padding: 2.5rem;
+}
+
+.login-box input {
+  width: 100%;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  color: var(--text);
+  font-family: 'Jost', sans-serif;
+  font-weight: 300;
+  font-size: 0.9rem;
+  padding: 0.85rem 1rem;
+  margin-bottom: 1rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.login-box input:focus { border-color: var(--gold); }
+.login-box input::placeholder { color: var(--dim2); }
+
+.btn-login {
+  width: 100%;
+  background: var(--gold);
+  color: var(--bg);
+  border: none;
+  border-radius: 2px;
+  font-family: 'Jost', sans-serif;
+  font-weight: 400;
+  font-size: 0.8rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  padding: 0.9rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-login:hover { background: var(--gold2); }
+
+.login-error {
+  color: #c0392b;
+  font-size: 0.8rem;
+  text-align: center;
+  margin-top: 1rem;
+  display: none;
+}
+
+/* ── APP ── */
+#app { display: none; }
+
+/* HEADER */
+.header {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 100;
+  background: rgba(7,7,9,0.92);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  padding: 1rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.header-logo {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.4rem;
+  font-weight: 300;
+  letter-spacing: 0.25em;
+  color: var(--gold2);
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.user-role {
+  font-size: 0.65rem;
+  letter-spacing: 0.2em;
+  color: var(--dim);
+  text-transform: uppercase;
+}
+
+.btn-logout {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--dim);
+  font-family: 'Jost', sans-serif;
+  font-size: 0.7rem;
+  letter-spacing: 0.15em;
+  padding: 0.4rem 0.8rem;
+  cursor: pointer;
+  border-radius: 2px;
+  text-transform: uppercase;
+  transition: all 0.2s;
+}
+
+.btn-logout:hover { border-color: var(--gold); color: var(--gold); }
+
+/* MAIN */
+.main { padding-top: 70px; padding-bottom: 140px; }
+
+/* FILTERS */
+.filters {
+  padding: 1.2rem 1.5rem;
+  display: flex;
+  gap: 0.5rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+  border-bottom: 1px solid var(--border);
+}
+
+.filters::-webkit-scrollbar { display: none; }
+
+.filter-btn {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--dim);
+  font-family: 'Jost', sans-serif;
+  font-size: 0.7rem;
+  letter-spacing: 0.15em;
+  padding: 0.4rem 0.9rem;
+  border-radius: 20px;
+  cursor: pointer;
+  white-space: nowrap;
+  text-transform: uppercase;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.filter-btn:hover, .filter-btn.active {
+  background: var(--gold);
+  border-color: var(--gold);
+  color: var(--bg);
+}
+
+/* SEARCH */
+.search-wrap {
+  padding: 1rem 1.5rem;
+}
+
+.search-input {
+  width: 100%;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  color: var(--text);
+  font-family: 'Jost', sans-serif;
+  font-weight: 300;
+  font-size: 0.9rem;
+  padding: 0.75rem 1rem;
+  outline: none;
+}
+
+.search-input::placeholder { color: var(--dim2); }
+
+/* TRACK LIST */
+.track-list {
+  padding: 0 1rem;
+}
+
+.track-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.9rem 0.5rem;
+  border-bottom: 1px solid rgba(197,151,58,0.06);
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background 0.15s;
+  position: relative;
+}
+
+.track-item:hover { background: rgba(197,151,58,0.04); }
+.track-item.playing { background: rgba(197,151,58,0.08); }
+
+.track-num {
+  font-size: 0.7rem;
+  color: var(--dim2);
+  width: 20px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.track-item.playing .track-num { color: var(--gold); }
+
+.track-info { flex: 1; min-width: 0; }
+
+.track-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.05rem;
+  font-weight: 400;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.track-item.playing .track-title { color: var(--gold2); }
+
+.track-meta {
+  font-size: 0.68rem;
+  color: var(--dim);
+  letter-spacing: 0.1em;
+  margin-top: 0.2rem;
+  text-transform: uppercase;
+}
+
+.track-badges {
+  display: flex;
+  gap: 0.3rem;
+  flex-shrink: 0;
+}
+
+.badge {
+  font-size: 0.55rem;
+  letter-spacing: 0.1em;
+  padding: 0.2rem 0.4rem;
+  border-radius: 2px;
+  text-transform: uppercase;
+}
+
+.badge-lang {
+  border: 1px solid var(--dim2);
+  color: var(--dim);
+}
+
+.badge-vip {
+  border: 1px solid var(--gold);
+  color: var(--gold);
+}
+
+.badge-final {
+  background: rgba(197,151,58,0.15);
+  color: var(--gold);
+}
+
+/* SECTION TITLE */
+.section-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 0.75rem;
+  letter-spacing: 0.3em;
+  color: var(--dim);
+  text-transform: uppercase;
+  padding: 1.5rem 1.5rem 0.5rem;
+}
+
+/* PLAYER */
+#player {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  background: rgba(15,15,19,0.97);
+  backdrop-filter: blur(20px);
+  border-top: 1px solid var(--border);
+  padding: 1rem 1.5rem 1.2rem;
+  z-index: 200;
+  display: none;
+}
+
+.player-track {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.8rem;
+}
+
+.player-info { flex: 1; min-width: 0; }
+
+.player-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.1rem;
+  font-weight: 400;
+  color: var(--gold2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.player-version {
+  font-size: 0.65rem;
+  color: var(--dim);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  margin-top: 0.15rem;
+}
+
+.player-controls {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+}
+
+.ctrl-btn {
+  background: none;
+  border: none;
+  color: var(--dim);
+  cursor: pointer;
+  font-size: 1.1rem;
+  transition: color 0.2s;
+  padding: 0.2rem;
+}
+
+.ctrl-btn:hover { color: var(--gold); }
+.ctrl-btn.active { color: var(--gold); }
+
+.ctrl-play {
+  width: 40px; height: 40px;
+  background: var(--gold);
+  border: none;
+  border-radius: 50%;
+  color: var(--bg);
+  font-size: 1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+  flex-shrink: 0;
+}
+
+.ctrl-play:hover { background: var(--gold2); }
+
+/* PROGRESS */
+.progress-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.progress-bar {
+  flex: 1;
+  height: 3px;
+  background: var(--card2);
+  border-radius: 2px;
+  cursor: pointer;
+  position: relative;
+}
+
+.progress-fill {
+  height: 100%;
+  background: var(--gold);
+  border-radius: 2px;
+  width: 0%;
+  transition: width 0.1s linear;
+  pointer-events: none;
+}
+
+.time {
+  font-size: 0.7rem;
+  color: var(--dim);
+  width: 32px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+/* VERSION TABS */
+.version-tabs {
+  display: flex;
+  gap: 0.4rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+  margin-top: 0.8rem;
+}
+
+.version-tabs::-webkit-scrollbar { display: none; }
+
+.ver-btn {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--dim);
+  font-family: 'Jost', sans-serif;
+  font-size: 0.6rem;
+  letter-spacing: 0.12em;
+  padding: 0.3rem 0.7rem;
+  border-radius: 20px;
+  cursor: pointer;
+  white-space: nowrap;
+  text-transform: uppercase;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.ver-btn:hover, .ver-btn.active {
+  background: rgba(197,151,58,0.15);
+  border-color: var(--gold);
+  color: var(--gold);
+}
+
+audio { display: none; }
+
+/* LOADING */
+.loading {
+  text-align: center;
+  padding: 3rem;
+  color: var(--dim);
+  font-size: 0.8rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+/* EMPTY */
+.empty {
+  text-align: center;
+  padding: 3rem 1.5rem;
+  color: var(--dim2);
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.1rem;
+  font-style: italic;
+}
+</style>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-logo">NILA ROOM</div>
+  <div class="login-sub">Musique · Versions · Émotions</div>
+  <div class="login-box">
+    <input type="email" id="email-input" placeholder="Adresse e-mail" autocomplete="email">
+    <input type="password" id="pass-input" placeholder="Mot de passe" autocomplete="current-password">
+    <button class="btn-login" onclick="doLogin()">Entrer</button>
+    <div class="login-error" id="login-error">Email ou mot de passe incorrect.</div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <div class="header">
+    <div class="header-logo">NILA ROOM</div>
+    <div class="header-right">
+      <span class="user-role" id="user-role-label"></span>
+      <button class="btn-logout" onclick="doLogout()">Quitter</button>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="search-wrap">
+      <input class="search-input" type="text" id="search-input" placeholder="Rechercher un titre..." oninput="renderTracks()">
+    </div>
+
+    <div class="filters" id="filters">
+      <button class="filter-btn active" onclick="setFilter('all',this)">Toutes</button>
+      <button class="filter-btn" onclick="setFilter('final',this)">Finals</button>
+      <button class="filter-btn" onclick="setFilter('fr',this)">Français</button>
+      <button class="filter-btn" onclick="setFilter('en',this)">Anglais</button>
+      <button class="filter-btn" onclick="setFilter('es',this)">Espagnol</button>
+      <button class="filter-btn" onclick="setFilter('inst',this)">Instrumental</button>
+      <button class="filter-btn" onclick="setFilter('nila',this)">Nila Moha</button>
+      <button class="filter-btn vip-only" onclick="setFilter('nnbh',this)" style="display:none">NNBH</button>
+    </div>
+
+    <div id="track-container"></div>
+  </div>
+
+  <!-- PLAYER -->
+  <div id="player">
+    <audio id="audio-el"></audio>
+    <div class="player-track">
+      <div class="player-info">
+        <div class="player-title" id="player-title">—</div>
+        <div class="player-version" id="player-version"></div>
+      </div>
+      <div class="player-controls">
+        <button class="ctrl-btn" onclick="prevTrack()" title="Précédent">&#9664;&#9664;</button>
+        <button class="ctrl-play" id="play-btn" onclick="togglePlay()">&#9654;</button>
+        <button class="ctrl-btn" onclick="nextTrack()" title="Suivant">&#9654;&#9654;</button>
+      </div>
+    </div>
+    <div class="progress-wrap">
+      <span class="time" id="time-cur">0:00</span>
+      <div class="progress-bar" id="progress-bar" onclick="seekAudio(event)">
+        <div class="progress-fill" id="progress-fill"></div>
+      </div>
+      <span class="time" id="time-dur">0:00</span>
+    </div>
+    <div class="version-tabs" id="version-tabs"></div>
+  </div>
+</div>
+
+<script>
+// ── FIREBASE CONFIG ──
+const firebaseConfig = {
+  apiKey: "AIzaSyAGcpYRxaqLr1KVyW33kHI1qQwMA47WCQU",
+  authDomain: "nila-room.firebaseapp.com",
+  projectId: "nila-room",
+  storageBucket: "nila-room.firebasestorage.app",
+  messagingSenderId: "1069806830773",
+  appId: "1:1069806830773:web:f2bf441c99a09d09522afc"
+};
+
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+
+const R2 = "https://pub-4812a6387ff34d099272e7020be40861.r2.dev";
+
+// ── CATALOGUE COMPLET ──
+const CATALOGUE = [
+  // ── NILA MOHA ──
+  { id:"nm01", artist:"nila-moha", title:"Miss Catastrophe", lang:"fr", versions:[
+    { label:"Final Master", file:"nila-moha/Miss Catastrophe (Final Master).mp3", type:"final" },
+    { label:"Extended", file:"nila-moha/Miss Catastrophe (Extended Version).mp3", type:"final" }
+  ]},
+  { id:"nm02", artist:"nila-moha", title:"Henné deux soleils", lang:"fr", versions:[
+    { label:"Final Master", file:"nila-moha/Henne deux soleils (Final Master).mp3", type:"final" },
+    { label:"Mix", file:"nila-moha/Henne deux soleils (Mix).mp3", type:"mix" }
+  ]},
+  { id:"nm03", artist:"nila-moha", title:"Let's Go", lang:"en", versions:[
+    { label:"Final Master", file:"nila-moha/Lets Go (Final Master).mp3", type:"final" }
+  ]},
+  { id:"nm04", artist:"nila-moha", title:"Deux pieds gauches", lang:"fr", versions:[
+    { label:"Final Master", file:"nila-moha/Deux pieds gauches (Final Master).mp3", type:"final" }
+  ]},
+  { id:"nm05", artist:"nila-moha", title:"Luz de mi corazón", lang:"es", versions:[
+    { label:"Final Master", file:"nila-moha/Luz de mi corazon (Final Master).mp3", type:"final" }
+  ]},
+  { id:"nm06", artist:"nila-moha", title:"I Want to Run", lang:"en", versions:[
+    { label:"Final Master", file:"nila-moha/I Want to Run (Final Master).mp3", type:"final" }
+  ]},
+  { id:"nm07", artist:"nila-moha", title:"Ce soir amour danse", lang:"fr", versions:[
+    { label:"Final Master", file:"nila-moha/Ce soir amour danse (Final Master).mp3", type:"final" },
+    { label:"Version 2", file:"nila-moha/Ce soir amour danse (Final Master V2).mp3", type:"final" }
+  ]},
+  { id:"nm08", artist:"nila-moha", title:"Dos mundos arden", lang:"es", versions:[
+    { label:"Final Master", file:"nila-moha/Dos mundos arden (Final Master).mp3", type:"final" }
+  ]},
+  { id:"nm09", artist:"nila-moha", title:"Ma force", lang:"fr", versions:[
+    { label:"Final Master", file:"nila-moha/Ma force (Final Master).mp3", type:"final" }
+  ]},
+  { id:"nm10", artist:"nila-moha", title:"Hija de dos tierras", lang:"es", versions:[
+    { label:"Final Master", file:"nila-moha/Hija de dos tierras (Final Master).mp3", type:"final" },
+    { label:"Mix V2", file:"nila-moha/Hija de dos tierras (Mix V2).mp3", type:"mix" },
+    { label:"Mix V2.1", file:"nila-moha/Hija de dos tierras (Mix V2.1).mp3", type:"mix" },
+    { label:"Mix V2.2", file:"nila-moha/Hija de dos tierras (Mix V2.2).mp3", type:"mix" }
+  ]},
+  { id:"nm11", artist:"nila-moha", title:"Mode Replay", lang:"fr", versions:[
+    { label:"Final Master", file:"nila-moha/Mode Replay (Final Master).mp3", type:"final" }
+  ]},
+  { id:"nm12", artist:"nila-moha", title:"Roots Before the Wind", lang:"en", versions:[
+    { label:"Acoustic V1", file:"nila-moha/Roots Before the Wind (Acoustic V1).mp3", type:"brut" },
+    { label:"Mixed V2", file:"nila-moha/Roots Before the Wind (Mixed V2).mp3", type:"mix" },
+    { label:"Mixed V3", file:"nila-moha/Roots Before the Wind (Mixed V3).mp3", type:"mix" }
+  ]},
+  { id:"nm13", artist:"nila-moha", title:"Mots trop lourds", lang:"fr", versions:[
+    { label:"Mix V1", file:"nila-moha/Mots trop lourds (Mix V1).mp3", type:"mix" },
+    { label:"Mix V2", file:"nila-moha/Mots trop lourds (Mix V2).mp3", type:"mix" }
+  ]},
+  { id:"nm14", artist:"nila-moha", title:"Éclats de ciel", lang:"fr", versions:[
+    { label:"Final Master", file:"nila-moha/Eclats de ciel (Final Master).mp3", type:"final" }
+  ]},
+  { id:"nm15", artist:"nila-moha", title:"Quiero huir", lang:"es", versions:[
+    { label:"Final Master", file:"nila-moha/Quiero huir (Final Master).mp3", type:"final" }
+  ]},
+  { id:"nm16", artist:"nila-moha", title:"Soleil au cœur", lang:"fr", versions:[
+    { label:"Final Master", file:"nila-moha/Soleil au coeur (Final Master).mp3", type:"final" }
+  ]},
+  { id:"nm17", artist:"nila-moha", title:"Ma belle âme", lang:"fr", versions:[
+    { label:"Mix", file:"nila-moha/Ma belle ame (Mix en cours).mp3", type:"mix" }
+  ]},
+  { id:"nm18", artist:"nila-moha", title:"Miroir craquelé", lang:"fr", versions:[
+    { label:"Mix", file:"nila-moha/Miroir craquele (Mix en cours).mp3", type:"mix" }
+  ]},
+  { id:"nm19", artist:"nila-moha", title:"Chœurs Voilés", lang:"fr", versions:[
+    { label:"Mix", file:"nila-moha/Choeurs Voiles (Mix en cours).mp3", type:"mix" }
+  ]},
+  { id:"nm20", artist:"nila-moha", title:"Ella lleva más flamenco", lang:"es", versions:[
+    { label:"Final Master", file:"nila-moha/Ella lleva mas flamenco (Final Master).mp3", type:"final" }
+  ]},
+  { id:"nm21", artist:"nila-moha", title:"Halfway Anything", lang:"en", versions:[
+    { label:"Mix", file:"nila-moha/Halfway Anything (Mix).mp3", type:"mix" },
+    { label:"Remastered", file:"nila-moha/Halfway Anything (Remastered).mp3", type:"final" }
+  ]},
+  { id:"nm22", artist:"nila-moha", title:"Mirror War Declaration", lang:"en", versions:[
+    { label:"Démo V1", file:"nila-moha/Mirror War Declaration (Demo V1).mp3", type:"brut" }
+  ]},
+  { id:"nm23", artist:"nila-moha", title:"Whisper Tabla Lament", lang:"inst", versions:[
+    { label:"Instrumental Remastered", file:"nila-moha/Whisper Tabla Lament (Instrumental Remastered).mp3", type:"final" }
+  ]},
+
+  // ── NNBH (VIP/Admin only) ──
+  { id:"nb01", artist:"nnbh", title:"Le Couloir", lang:"fr", versions:[
+    { label:"Final Master", file:"nnbh/Le Couloir (Final Master).mp3", type:"final" }
+  ]},
+  { id:"nb02", artist:"nnbh", title:"Trois heures", lang:"fr", versions:[
+    { label:"Final Master", file:"nnbh/Trois heures (Final Master).mp3", type:"final" }
+  ]},
+  { id:"nb03", artist:"nnbh", title:"When the World Disappears", lang:"en", versions:[
+    { label:"V1 Brut", file:"nnbh/When the World Disappears (V1 Brut).mp3", type:"brut" },
+    { label:"V2 Mix", file:"nnbh/When the World Disappears (V2 Mix).mp3", type:"mix" },
+    { label:"V3 Mix", file:"nnbh/When the World Disappears (V3 Mix).mp3", type:"mix" },
+    { label:"Final Master", file:"nnbh/When the World Disappears (Final Master V4).mp3", type:"final" },
+    { label:"Alt", file:"nnbh/When the World Disappears (Version Alternative).mp3", type:"mix" }
+  ]},
+  { id:"nb04", artist:"nnbh", title:"Too Close to Heaven", lang:"en", versions:[
+    { label:"Final Master", file:"nnbh/Too Close to Heaven (Final Master).mp3", type:"final" },
+    { label:"Mix", file:"nnbh/Too Close to Heaven (Mix).mp3", type:"mix" },
+    { label:"World Music", file:"nnbh/Too Close to Heaven (World Music Version).mp3", type:"mix" }
+  ]},
+  { id:"nb05", artist:"nnbh", title:"God Kept Me", lang:"en", versions:[
+    { label:"Final Master", file:"nnbh/God Kept Me (Final Master).mp3", type:"final" }
+  ]},
+  { id:"nb06", artist:"nnbh", title:"What He Gave Me", lang:"en", versions:[
+    { label:"Final Master", file:"nnbh/What He Gave Me (Final Master).mp3", type:"final" }
+  ]},
+  { id:"nb07", artist:"nnbh", title:"Fire and Calm", lang:"en", versions:[
+    { label:"Final Master", file:"nnbh/Fire and Calm (Final Master).mp3", type:"final" }
+  ]},
+  { id:"nb08", artist:"nnbh", title:"Cross", lang:"en", versions:[
+    { label:"Final Master", file:"nnbh/Cross (Final Master).mp3", type:"final" }
+  ]},
+  { id:"nb09", artist:"nnbh", title:"Little Iris", lang:"en", versions:[
+    { label:"Final Master HQ", file:"nnbh/Little Iris (Final Master HQ).mp3", type:"final" }
+  ]},
+  { id:"nb10", artist:"nnbh", title:"Under This Dome", lang:"en", versions:[
+    { label:"Final Master", file:"nnbh/Under This Dome (Final Master).mp3", type:"final" }
+  ]},
+  { id:"nb11", artist:"nnbh", title:"I Must Relearn You", lang:"en", versions:[
+    { label:"Final Master", file:"nnbh/I Must Relearn You (Final Master).mp3", type:"final" }
+  ]},
+  { id:"nb12", artist:"nnbh", title:"You Held Me", lang:"en", versions:[
+    { label:"V1", file:"nnbh/You Held Me (V1).mp3", type:"brut" },
+    { label:"V2 Mix", file:"nnbh/You Held Me (V2 Mix).mp3", type:"mix" }
+  ]},
+  { id:"nb13", artist:"nnbh", title:"Your Hand", lang:"en", versions:[
+    { label:"Final Master", file:"nnbh/Your Hand (Final Master).mp3", type:"final" }
+  ]},
+  { id:"nb14", artist:"nnbh", title:"Fragments of My Soul", lang:"en", versions:[
+    { label:"Final Master", file:"nnbh/Fragments of My Soul (Final Master).mp3", type:"final" }
+  ]},
+  { id:"nb15", artist:"nnbh", title:"Breathe", lang:"en", versions:[
+    { label:"Acoustic V1", file:"nnbh/Breathe (Acoustic V1).mp3", type:"brut" },
+    { label:"Mix V2", file:"nnbh/Breathe (Mix V2).mp3", type:"mix" },
+    { label:"Tanpura Instrumental", file:"nnbh/Breathe (Tanpura Instrumental).mp3", type:"inst" }
+  ]},
+  { id:"nb16", artist:"nnbh", title:"Brow Doodle Rage", lang:"exp", versions:[
+    { label:"Démo V1", file:"nnbh/Brow Doodle Rage (Demo V1).mp3", type:"brut" },
+    { label:"Mix V2", file:"nnbh/Brow Doodle Rage (Mix V2).mp3", type:"mix" }
+  ]},
+  { id:"nb17", artist:"nnbh", title:"Œil Teams Call", lang:"exp", versions:[
+    { label:"Expérimental", file:"nnbh/Oeil Teams Call (Experimental).mp3", type:"brut" }
+  ]},
+  { id:"nb18", artist:"nnbh", title:"Meeting", lang:"en", versions:[
+    { label:"Final Master", file:"nnbh/Meeting (Final Master).mp3", type:"final" }
+  ]},
+  { id:"nb19", artist:"nnbh", title:"Song", lang:"en", versions:[
+    { label:"Mix V1", file:"nnbh/Song (Mix V1).mp3", type:"mix" },
+    { label:"Mix V2", file:"nnbh/Song (Mix V2).mp3", type:"mix" }
+  ]},
+  { id:"nb20", artist:"nnbh", title:"Three Hour Door", lang:"exp", versions:[
+    { label:"Brut", file:"nnbh/Three Hour Door (Brut).mp3", type:"brut" }
+  ]}
+];
+
+// ── STATE ──
+let userRole = "guest";
+let currentFilter = "all";
+let currentTrackId = null;
+let currentVersionIdx = 0;
+let isPlaying = false;
+let filteredTracks = [];
+
+const audio = document.getElementById("audio-el");
+
+// ── AUTH ──
+async function doLogin() {
+  const email = document.getElementById("email-input").value.trim();
+  const pass = document.getElementById("pass-input").value;
+  const err = document.getElementById("login-error");
+  err.style.display = "none";
+  try {
+    await auth.signInWithEmailAndPassword(email, pass);
+  } catch(e) {
+    err.style.display = "block";
+  }
+}
+
+document.getElementById("pass-input").addEventListener("keydown", e => {
+  if (e.key === "Enter") doLogin();
+});
+
+function doLogout() {
+  auth.signOut();
+}
+
+auth.onAuthStateChanged(async (user) => {
+  if (user) {
+    const doc = await db.collection("Users").doc(user.uid).get();
+    if (!doc.exists) {
+      const emailDoc = await db.collection("Users").where("email","==",user.email).get();
+      if (!emailDoc.empty) {
+        userRole = emailDoc.docs[0].data().role || "guest";
+      }
+    } else {
+      userRole = doc.data().role || "guest";
+    }
+    showApp();
+  } else {
+    showLogin();
+  }
+});
+
+function showApp() {
+  document.getElementById("login-screen").style.display = "none";
+  document.getElementById("app").style.display = "block";
+  document.getElementById("user-role-label").textContent = userRole;
+  if (userRole === "vip" || userRole === "admin") {
+    document.querySelector(".vip-only").style.display = "flex";
+  }
+  renderTracks();
+}
+
+function showLogin() {
+  document.getElementById("login-screen").style.display = "flex";
+  document.getElementById("app").style.display = "none";
+  document.getElementById("player").style.display = "none";
+}
+
+// ── FILTERS ──
+function setFilter(f, btn) {
+  currentFilter = f;
+  document.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+  renderTracks();
+}
+
+function matchFilter(t) {
+  const canSeeNNBH = userRole === "vip" || userRole === "admin";
+  if (t.artist === "nnbh" && !canSeeNNBH) return false;
+  if (currentFilter === "all") return true;
+  if (currentFilter === "nila") return t.artist === "nila-moha";
+  if (currentFilter === "nnbh") return t.artist === "nnbh";
+  if (currentFilter === "fr") return t.lang === "fr";
+  if (currentFilter === "en") return t.lang === "en";
+  if (currentFilter === "es") return t.lang === "es";
+  if (currentFilter === "inst") return t.lang === "inst" || t.lang === "exp";
+  if (currentFilter === "final") return t.versions.some(v => v.type === "final");
+  return true;
+}
+
+function renderTracks() {
+  const q = document.getElementById("search-input").value.toLowerCase();
+  const container = document.getElementById("track-container");
+
+  let tracks = CATALOGUE.filter(t => {
+    if (!matchFilter(t)) return false;
+    if (q && !t.title.toLowerCase().includes(q)) return false;
+    return true;
+  });
+
+  filteredTracks = tracks;
+
+  if (tracks.length === 0) {
+    container.innerHTML = '<div class="empty">Aucun titre trouvé</div>';
+    return;
+  }
+
+  const nilaSection = tracks.filter(t => t.artist === "nila-moha");
+  const nnbhSection = tracks.filter(t => t.artist === "nnbh");
+  const canSeeNNBH = userRole === "vip" || userRole === "admin";
+
+  let html = "";
+
+  if (nilaSection.length > 0 && (currentFilter === "all" || currentFilter === "nila" || ["fr","en","es","inst","final"].includes(currentFilter))) {
+    if (canSeeNNBH && nnbhSection.length > 0) {
+      html += '<div class="section-title">Nila Moha</div>';
+    }
+    nilaSection.forEach((t, i) => { html += trackHTML(t, i + 1); });
+  }
+
+  if (nnbhSection.length > 0 && canSeeNNBH) {
+    html += '<div class="section-title">NNBH</div>';
+    nnbhSection.forEach((t, i) => { html += trackHTML(t, i + 1); });
+  }
+
+  container.innerHTML = html;
+}
+
+function trackHTML(t, num) {
+  const langMap = { fr:"FR", en:"EN", es:"ES", inst:"INST", exp:"EXP" };
+  const hasFinal = t.versions.some(v => v.type === "final");
+  const isNNBH = t.artist === "nnbh";
+  const playing = t.id === currentTrackId;
+
+  return `<div class="track-item ${playing ? 'playing' : ''}" onclick="playTrack('${t.id}', 0)">
+    <div class="track-num">${playing ? '♪' : num}</div>
+    <div class="track-info">
+      <div class="track-title">${t.title}</div>
+      <div class="track-meta">${t.versions.length > 1 ? t.versions.length + ' versions' : t.versions[0].label}</div>
+    </div>
+    <div class="track-badges">
+      <span class="badge badge-lang">${langMap[t.lang] || t.lang.toUpperCase()}</span>
+      ${hasFinal ? '<span class="badge badge-final">FINAL</span>' : ''}
+      ${isNNBH ? '<span class="badge badge-vip">VIP</span>' : ''}
+    </div>
+  </div>`;
+}
+
+// ── PLAYER ──
+function playTrack(id, versionIdx) {
+  const track = CATALOGUE.find(t => t.id === id);
+  if (!track) return;
+
+  currentTrackId = id;
+  currentVersionIdx = versionIdx;
+
+  const version = track.versions[versionIdx];
+  const url = R2 + "/" + encodeURIComponent(version.file).replace(/%2F/g, "/");
+
+  audio.src = url;
+  audio.play();
+  isPlaying = true;
+
+  document.getElementById("player").style.display = "block";
+  document.getElementById("player-title").textContent = track.title;
+  document.getElementById("player-version").textContent = version.label;
+  document.getElementById("play-btn").innerHTML = "&#9646;&#9646;";
+
+  // Version tabs
+  const tabs = document.getElementById("version-tabs");
+  if (track.versions.length > 1) {
+    tabs.innerHTML = track.versions.map((v, i) =>
+      `<button class="ver-btn ${i === versionIdx ? 'active' : ''}" onclick="playTrack('${id}', ${i})">${v.label}</button>`
+    ).join("");
+    tabs.style.display = "flex";
+  } else {
+    tabs.style.display = "none";
+  }
+
+  renderTracks();
+}
+
+function togglePlay() {
+  if (audio.paused) {
+    audio.play();
+    isPlaying = true;
+    document.getElementById("play-btn").innerHTML = "&#9646;&#9646;";
+  } else {
+    audio.pause();
+    isPlaying = false;
+    document.getElementById("play-btn").innerHTML = "&#9654;";
+  }
+}
+
+function prevTrack() {
+  const idx = filteredTracks.findIndex(t => t.id === currentTrackId);
+  if (idx > 0) playTrack(filteredTracks[idx - 1].id, 0);
+}
+
+function nextTrack() {
+  const idx = filteredTracks.findIndex(t => t.id === currentTrackId);
+  if (idx < filteredTracks.length - 1) playTrack(filteredTracks[idx + 1].id, 0);
+}
+
+audio.addEventListener("timeupdate", () => {
+  if (!audio.duration) return;
+  const pct = (audio.currentTime / audio.duration) * 100;
+  document.getElementById("progress-fill").style.width = pct + "%";
+  document.getElementById("time-cur").textContent = fmt(audio.currentTime);
+  document.getElementById("time-dur").textContent = fmt(audio.duration);
+});
+
+audio.addEventListener("ended", () => { nextTrack(); });
+
+function seekAudio(e) {
+  const bar = document.getElementById("progress-bar");
+  const pct = e.offsetX / bar.offsetWidth;
+  audio.currentTime = pct * audio.duration;
+}
+
+function fmt(s) {
+  const m = Math.floor(s / 60);
+  const sec = Math.floor(s % 60);
+  return m + ":" + (sec < 10 ? "0" : "") + sec;
+}
+</script>
+</body>
+</html>
