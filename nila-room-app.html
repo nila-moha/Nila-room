@@ -2,492 +2,147 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#070709">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="NILA ROOM">
+<link rel="apple-touch-icon" href="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' fill='%23070709'/%3E%3Ctext x='90' y='118' font-family='Georgia,serif' font-size='72' font-weight='400' text-anchor='middle' fill='%23C5973A' letter-spacing='6'%3ENR%3C/text%3E%3C/svg%3E">
 <title>NILA ROOM</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400&display=swap" rel="stylesheet">
-
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Italiana&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Jost:wght@200;300;400&display=swap" rel="stylesheet">
 <style>
-:root {
-  --bg: #070709;
-  --card: #0f0f13;
-  --card2: #161619;
-  --gold: #C5973A;
-  --gold2: #D4AF67;
-  --text: #F7F1E6;
-  --dim: #8a8070;
-  --dim2: #5a5248;
-  --border: rgba(197,151,58,0.15);
-  --r2: https://pub-4812a6387ff34d099272e7020be40861.r2.dev;
-}
+:root{--bg:#06060a;--bg2:#0a0a10;--card:#0f0f15;--gold:#C5973A;--gold2:#D4AF67;--gold3:#E8C77A;--text:#F2EAD9;--dim:#7a705f;--dim2:#4a4338;--border:rgba(197,151,58,0.2);--border2:rgba(197,151,58,0.4)}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{background:var(--bg);color:var(--text);font-family:'Jost',sans-serif;font-weight:300;min-height:100vh;overflow-x:hidden;letter-spacing:0.02em}
+button{font-family:inherit}
 
-* { margin:0; padding:0; box-sizing:border-box; }
+#login-screen{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem;background:radial-gradient(ellipse 60% 40% at 50% 25%,rgba(197,151,58,0.12) 0%,transparent 70%),var(--bg)}
+.login-logo{font-family:'Italiana',serif;font-size:3.4rem;letter-spacing:0.4em;color:var(--gold2);margin-bottom:0.5rem;padding-left:0.4em;text-shadow:0 0 40px rgba(197,151,58,0.3)}
+.login-sub{font-family:'Italiana',serif;font-size:0.7rem;letter-spacing:0.55em;color:var(--dim);text-transform:uppercase;margin-bottom:3.5rem;padding-left:0.55em}
+.login-box{width:100%;max-width:380px;background:linear-gradient(180deg,rgba(15,15,21,0.95) 0%,rgba(10,10,16,0.95) 100%);border:1px solid var(--border);border-radius:3px;padding:2.5rem;backdrop-filter:blur(10px)}
+.login-box input{width:100%;background:rgba(6,6,10,0.6);border:1px solid var(--border);border-radius:2px;color:var(--text);font-family:'Jost',sans-serif;font-weight:300;font-size:0.92rem;padding:0.95rem 1rem;margin-bottom:1rem;outline:none;transition:all 0.3s;letter-spacing:0.04em}
+.login-box input:focus{border-color:var(--gold);background:rgba(6,6,10,0.9)}
+.login-box input::placeholder{color:var(--dim2)}
+.btn-login{width:100%;background:linear-gradient(180deg,var(--gold2),var(--gold));color:#000;border:none;border-radius:2px;font-family:'Italiana',serif;font-size:0.85rem;letter-spacing:0.4em;text-transform:uppercase;padding:1rem;cursor:pointer;transition:all 0.3s;padding-left:calc(0.4em + 1rem);box-shadow:0 4px 20px rgba(197,151,58,0.2)}
+.btn-login:hover{background:linear-gradient(180deg,var(--gold3),var(--gold2));box-shadow:0 6px 25px rgba(197,151,58,0.35)}
+.login-error{color:#c0392b;font-size:0.8rem;text-align:center;margin-top:1rem;display:none;letter-spacing:0.05em;font-style:italic}
 
-body {
-  background: var(--bg);
-  color: var(--text);
-  font-family: 'Jost', sans-serif;
-  font-weight: 300;
-  min-height: 100vh;
-  overflow-x: hidden;
-}
+#app{display:none}
+.header{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(6,6,10,0.95);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:1.1rem 1.5rem;display:flex;align-items:center;justify-content:space-between}
+.header-logo{font-family:'Italiana',serif;font-size:1.25rem;letter-spacing:0.4em;color:var(--gold2);padding-left:0.4em}
+.header-right{display:flex;align-items:center;gap:1rem}
+.user-role{font-family:'Italiana',serif;font-size:0.62rem;letter-spacing:0.3em;color:var(--dim);text-transform:uppercase;padding-left:0.3em}
+.btn-logout{background:none;border:1px solid var(--border);color:var(--dim);font-family:'Italiana',serif;font-size:0.62rem;letter-spacing:0.28em;padding:0.45rem 0.9rem;cursor:pointer;border-radius:2px;text-transform:uppercase;transition:all 0.2s;padding-left:calc(0.28em + 0.9rem)}
+.btn-logout:hover{border-color:var(--gold);color:var(--gold2)}
 
-/* ── LOGIN ── */
-#login-screen {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 2rem;
-  background: radial-gradient(ellipse at 50% 0%, rgba(197,151,58,0.08) 0%, transparent 70%);
-}
+.main{padding-top:75px;padding-bottom:170px}
+.search-wrap{padding:1.4rem 1.5rem 0.5rem}
+.search-input{width:100%;background:var(--card);border:1px solid var(--border);border-radius:2px;color:var(--text);font-family:'Jost',sans-serif;font-weight:300;font-size:0.92rem;padding:0.85rem 1rem;outline:none;letter-spacing:0.04em;transition:border-color 0.3s}
+.search-input:focus{border-color:var(--gold)}
+.search-input::placeholder{color:var(--dim2);font-style:italic}
 
-.login-logo {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: 3.5rem;
-  font-weight: 300;
-  letter-spacing: 0.3em;
-  color: var(--gold2);
-  margin-bottom: 0.3rem;
-}
+.filters{padding:0.5rem 1.5rem 1rem;display:flex;gap:0.5rem;overflow-x:auto;scrollbar-width:none;border-bottom:1px solid var(--border)}
+.filters::-webkit-scrollbar{display:none}
+.filter-btn{background:none;border:1px solid var(--border);color:var(--dim);font-family:'Italiana',serif;font-size:0.68rem;letter-spacing:0.28em;padding:0.5rem 1rem;border-radius:30px;cursor:pointer;white-space:nowrap;text-transform:uppercase;transition:all 0.3s;flex-shrink:0;padding-left:calc(0.28em + 1rem)}
+.filter-btn:hover{border-color:var(--gold);color:var(--gold2)}
+.filter-btn.active{background:linear-gradient(180deg,var(--gold2),var(--gold));border-color:var(--gold);color:#000}
 
-.login-sub {
-  font-size: 0.65rem;
-  letter-spacing: 0.35em;
-  color: var(--dim);
-  text-transform: uppercase;
-  margin-bottom: 3rem;
-}
+.section-title{font-family:'Italiana',serif;font-size:0.78rem;letter-spacing:0.45em;color:var(--gold2);text-transform:uppercase;padding:2rem 1.5rem 0.7rem;grid-column:1/-1;padding-left:calc(0.45em + 1.5rem);position:relative}
+.section-title::before{content:'';position:absolute;bottom:0.4rem;left:1.5rem;width:32px;height:1px;background:linear-gradient(90deg,var(--gold),transparent)}
 
-.login-box {
-  width: 100%;
-  max-width: 360px;
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 2px;
-  padding: 2.5rem;
-}
+.cards-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1rem;padding:0.5rem 1rem 1rem}
+@media(min-width:600px){.cards-grid{grid-template-columns:repeat(3,1fr);gap:1.3rem;padding:0.5rem 1.5rem 1.5rem}}
+@media(min-width:900px){.cards-grid{grid-template-columns:repeat(4,1fr)}}
 
-.login-box input {
-  width: 100%;
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: 2px;
-  color: var(--text);
-  font-family: 'Jost', sans-serif;
-  font-weight: 300;
-  font-size: 0.9rem;
-  padding: 0.85rem 1rem;
-  margin-bottom: 1rem;
-  outline: none;
-  transition: border-color 0.2s;
-}
+.card{position:relative;border-radius:6px;overflow:hidden;cursor:pointer;aspect-ratio:3/4;transition:transform 0.4s cubic-bezier(0.2,0.8,0.2,1),box-shadow 0.4s;border:1px solid var(--border);background:var(--card)}
+.card:hover{transform:translateY(-4px);box-shadow:0 16px 40px rgba(0,0,0,0.7),0 0 0 1px var(--border2)}
+.card:active{transform:scale(0.98)}
+.card-img{position:absolute;inset:0;background-size:cover;background-position:center;filter:brightness(0.55) saturate(0.85);transition:filter 0.4s}
+.card:hover .card-img{filter:brightness(0.7) saturate(1)}
+.card.playing .card-img{filter:brightness(0.65) saturate(1.1)}
+.card-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(6,6,10,0.95) 0%,rgba(6,6,10,0.5) 50%,rgba(6,6,10,0.15) 100%)}
+.card.playing .card-overlay{background:linear-gradient(to top,rgba(6,6,10,0.92) 0%,rgba(197,151,58,0.18) 50%,rgba(197,151,58,0.05) 100%)}
+.card.playing::before{content:'';position:absolute;inset:0;border:1.5px solid var(--gold);border-radius:6px;z-index:2;pointer-events:none;animation:goldPulse 2.5s ease-in-out infinite}
+@keyframes goldPulse{0%,100%{opacity:0.5;box-shadow:0 0 0 0 rgba(197,151,58,0.4)}50%{opacity:1;box-shadow:0 0 30px 0 rgba(197,151,58,0.2)}}
+.card-fav{position:absolute;top:0.6rem;right:0.6rem;z-index:3;background:rgba(0,0,0,0.4);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,0.1);width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:0.95rem;color:rgba(255,255,255,0.6);transition:all 0.2s}
+.card-fav:hover{background:rgba(0,0,0,0.7);color:var(--gold2);border-color:var(--gold)}
+.card-fav.on{background:rgba(197,151,58,0.25);border-color:var(--gold);color:var(--gold2)}
+.card-content{position:absolute;bottom:0;left:0;right:0;padding:1rem 0.9rem 0.95rem;z-index:1}
+.card-badges{display:flex;gap:0.3rem;margin-bottom:0.5rem;flex-wrap:wrap}
+.badge{font-family:'Italiana',serif;font-size:0.55rem;letter-spacing:0.22em;padding:0.2rem 0.5rem;border-radius:2px;text-transform:uppercase;padding-left:calc(0.22em + 0.5rem)}
+.badge-lang{border:1px solid rgba(255,255,255,0.2);color:rgba(255,255,255,0.7);background:rgba(0,0,0,0.3);backdrop-filter:blur(4px)}
+.badge-vip{border:1px solid var(--gold);color:var(--gold2);background:rgba(197,151,58,0.15)}
+.badge-final{background:rgba(197,151,58,0.2);color:var(--gold3);border:1px solid var(--border)}
+.card-title{font-family:'Italiana',serif;font-size:1.05rem;color:var(--text);line-height:1.25;margin-bottom:0.35rem;letter-spacing:0.05em;padding-left:0.05em;text-shadow:0 2px 8px rgba(0,0,0,0.5)}
+.card.playing .card-title{color:var(--gold2)}
+.card-meta{font-family:'Italiana',serif;font-size:0.6rem;letter-spacing:0.3em;color:rgba(242,234,217,0.6);text-transform:uppercase;padding-left:0.3em}
 
-.login-box input:focus { border-color: var(--gold); }
-.login-box input::placeholder { color: var(--dim2); }
+#song-modal{display:none;position:fixed;inset:0;z-index:300;background:var(--bg);overflow-y:auto;-webkit-overflow-scrolling:touch}
+.modal-header{position:sticky;top:0;background:rgba(6,6,10,0.96);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);padding:1.1rem 1.5rem;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);z-index:10}
+.modal-back{background:none;border:none;color:var(--gold2);font-size:1.5rem;cursor:pointer;padding:0.3rem 0.5rem;font-family:'Italiana',serif;line-height:1}
+.modal-title{font-family:'Italiana',serif;font-size:0.78rem;color:var(--dim);letter-spacing:0.4em;text-transform:uppercase;padding-left:0.4em}
 
-.btn-login {
-  width: 100%;
-  background: var(--gold);
-  color: var(--bg);
-  border: none;
-  border-radius: 2px;
-  font-family: 'Jost', sans-serif;
-  font-weight: 400;
-  font-size: 0.8rem;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  padding: 0.9rem;
-  cursor: pointer;
-  transition: background 0.2s;
-}
+.modal-hero{position:relative;height:340px;overflow:hidden;border-bottom:1px solid var(--border)}
+.modal-hero-img{position:absolute;inset:0;background-size:cover;background-position:center;filter:brightness(0.45) saturate(0.9)}
+.modal-hero-img::after{content:'';position:absolute;inset:0;background:linear-gradient(to bottom,transparent 0%,rgba(6,6,10,0.4) 50%,rgba(6,6,10,0.95) 100%)}
+.modal-hero-content{position:absolute;bottom:0;left:0;right:0;padding:2rem 1.5rem 1.8rem;text-align:center;z-index:2}
+.modal-hero-title{font-family:'Italiana',serif;font-size:2.4rem;color:var(--gold2);letter-spacing:0.1em;margin-bottom:0.5rem;padding-left:0.1em;line-height:1.1;text-shadow:0 2px 20px rgba(0,0,0,0.6)}
+.modal-hero-sub{font-family:'Italiana',serif;font-size:0.72rem;letter-spacing:0.45em;color:var(--dim);text-transform:uppercase;padding-left:0.45em}
 
-.btn-login:hover { background: var(--gold2); }
+.modal-body{padding:1.8rem 1.5rem 3rem}
+.ver-section{margin-bottom:2rem}
+.ver-section-label{font-family:'Italiana',serif;font-size:0.65rem;letter-spacing:0.4em;color:var(--dim);text-transform:uppercase;margin-bottom:0.85rem;padding-left:0.4em}
+.ver-list{display:flex;flex-direction:column;gap:0.5rem}
+.ver-item{display:flex;align-items:center;gap:0.8rem;padding:0.75rem 0.9rem;background:var(--card);border:1px solid var(--border);border-radius:3px;cursor:pointer;transition:all 0.25s}
+.ver-item:hover{border-color:var(--gold);background:rgba(15,15,21,0.95)}
+.ver-item.active{border-color:var(--gold);background:rgba(197,151,58,0.08)}
+.ver-item.active .ver-item-name{color:var(--gold2)}
+.ver-item-icon{font-size:0.85rem;color:var(--dim);flex-shrink:0;width:14px;text-align:center}
+.ver-item.active .ver-item-icon{color:var(--gold)}
+.ver-item-name{flex:1;font-family:'Italiana',serif;font-size:0.85rem;color:var(--text);letter-spacing:0.1em;padding-left:0.1em}
+.ver-item-fav{background:none;border:none;color:var(--dim2);font-size:1rem;cursor:pointer;padding:0.2rem;transition:color 0.2s;flex-shrink:0}
+.ver-item-fav:hover{color:var(--gold2)}
+.ver-item-fav.on{color:var(--gold)}
 
-.login-error {
-  color: #c0392b;
-  font-size: 0.8rem;
-  text-align: center;
-  margin-top: 1rem;
-  display: none;
-}
+.lyrics-tabs{display:flex;gap:1.6rem;margin-bottom:1.4rem;border-bottom:1px solid var(--border);padding-bottom:1rem}
+.lyric-tab{background:none;border:none;color:var(--dim);font-family:'Italiana',serif;font-size:0.68rem;letter-spacing:0.32em;padding:0.3rem 0;cursor:pointer;text-transform:uppercase;transition:color 0.2s;position:relative;padding-left:0.32em}
+.lyric-tab.active{color:var(--gold2)}
+.lyric-tab.active::after{content:'';position:absolute;bottom:-1.05rem;left:0;right:0;height:1px;background:var(--gold)}
+.lyric-tab:hover{color:var(--text)}
+.lyrics-content{display:none}
+.lyrics-content.active{display:block}
+.lyrics-text{font-family:'Cormorant Garamond',serif;font-size:1.18rem;line-height:2;color:var(--text);font-weight:300;white-space:pre-wrap;letter-spacing:0.015em;font-style:italic}
+.lyrics-empty{font-family:'Cormorant Garamond',serif;font-size:1rem;color:var(--dim);font-style:italic;text-align:center;padding:3rem 1rem;line-height:1.7;letter-spacing:0.02em}
 
-/* ── APP ── */
-#app { display: none; }
+#player{position:fixed;bottom:0;left:0;right:0;background:rgba(8,8,13,0.98);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border-top:1px solid var(--border);padding:0.85rem 1.5rem 1.3rem;z-index:200;display:none;padding-bottom:calc(1.3rem + env(safe-area-inset-bottom))}
+.player-top{display:flex;align-items:center;gap:0.9rem;margin-bottom:0.7rem}
+.player-thumb{width:44px;height:44px;border-radius:3px;flex-shrink:0;background-size:cover;background-position:center;border:1px solid var(--border)}
+.player-info{flex:1;min-width:0}
+.player-title{font-family:'Italiana',serif;font-size:1rem;color:var(--gold2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:0.06em;padding-left:0.06em}
+.player-version{font-family:'Italiana',serif;font-size:0.6rem;color:var(--dim);letter-spacing:0.28em;text-transform:uppercase;margin-top:0.15rem;padding-left:0.28em}
+.player-controls{display:flex;align-items:center;gap:0.9rem}
+.ctrl-btn{background:none;border:none;color:var(--dim);cursor:pointer;font-size:0.95rem;transition:color 0.2s;padding:0.25rem}
+.ctrl-btn:hover{color:var(--gold2)}
+.ctrl-play{width:42px;height:42px;background:linear-gradient(180deg,var(--gold2),var(--gold));border:none;border-radius:50%;color:#000;font-size:0.9rem;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all 0.2s;box-shadow:0 4px 16px rgba(197,151,58,0.25)}
+.ctrl-play:hover{background:linear-gradient(180deg,var(--gold3),var(--gold2))}
+.progress-wrap{display:flex;align-items:center;gap:0.85rem}
+.progress-bar{flex:1;height:2px;background:rgba(197,151,58,0.15);border-radius:2px;cursor:pointer;position:relative}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--gold),var(--gold2));border-radius:2px;width:0%;transition:width 0.1s linear;pointer-events:none}
+.time{font-family:'Italiana',serif;font-size:0.65rem;color:var(--dim);width:32px;text-align:center;flex-shrink:0;letter-spacing:0.1em}
+.player-open-btn{background:none;border:none;color:var(--dim);font-family:'Italiana',serif;font-size:0.6rem;letter-spacing:0.32em;text-transform:uppercase;cursor:pointer;padding:0.3rem 0;transition:color 0.2s;margin-top:0.3rem;padding-left:0.32em}
+.player-open-btn:hover{color:var(--gold2)}
 
-/* HEADER */
-.header {
-  position: fixed;
-  top: 0; left: 0; right: 0;
-  z-index: 100;
-  background: rgba(7,7,9,0.92);
-  backdrop-filter: blur(12px);
-  border-bottom: 1px solid var(--border);
-  padding: 1rem 1.5rem;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.header-logo {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: 1.4rem;
-  font-weight: 300;
-  letter-spacing: 0.25em;
-  color: var(--gold2);
-}
-
-.header-right {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-
-.user-role {
-  font-size: 0.65rem;
-  letter-spacing: 0.2em;
-  color: var(--dim);
-  text-transform: uppercase;
-}
-
-.btn-logout {
-  background: none;
-  border: 1px solid var(--border);
-  color: var(--dim);
-  font-family: 'Jost', sans-serif;
-  font-size: 0.7rem;
-  letter-spacing: 0.15em;
-  padding: 0.4rem 0.8rem;
-  cursor: pointer;
-  border-radius: 2px;
-  text-transform: uppercase;
-  transition: all 0.2s;
-}
-
-.btn-logout:hover { border-color: var(--gold); color: var(--gold); }
-
-/* MAIN */
-.main { padding-top: 70px; padding-bottom: 140px; }
-
-/* FILTERS */
-.filters {
-  padding: 1.2rem 1.5rem;
-  display: flex;
-  gap: 0.5rem;
-  overflow-x: auto;
-  scrollbar-width: none;
-  border-bottom: 1px solid var(--border);
-}
-
-.filters::-webkit-scrollbar { display: none; }
-
-.filter-btn {
-  background: none;
-  border: 1px solid var(--border);
-  color: var(--dim);
-  font-family: 'Jost', sans-serif;
-  font-size: 0.7rem;
-  letter-spacing: 0.15em;
-  padding: 0.4rem 0.9rem;
-  border-radius: 20px;
-  cursor: pointer;
-  white-space: nowrap;
-  text-transform: uppercase;
-  transition: all 0.2s;
-  flex-shrink: 0;
-}
-
-.filter-btn:hover, .filter-btn.active {
-  background: var(--gold);
-  border-color: var(--gold);
-  color: var(--bg);
-}
-
-/* SEARCH */
-.search-wrap {
-  padding: 1rem 1.5rem;
-}
-
-.search-input {
-  width: 100%;
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 2px;
-  color: var(--text);
-  font-family: 'Jost', sans-serif;
-  font-weight: 300;
-  font-size: 0.9rem;
-  padding: 0.75rem 1rem;
-  outline: none;
-}
-
-.search-input::placeholder { color: var(--dim2); }
-
-/* TRACK LIST */
-.track-list {
-  padding: 0 1rem;
-}
-
-.track-item {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  padding: 0.9rem 0.5rem;
-  border-bottom: 1px solid rgba(197,151,58,0.06);
-  cursor: pointer;
-  border-radius: 4px;
-  transition: background 0.15s;
-  position: relative;
-}
-
-.track-item:hover { background: rgba(197,151,58,0.04); }
-.track-item.playing { background: rgba(197,151,58,0.08); }
-
-.track-num {
-  font-size: 0.7rem;
-  color: var(--dim2);
-  width: 20px;
-  text-align: center;
-  flex-shrink: 0;
-}
-
-.track-item.playing .track-num { color: var(--gold); }
-
-.track-info { flex: 1; min-width: 0; }
-
-.track-title {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: 1.05rem;
-  font-weight: 400;
-  color: var(--text);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.track-item.playing .track-title { color: var(--gold2); }
-
-.track-meta {
-  font-size: 0.68rem;
-  color: var(--dim);
-  letter-spacing: 0.1em;
-  margin-top: 0.2rem;
-  text-transform: uppercase;
-}
-
-.track-badges {
-  display: flex;
-  gap: 0.3rem;
-  flex-shrink: 0;
-}
-
-.badge {
-  font-size: 0.55rem;
-  letter-spacing: 0.1em;
-  padding: 0.2rem 0.4rem;
-  border-radius: 2px;
-  text-transform: uppercase;
-}
-
-.badge-lang {
-  border: 1px solid var(--dim2);
-  color: var(--dim);
-}
-
-.badge-vip {
-  border: 1px solid var(--gold);
-  color: var(--gold);
-}
-
-.badge-final {
-  background: rgba(197,151,58,0.15);
-  color: var(--gold);
-}
-
-/* SECTION TITLE */
-.section-title {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: 0.75rem;
-  letter-spacing: 0.3em;
-  color: var(--dim);
-  text-transform: uppercase;
-  padding: 1.5rem 1.5rem 0.5rem;
-}
-
-/* PLAYER */
-#player {
-  position: fixed;
-  bottom: 0; left: 0; right: 0;
-  background: rgba(15,15,19,0.97);
-  backdrop-filter: blur(20px);
-  border-top: 1px solid var(--border);
-  padding: 1rem 1.5rem 1.2rem;
-  z-index: 200;
-  display: none;
-}
-
-.player-track {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 0.8rem;
-}
-
-.player-info { flex: 1; min-width: 0; }
-
-.player-title {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: 1.1rem;
-  font-weight: 400;
-  color: var(--gold2);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.player-version {
-  font-size: 0.65rem;
-  color: var(--dim);
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
-  margin-top: 0.15rem;
-}
-
-.player-controls {
-  display: flex;
-  align-items: center;
-  gap: 1.2rem;
-}
-
-.ctrl-btn {
-  background: none;
-  border: none;
-  color: var(--dim);
-  cursor: pointer;
-  font-size: 1.1rem;
-  transition: color 0.2s;
-  padding: 0.2rem;
-}
-
-.ctrl-btn:hover { color: var(--gold); }
-.ctrl-btn.active { color: var(--gold); }
-
-.ctrl-play {
-  width: 40px; height: 40px;
-  background: var(--gold);
-  border: none;
-  border-radius: 50%;
-  color: var(--bg);
-  font-size: 1rem;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background 0.2s;
-  flex-shrink: 0;
-}
-
-.ctrl-play:hover { background: var(--gold2); }
-
-/* PROGRESS */
-.progress-wrap {
-  display: flex;
-  align-items: center;
-  gap: 0.8rem;
-}
-
-.progress-bar {
-  flex: 1;
-  height: 3px;
-  background: var(--card2);
-  border-radius: 2px;
-  cursor: pointer;
-  position: relative;
-}
-
-.progress-fill {
-  height: 100%;
-  background: var(--gold);
-  border-radius: 2px;
-  width: 0%;
-  transition: width 0.1s linear;
-  pointer-events: none;
-}
-
-.time {
-  font-size: 0.7rem;
-  color: var(--dim);
-  width: 32px;
-  text-align: center;
-  flex-shrink: 0;
-}
-
-/* VERSION TABS */
-.version-tabs {
-  display: flex;
-  gap: 0.4rem;
-  overflow-x: auto;
-  scrollbar-width: none;
-  margin-top: 0.8rem;
-}
-
-.version-tabs::-webkit-scrollbar { display: none; }
-
-.ver-btn {
-  background: none;
-  border: 1px solid var(--border);
-  color: var(--dim);
-  font-family: 'Jost', sans-serif;
-  font-size: 0.6rem;
-  letter-spacing: 0.12em;
-  padding: 0.3rem 0.7rem;
-  border-radius: 20px;
-  cursor: pointer;
-  white-space: nowrap;
-  text-transform: uppercase;
-  transition: all 0.2s;
-  flex-shrink: 0;
-}
-
-.ver-btn:hover, .ver-btn.active {
-  background: rgba(197,151,58,0.15);
-  border-color: var(--gold);
-  color: var(--gold);
-}
-
-audio { display: none; }
-
-/* LOADING */
-.loading {
-  text-align: center;
-  padding: 3rem;
-  color: var(--dim);
-  font-size: 0.8rem;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-}
-
-/* EMPTY */
-.empty {
-  text-align: center;
-  padding: 3rem 1.5rem;
-  color: var(--dim2);
-  font-family: 'Cormorant Garamond', serif;
-  font-size: 1.1rem;
-  font-style: italic;
-}
+audio{display:none}
+.empty{text-align:center;padding:4rem 1.5rem;color:var(--dim);font-family:'Cormorant Garamond',serif;font-size:1.15rem;font-style:italic;grid-column:1/-1;letter-spacing:0.02em}
 </style>
-
-<!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
 </head>
 <body>
 
-<!-- LOGIN -->
 <div id="login-screen">
   <div class="login-logo">NILA ROOM</div>
   <div class="login-sub">Musique · Versions · Émotions</div>
@@ -499,7 +154,6 @@ audio { display: none; }
   </div>
 </div>
 
-<!-- APP -->
 <div id="app">
   <div class="header">
     <div class="header-logo">NILA ROOM</div>
@@ -508,14 +162,13 @@ audio { display: none; }
       <button class="btn-logout" onclick="doLogout()">Quitter</button>
     </div>
   </div>
-
   <div class="main">
     <div class="search-wrap">
-      <input class="search-input" type="text" id="search-input" placeholder="Rechercher un titre..." oninput="renderTracks()">
+      <input class="search-input" type="text" id="search-input" placeholder="Rechercher un titre..." oninput="renderCards()">
     </div>
-
     <div class="filters" id="filters">
       <button class="filter-btn active" onclick="setFilter('all',this)">Toutes</button>
+      <button class="filter-btn" onclick="setFilter('fav',this)">Favoris</button>
       <button class="filter-btn" onclick="setFilter('final',this)">Finals</button>
       <button class="filter-btn" onclick="setFilter('fr',this)">Français</button>
       <button class="filter-btn" onclick="setFilter('en',this)">Anglais</button>
@@ -524,37 +177,50 @@ audio { display: none; }
       <button class="filter-btn" onclick="setFilter('nila',this)">Nila Moha</button>
       <button class="filter-btn vip-only" onclick="setFilter('nnbh',this)" style="display:none">NNBH</button>
     </div>
-
-    <div id="track-container"></div>
+    <div class="cards-grid" id="cards-container"></div>
   </div>
-
-  <!-- PLAYER -->
   <div id="player">
     <audio id="audio-el"></audio>
-    <div class="player-track">
+    <div class="player-top">
+      <div class="player-thumb" id="player-thumb"></div>
       <div class="player-info">
         <div class="player-title" id="player-title">—</div>
         <div class="player-version" id="player-version"></div>
       </div>
       <div class="player-controls">
-        <button class="ctrl-btn" onclick="prevTrack()" title="Précédent">&#9664;&#9664;</button>
-        <button class="ctrl-play" id="play-btn" onclick="togglePlay()">&#9654;</button>
-        <button class="ctrl-btn" onclick="nextTrack()" title="Suivant">&#9654;&#9654;</button>
+        <button class="ctrl-btn" onclick="prevTrack()">◂◂</button>
+        <button class="ctrl-play" id="play-btn" onclick="togglePlay()">▶</button>
+        <button class="ctrl-btn" onclick="nextTrack()">▸▸</button>
       </div>
     </div>
     <div class="progress-wrap">
       <span class="time" id="time-cur">0:00</span>
-      <div class="progress-bar" id="progress-bar" onclick="seekAudio(event)">
-        <div class="progress-fill" id="progress-fill"></div>
-      </div>
+      <div class="progress-bar" id="progress-bar" onclick="seekAudio(event)"><div class="progress-fill" id="progress-fill"></div></div>
       <span class="time" id="time-dur">0:00</span>
     </div>
-    <div class="version-tabs" id="version-tabs"></div>
+    <button class="player-open-btn" onclick="openCurrentSong()">Voir la chanson ↑</button>
   </div>
 </div>
 
+<div id="song-modal">
+  <div class="modal-header">
+    <button class="modal-back" onclick="closeModal()">←</button>
+    <div class="modal-title" id="modal-title-label"></div>
+    <div style="width:30px"></div>
+  </div>
+  <div class="modal-hero">
+    <div class="modal-hero-img" id="modal-hero-img"></div>
+    <div class="modal-hero-content">
+      <div class="modal-hero-title" id="modal-hero-title"></div>
+      <div class="modal-hero-sub" id="modal-hero-sub"></div>
+    </div>
+  </div>
+  <div class="modal-body">
+    <div class="ver-section" id="modal-ver-section"></div>
+    <div id="modal-lyrics-section"></div>
+  </div>
+</div>
 <script>
-// ── FIREBASE CONFIG ──
 const firebaseConfig = {
   apiKey: "AIzaSyAGcpYRxaqLr1KVyW33kHI1qQwMA47WCQU",
   authDomain: "nila-room.firebaseapp.com",
@@ -563,391 +229,358 @@ const firebaseConfig = {
   messagingSenderId: "1069806830773",
   appId: "1:1069806830773:web:f2bf441c99a09d09522afc"
 };
-
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
-
 const R2 = "https://pub-4812a6387ff34d099272e7020be40861.r2.dev";
 
-// ── CATALOGUE COMPLET ──
-const CATALOGUE = [
-  // ── NILA MOHA ──
-  { id:"nm01", artist:"nila-moha", title:"Miss Catastrophe", lang:"fr", versions:[
-    { label:"Final Master", file:"nila-moha/Miss Catastrophe (Final Master).mp3", type:"final" },
-    { label:"Extended", file:"nila-moha/Miss Catastrophe (Extended Version).mp3", type:"final" }
-  ]},
-  { id:"nm02", artist:"nila-moha", title:"Henné deux soleils", lang:"fr", versions:[
-    { label:"Final Master", file:"nila-moha/Henne deux soleils (Final Master).mp3", type:"final" },
-    { label:"Mix", file:"nila-moha/Henne deux soleils (Mix).mp3", type:"mix" }
-  ]},
-  { id:"nm03", artist:"nila-moha", title:"Let's Go", lang:"en", versions:[
-    { label:"Final Master", file:"nila-moha/Lets Go (Final Master).mp3", type:"final" }
-  ]},
-  { id:"nm04", artist:"nila-moha", title:"Deux pieds gauches", lang:"fr", versions:[
-    { label:"Final Master", file:"nila-moha/Deux pieds gauches (Final Master).mp3", type:"final" }
-  ]},
-  { id:"nm05", artist:"nila-moha", title:"Luz de mi corazón", lang:"es", versions:[
-    { label:"Final Master", file:"nila-moha/Luz de mi corazon (Final Master).mp3", type:"final" }
-  ]},
-  { id:"nm06", artist:"nila-moha", title:"I Want to Run", lang:"en", versions:[
-    { label:"Final Master", file:"nila-moha/I Want to Run (Final Master).mp3", type:"final" }
-  ]},
-  { id:"nm07", artist:"nila-moha", title:"Ce soir amour danse", lang:"fr", versions:[
-    { label:"Final Master", file:"nila-moha/Ce soir amour danse (Final Master).mp3", type:"final" },
-    { label:"Version 2", file:"nila-moha/Ce soir amour danse (Final Master V2).mp3", type:"final" }
-  ]},
-  { id:"nm08", artist:"nila-moha", title:"Dos mundos arden", lang:"es", versions:[
-    { label:"Final Master", file:"nila-moha/Dos mundos arden (Final Master).mp3", type:"final" }
-  ]},
-  { id:"nm09", artist:"nila-moha", title:"Ma force", lang:"fr", versions:[
-    { label:"Final Master", file:"nila-moha/Ma force (Final Master).mp3", type:"final" }
-  ]},
-  { id:"nm10", artist:"nila-moha", title:"Hija de dos tierras", lang:"es", versions:[
-    { label:"Final Master", file:"nila-moha/Hija de dos tierras (Final Master).mp3", type:"final" },
-    { label:"Mix V2", file:"nila-moha/Hija de dos tierras (Mix V2).mp3", type:"mix" },
-    { label:"Mix V2.1", file:"nila-moha/Hija de dos tierras (Mix V2.1).mp3", type:"mix" },
-    { label:"Mix V2.2", file:"nila-moha/Hija de dos tierras (Mix V2.2).mp3", type:"mix" }
-  ]},
-  { id:"nm11", artist:"nila-moha", title:"Mode Replay", lang:"fr", versions:[
-    { label:"Final Master", file:"nila-moha/Mode Replay (Final Master).mp3", type:"final" }
-  ]},
-  { id:"nm12", artist:"nila-moha", title:"Roots Before the Wind", lang:"en", versions:[
-    { label:"Acoustic V1", file:"nila-moha/Roots Before the Wind (Acoustic V1).mp3", type:"brut" },
-    { label:"Mixed V2", file:"nila-moha/Roots Before the Wind (Mixed V2).mp3", type:"mix" },
-    { label:"Mixed V3", file:"nila-moha/Roots Before the Wind (Mixed V3).mp3", type:"mix" }
-  ]},
-  { id:"nm13", artist:"nila-moha", title:"Mots trop lourds", lang:"fr", versions:[
-    { label:"Mix V1", file:"nila-moha/Mots trop lourds (Mix V1).mp3", type:"mix" },
-    { label:"Mix V2", file:"nila-moha/Mots trop lourds (Mix V2).mp3", type:"mix" }
-  ]},
-  { id:"nm14", artist:"nila-moha", title:"Éclats de ciel", lang:"fr", versions:[
-    { label:"Final Master", file:"nila-moha/Eclats de ciel (Final Master).mp3", type:"final" }
-  ]},
-  { id:"nm15", artist:"nila-moha", title:"Quiero huir", lang:"es", versions:[
-    { label:"Final Master", file:"nila-moha/Quiero huir (Final Master).mp3", type:"final" }
-  ]},
-  { id:"nm16", artist:"nila-moha", title:"Soleil au cœur", lang:"fr", versions:[
-    { label:"Final Master", file:"nila-moha/Soleil au coeur (Final Master).mp3", type:"final" }
-  ]},
-  { id:"nm17", artist:"nila-moha", title:"Ma belle âme", lang:"fr", versions:[
-    { label:"Mix", file:"nila-moha/Ma belle ame (Mix en cours).mp3", type:"mix" }
-  ]},
-  { id:"nm18", artist:"nila-moha", title:"Miroir craquelé", lang:"fr", versions:[
-    { label:"Mix", file:"nila-moha/Miroir craquele (Mix en cours).mp3", type:"mix" }
-  ]},
-  { id:"nm19", artist:"nila-moha", title:"Chœurs Voilés", lang:"fr", versions:[
-    { label:"Mix", file:"nila-moha/Choeurs Voiles (Mix en cours).mp3", type:"mix" }
-  ]},
-  { id:"nm20", artist:"nila-moha", title:"Ella lleva más flamenco", lang:"es", versions:[
-    { label:"Final Master", file:"nila-moha/Ella lleva mas flamenco (Final Master).mp3", type:"final" }
-  ]},
-  { id:"nm21", artist:"nila-moha", title:"Halfway Anything", lang:"en", versions:[
-    { label:"Mix", file:"nila-moha/Halfway Anything (Mix).mp3", type:"mix" },
-    { label:"Remastered", file:"nila-moha/Halfway Anything (Remastered).mp3", type:"final" }
-  ]},
-  { id:"nm22", artist:"nila-moha", title:"Mirror War Declaration", lang:"en", versions:[
-    { label:"Démo V1", file:"nila-moha/Mirror War Declaration (Demo V1).mp3", type:"brut" }
-  ]},
-  { id:"nm23", artist:"nila-moha", title:"Whisper Tabla Lament", lang:"inst", versions:[
-    { label:"Instrumental Remastered", file:"nila-moha/Whisper Tabla Lament (Instrumental Remastered).mp3", type:"final" }
-  ]},
-
-  // ── NNBH (VIP/Admin only) ──
-  { id:"nb01", artist:"nnbh", title:"Le Couloir", lang:"fr", versions:[
-    { label:"Final Master", file:"nnbh/Le Couloir (Final Master).mp3", type:"final" }
-  ]},
-  { id:"nb02", artist:"nnbh", title:"Trois heures", lang:"fr", versions:[
-    { label:"Final Master", file:"nnbh/Trois heures (Final Master).mp3", type:"final" }
-  ]},
-  { id:"nb03", artist:"nnbh", title:"When the World Disappears", lang:"en", versions:[
-    { label:"V1 Brut", file:"nnbh/When the World Disappears (V1 Brut).mp3", type:"brut" },
-    { label:"V2 Mix", file:"nnbh/When the World Disappears (V2 Mix).mp3", type:"mix" },
-    { label:"V3 Mix", file:"nnbh/When the World Disappears (V3 Mix).mp3", type:"mix" },
-    { label:"Final Master", file:"nnbh/When the World Disappears (Final Master V4).mp3", type:"final" },
-    { label:"Alt", file:"nnbh/When the World Disappears (Version Alternative).mp3", type:"mix" }
-  ]},
-  { id:"nb04", artist:"nnbh", title:"Too Close to Heaven", lang:"en", versions:[
-    { label:"Final Master", file:"nnbh/Too Close to Heaven (Final Master).mp3", type:"final" },
-    { label:"Mix", file:"nnbh/Too Close to Heaven (Mix).mp3", type:"mix" },
-    { label:"World Music", file:"nnbh/Too Close to Heaven (World Music Version).mp3", type:"mix" }
-  ]},
-  { id:"nb05", artist:"nnbh", title:"God Kept Me", lang:"en", versions:[
-    { label:"Final Master", file:"nnbh/God Kept Me (Final Master).mp3", type:"final" }
-  ]},
-  { id:"nb06", artist:"nnbh", title:"What He Gave Me", lang:"en", versions:[
-    { label:"Final Master", file:"nnbh/What He Gave Me (Final Master).mp3", type:"final" }
-  ]},
-  { id:"nb07", artist:"nnbh", title:"Fire and Calm", lang:"en", versions:[
-    { label:"Final Master", file:"nnbh/Fire and Calm (Final Master).mp3", type:"final" }
-  ]},
-  { id:"nb08", artist:"nnbh", title:"Cross", lang:"en", versions:[
-    { label:"Final Master", file:"nnbh/Cross (Final Master).mp3", type:"final" }
-  ]},
-  { id:"nb09", artist:"nnbh", title:"Little Iris", lang:"en", versions:[
-    { label:"Final Master HQ", file:"nnbh/Little Iris (Final Master HQ).mp3", type:"final" }
-  ]},
-  { id:"nb10", artist:"nnbh", title:"Under This Dome", lang:"en", versions:[
-    { label:"Final Master", file:"nnbh/Under This Dome (Final Master).mp3", type:"final" }
-  ]},
-  { id:"nb11", artist:"nnbh", title:"I Must Relearn You", lang:"en", versions:[
-    { label:"Final Master", file:"nnbh/I Must Relearn You (Final Master).mp3", type:"final" }
-  ]},
-  { id:"nb12", artist:"nnbh", title:"You Held Me", lang:"en", versions:[
-    { label:"V1", file:"nnbh/You Held Me (V1).mp3", type:"brut" },
-    { label:"V2 Mix", file:"nnbh/You Held Me (V2 Mix).mp3", type:"mix" }
-  ]},
-  { id:"nb13", artist:"nnbh", title:"Your Hand", lang:"en", versions:[
-    { label:"Final Master", file:"nnbh/Your Hand (Final Master).mp3", type:"final" }
-  ]},
-  { id:"nb14", artist:"nnbh", title:"Fragments of My Soul", lang:"en", versions:[
-    { label:"Final Master", file:"nnbh/Fragments of My Soul (Final Master).mp3", type:"final" }
-  ]},
-  { id:"nb15", artist:"nnbh", title:"Breathe", lang:"en", versions:[
-    { label:"Acoustic V1", file:"nnbh/Breathe (Acoustic V1).mp3", type:"brut" },
-    { label:"Mix V2", file:"nnbh/Breathe (Mix V2).mp3", type:"mix" },
-    { label:"Tanpura Instrumental", file:"nnbh/Breathe (Tanpura Instrumental).mp3", type:"inst" }
-  ]},
-  { id:"nb16", artist:"nnbh", title:"Brow Doodle Rage", lang:"exp", versions:[
-    { label:"Démo V1", file:"nnbh/Brow Doodle Rage (Demo V1).mp3", type:"brut" },
-    { label:"Mix V2", file:"nnbh/Brow Doodle Rage (Mix V2).mp3", type:"mix" }
-  ]},
-  { id:"nb17", artist:"nnbh", title:"Œil Teams Call", lang:"exp", versions:[
-    { label:"Expérimental", file:"nnbh/Oeil Teams Call (Experimental).mp3", type:"brut" }
-  ]},
-  { id:"nb18", artist:"nnbh", title:"Meeting", lang:"en", versions:[
-    { label:"Final Master", file:"nnbh/Meeting (Final Master).mp3", type:"final" }
-  ]},
-  { id:"nb19", artist:"nnbh", title:"Song", lang:"en", versions:[
-    { label:"Mix V1", file:"nnbh/Song (Mix V1).mp3", type:"mix" },
-    { label:"Mix V2", file:"nnbh/Song (Mix V2).mp3", type:"mix" }
-  ]},
-  { id:"nb20", artist:"nnbh", title:"Three Hour Door", lang:"exp", versions:[
-    { label:"Brut", file:"nnbh/Three Hour Door (Brut).mp3", type:"brut" }
-  ]}
+// Unsplash images chosen for emotional resonance per song
+const IMG = {
+  nm01:"https://images.unsplash.com/photo-1518895949257-7621c3c786d7?w=600&q=80",
+  nm02:"https://images.unsplash.com/photo-1583394293214-28ded15ee548?w=600&q=80",
+  nm03:"https://images.unsplash.com/photo-1518709268805-4e9042af2176?w=600&q=80",
+  nm04:"https://images.unsplash.com/photo-1535525153412-5a42439a210d?w=600&q=80",
+  nm05:"https://images.unsplash.com/photo-1565895405138-6c3a1555da6a?w=600&q=80",
+  nm06:"https://images.unsplash.com/photo-1502472584811-0a2f2feb8968?w=600&q=80",
+  nm07:"https://images.unsplash.com/photo-1519892338195-d7be84a4dc94?w=600&q=80",
+  nm08:"https://images.unsplash.com/photo-1518709594023-6eab9bab7b23?w=600&q=80",
+  nm09:"https://images.unsplash.com/photo-1518837695005-2083093ee35b?w=600&q=80",
+  nm10:"https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=600&q=80",
+  nm11:"https://images.unsplash.com/photo-1495312040802-a929cd14a6ab?w=600&q=80",
+  nm12:"https://images.unsplash.com/photo-1518173946687-a4c8892bbd9f?w=600&q=80",
+  nm13:"https://images.unsplash.com/photo-1480497490787-505ec076689f?w=600&q=80",
+  nm14:"https://images.unsplash.com/photo-1419242902214-272b3f66ee7a?w=600&q=80",
+  nm15:"https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=600&q=80",
+  nm16:"https://images.unsplash.com/photo-1495616811223-4d98c6e9c869?w=600&q=80",
+  nm17:"https://images.unsplash.com/photo-1518621736915-f3b1c41bfd00?w=600&q=80",
+  nm18:"https://images.unsplash.com/photo-1518709594023-6eab9bab7b23?w=600&q=80",
+  nm19:"https://images.unsplash.com/photo-1519791883288-dc8bd696e667?w=600&q=80",
+  nm20:"https://images.unsplash.com/photo-1547636780-0c8e5026263d?w=600&q=80",
+  nm21:"https://images.unsplash.com/photo-1499002238440-d264edd596ec?w=600&q=80",
+  nm22:"https://images.unsplash.com/photo-1502485892302-0fa3e1de5571?w=600&q=80",
+  nm23:"https://images.unsplash.com/photo-1466721591366-2d5fba72006d?w=600&q=80",
+  nb01:"https://images.unsplash.com/photo-1518709268805-4e9042af2176?w=600&q=80",
+  nb02:"https://images.unsplash.com/photo-1531213237040-d9b1611c3b1f?w=600&q=80",
+  nb03:"https://images.unsplash.com/photo-1419242902214-272b3f66ee7a?w=600&q=80",
+  nb04:"https://images.unsplash.com/photo-1502134249126-9f3755a50d78?w=600&q=80",
+  nb05:"https://images.unsplash.com/photo-1490730141103-6cac27aaab94?w=600&q=80",
+  nb06:"https://images.unsplash.com/photo-1499002238440-d264edd596ec?w=600&q=80",
+  nb07:"https://images.unsplash.com/photo-1488866022504-f2584929ca5f?w=600&q=80",
+  nb08:"https://images.unsplash.com/photo-1518837695005-2083093ee35b?w=600&q=80",
+  nb09:"https://images.unsplash.com/photo-1469594292607-7bd90f8d3ba4?w=600&q=80",
+  nb10:"https://images.unsplash.com/photo-1502134249126-9f3755a50d78?w=600&q=80",
+  nb11:"https://images.unsplash.com/photo-1502230831726-fe5549140034?w=600&q=80",
+  nb12:"https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?w=600&q=80",
+  nb13:"https://images.unsplash.com/photo-1518621736915-f3b1c41bfd00?w=600&q=80",
+  nb14:"https://images.unsplash.com/photo-1505144808419-1957a94ca61e?w=600&q=80",
+  nb15:"https://images.unsplash.com/photo-1499209974431-9dddcece7f88?w=600&q=80",
+  nb16:"https://images.unsplash.com/photo-1495020689067-958852a7765e?w=600&q=80",
+  nb17:"https://images.unsplash.com/photo-1517842645767-c639042777db?w=600&q=80",
+  nb18:"https://images.unsplash.com/photo-1497366216548-37526070297c?w=600&q=80",
+  nb19:"https://images.unsplash.com/photo-1518972559570-7cc1309f3229?w=600&q=80",
+  nb20:"https://images.unsplash.com/photo-1502082553048-f009c37129b9?w=600&q=80"
+};
+const LYRICS={
+nm17:{"fr": "Ma belle âme,\ntu fais partie de ces femmes rares\nqu'on ne rencontre jamais par hasard.\n\nTu es cette lumière fragile,\npresque tremblante,\nmais indestructible\ndans le fond.\n\nOn a essayé de t'éteindre,\nde te faire douter de ta place,\nde ton charme,\nde ton importance.\n\nMais même quand tu ne te vois plus,\nquelque chose en toi\ncontinue de briller en silence.\n\nAlors écoute-moi,\nmême si ta voix tremble.\n\nTu es précieuse.\nTu es profonde.\nTu es noble.\n\nEt rien de ce qu'on t'a fait vivre\nn'a le pouvoir de changer ça.\n\nTu n'as jamais été banale.\nTu n'as jamais été facile à remplacer.\nTu n'étais pas trop intense.\nTu n'étais pas trop entière.\n\nTu as seulement été offerte\nau mauvais cœur, au mauvais cœur.\n\nEt ce cœur-là\nn'a pas su tenir\nce que tu donnais\navec tout ton être.\n\nTu aimes comme on plonge\ndans l'eau froide,\nle cœur en premier,\nsans filet, sans plan B.\n\nTu ne sais pas aimer à moitié.\nTu donnes avec les mains ouvertes,\navec l'âme devant,\navec l'espoir encore vivant.\n\nEt oui, tu as été blessée.\nTu as été ignorée.\nTu as été prise pour acquise.\n\nMais ma belle âme,\nêtre mal aimée\nn'a jamais voulu dire être sans valeur.\n\nTu as cette force rare\nde te regarder en face,\nmême quand ton reflet te fait mal.\n\nJe veux comprendre,\nmême si ça me brise.\nJe veux guérir,\nsans devenir froide.\n\nEt maintenant, il est temps de le reprendre\ncomme on ramasse une lumière tombée.\n\nTu es loyale,\nmême envers ceux qui ne t'ont pas méritée.\nTu es généreuse,\nmême quand on t'a laissée vide.\nTu es brillante,\nmême les jours où tu te crois éteinte.\n\nEt surtout, tu es vraie.\n\nDans un monde qui porte des masques,\ntoi, tu as encore le courage\nd'avoir un cœur nu.\n\nTu n'as pas besoin d'un homme pour prouver ta valeur.\nTu l'es déjà.\n\nAlors reprends-le.\nDoucement. Fièrement. Entièrement.\n\nReprends ton nom.\nReprends ta paix.\nReprends ta lumière.\n\nNe cache plus ta douceur.\nNe cache plus ton feu.\nNe cache plus ta folie,\nta foi, ton corps, ta voix.\n\nTu es une femme à aimer dans l'absolu.\nPas à moitié.\nPas en secret.\nPas sous condition.\n\nEn attendant ce jour,\naime-toi comme tu aurais voulu qu'il t'aime.\nProtège-toi comme tu aurais voulu qu'il te protège.\nChoisis-toi comme il n'a jamais su le faire.\n\nTu es déjà tout ce que tu cherches.\n\nMa belle âme,\ntu vaux mieux que ce que tu as vécu.\nEt tellement plus que ce que tu crois.", "en": "My beautiful soul,\nyou are one of those rare women\none never meets by chance.\n\nYou are that fragile light,\nalmost trembling,\nyet indestructible at the core.\n\nThey tried to extinguish you,\nto make you doubt your place,\nyour charm, your importance.\n\nBut even when you no longer see yourself,\nsomething in you keeps shining in silence.\n\nSo listen to me,\neven if your voice trembles.\n\nYou are precious.\nYou are profound.\nYou are noble.\n\nAnd nothing you have been through\nhas the power to change that.\n\nYou were never ordinary.\nYou were never easy to replace.\nYou were not too intense.\nYou were not too whole.\n\nYou were simply given\nto the wrong heart, the wrong heart.\n\nAnd that heart did not know how to hold\nwhat you gave with your entire being.\n\nYou love like diving into cold water,\nheart first,\nwithout a net, without a backup plan.\n\nYou give with open hands,\nwith your soul forward,\nwith hope still alive.\n\nAnd yes, you were hurt.\nYou were ignored.\nYou were taken for granted.\n\nBut my beautiful soul,\nbeing poorly loved\nhas never meant being without worth.\n\nYou have that rare strength to face yourself,\neven when your reflection causes you pain.\n\nI want to understand,\neven if it breaks me.\nI want to heal,\nwithout becoming cold.\n\nAnd now, it is time to take it back\nlike gathering a fallen light.\n\nYou are loyal,\neven to those who did not deserve you.\nYou are generous,\neven when they left you empty.\nYou are brilliant,\neven on the days you believe you are dim.\n\nAnd above all, you are real.\n\nIn a world that wears masks,\nyou still have the courage\nto have a bare heart.\n\nYou do not need a man to prove your worth.\nYou already are.\n\nSo take it back.\nGently. Proudly. Entirely.\n\nTake back your name.\nTake back your peace.\nTake back your light.\n\nNo longer hide your softness.\nNo longer hide your fire.\nNo longer hide your madness,\nyour faith, your body, your voice.\n\nYou are a woman to be loved absolutely.\nNot halfway.\nNot in secret.\nNot conditionally.\n\nUntil that day,\nlove yourself the way you wished he had loved you.\nProtect yourself the way you wished he had protected you.\nChoose yourself the way he never knew how to.\n\nYou are already everything you are searching for.\n\nMy beautiful soul,\nyou are worth more than what you have lived.\nAnd so much more than what you believe."},nb03:{"en": "We didn't just love from a distance,\nwe had nights I still can't explain.\nRooms where the whole world went quiet,\nwhere I forgot my own pain.\n\nI know what your hand feels like,\nyour breath close to mine.\nI've lived this impossible love,\nand for a moment, it felt like life.\n\nThat's why it cuts so deeply,\nit's not some dream I made up.\nI know the kind of peace\nthat only comes when you're near.\n\nWhen I'm with you, the world disappears.\nNo noise, no fear, nothing between us.\n\nJust your eyes,\nyour hand finding mine,\nand for a second,\nI can breathe again.\n\nThen the silence comes back,\nand the walls come back.\nLoving you like this\nis the wound I can't let go.\n\nYour face on a screen still saves me,\nbut God, it breaks me too.\nI smile when I see you calling,\nthen I miss the real you.\n\nMy body remembers\nwhat my heart keeps trying to survive.\nHow calm I get beside you,\nhow I finally feel alive.\n\nWe said one day we'd sit there,\ntwo chairs facing the horizon.\nNo phone, no clock, no leaving,\njust your hand holding mine.\n\nBut right now love keeps tearing\nbetween holding on and goodbye.\nEvery time I get to hold you,\nI have to lose you again.\n\nMaybe that's why I stay,\nnot for the promise,\nbut for the quiet that only comes from you.\n\nOne day, no screen.\nOne day, no leaving.\nTwo chairs, one horizon,\nyour hand in mine.\n\nUntil then, I carry you\nthrough every room you're not in.\nAn impossible love,\nstill breathing,\nstill whole,\nstill choosing us.", "fr": "Nous n'avons pas seulement aimé de loin,\nnous avons eu des nuits que je ne peux toujours pas expliquer.\nDes chambres où le monde entier se taisait,\noù j'oubliais ma propre douleur.\n\nJe sais ce que ressent ta main,\nton souffle près du mien.\nJ'ai vécu cet amour impossible,\net pour un instant, il ressemblait à la vie.\n\nC'est pourquoi ça coupe si profondément,\nce n'est pas un rêve que j'ai inventé.\nJe connais ce genre de paix\nqui ne vient que lorsque tu es près.\n\nQuand je suis avec toi, le monde disparaît.\nPas de bruit, pas de peur, rien entre nous.\n\nJuste tes yeux,\nta main qui trouve la mienne,\net pour une seconde,\nje peux respirer à nouveau.\n\nPuis le silence revient,\net les murs reviennent.\nT'aimer ainsi\nest la blessure que je ne peux pas laisser partir.\n\nTon visage sur un écran me sauve encore,\nmais Dieu, ça me brise aussi.\nJe souris quand je te vois appeler,\npuis tu me manques, le vrai toi.\n\nMon corps se souvient\nde ce que mon cœur essaie de survivre.\nComme je me calme à côté de toi,\ncomme je me sens enfin vivante.\n\nNous disions qu'un jour nous serions là,\ndeux chaises face à l'horizon.\nPas de téléphone, pas d'horloge, pas de départ,\njuste ta main tenant la mienne.\n\nMais maintenant l'amour déchire encore\nentre tenir et dire au revoir.\nChaque fois que je peux te tenir,\nje dois te perdre à nouveau.\n\nC'est peut-être pour ça que je reste,\npas pour la promesse,\nmais pour le silence qui ne vient que de toi.\n\nUn jour, sans écran.\nUn jour, sans partir.\nDeux chaises, un horizon,\nta main dans la mienne.\n\nEn attendant, je te porte\nà travers chaque pièce où tu n'es pas.\nUn amour impossible,\nencore vivant,\nencore entier,\nencore nous."},nm12:{"en": "They come back home with heavy words in their hands,\nscreen-made truths they barely understand.\nThe world says: choose now, hurry and be you,\nbut how to find yourself when everything is new?\n\nThey speak of bodies before they see their eyes,\nof all their doubts before their joy can rise.\nAnd I see childhood trembling in the light,\nlike a small flame pushed into the night.\n\nI just want to keep alive what the world leaves behind.\nValues, roots, and a place, a voice they can always find.\n\nWe can give them choices without stealing their roots.\nThe body wasn't made for shop windows,\nand love wasn't made for machines.\nEvery age has its season, every thing has its time.\nReal life isn't scrolled through, it's built slowly, line by line.\n\nWe skip the promises, we swipe the feelings away,\nwe call it freedom when we refuse to stay.\nWe mistake the glow of screens for the sun,\nand the world's noise drowns what parents have begun.\n\nAt home, we still speak of respect and pride,\nof family, effort, with nothing to hide.\nNot to control them, not to clip their wings,\nbut to stand tall when real life begins.\n\nWe tell them: do whatever you want, but who teaches them to think?\nWe tell them: everything is equal, but who teaches them to link?\nEverything is allowed, except saying no, except limits at home.\nYou call that freedom, I see children left to roam.\n\nI don't want to hate anyone, I just want to keep the light.\nBut don't make our values a crime, a wall, or a fight.\nOur children are not trends.\nGive them their roots.\nGive them time to be.", "fr": "Ils rentrent avec des mots lourds dans les mains,\ndes vérités d'écran qu'ils comprennent à peine.\nLe monde leur dit : choisis, dépêche-toi d'être toi,\nmais comment se trouver quand tout change à chaque fois ?\n\nOn leur parle de leurs corps avant de voir leurs yeux,\nde leurs doutes avant même qu'ils puissent être heureux.\nEt moi je vois l'enfance trembler sous le bruit,\ncomme une petite flamme qu'on pousse dans la nuit.\n\nJe veux juste garder vivant ce que le monde abandonne.\nDes valeurs, des repères, une voix qui leur répond.\n\nOn peut leur laisser le choix sans leur voler les racines.\nLe corps n'est pas fait pour les vitrines,\nl'amour n'est pas fait pour les machines.\nChaque âge a sa saison, chaque chose a son moment.\nLa vraie vie ne se scrolle pas, elle se construit lentement.\n\nOn zappe les promesses, on swipe les sentiments,\non appelle liberté ce qui fuit l'engagement.\nOn confond la lumière avec tous les écrans,\net le bruit du monde couvre la voix des parents.\n\nÀ la maison, on parle encore de respect,\nde famille, d'efforts, de parole donnée.\nPas pour les contrôler, pas pour couper leurs ailes,\nmais pour qu'ils tiennent debout quand la vie devient réelle.\n\nOn leur dit : fais ce que tu veux, mais qui leur apprend à réfléchir ?\nOn leur dit : tout se vaut, mais qui leur apprend à se construire ?\nTout est permis, sauf dire non, sauf parler de limites à la maison.\nOn appelle ça liberté, moi j'y vois des enfants livrés trop tôt.\n\nJe ne veux haïr personne, je veux juste garder la lumière.\nMais ne faites pas de nos valeurs une faute, une guerre, une barrière.\nNos enfants ne sont pas des tendances.\nDonnez-leur des racines.\nDonnez-leur le temps d'être soi."},nm13:{"fr": "Ils rentrent avec des mots trop lourds dans les mains,\ndes vérités d'écran, des slogans du matin.\nLe monde leur dit : choisis, dépêche-toi d'être toi,\nmais comment se trouver quand tout change à chaque fois ?\n\nOn leur parle de leurs corps avant de voir leurs yeux,\nde leurs doutes avant même qu'ils puissent être heureux.\nEt moi je vois l'enfance trembler sous le bruit,\ncomme une petite flamme qu'on pousse dans la nuit.\n\nJe veux juste garder vivant ce que le monde abandonne.\nDes valeurs, des repères, une voix qui leur répond.\n\nOn peut leur laisser le choix sans leur voler les racines.\nLe corps n'est pas fait pour les vitrines,\nl'amour n'est pas fait pour les machines.\nChaque âge a sa saison, chaque chose a son moment.\nLa vraie vie ne se scrolle pas, elle se construit lentement.\n\nOn zappe les promesses, on swipe les sentiments,\non appelle liberté ce qui fuit l'engagement.\nOn confond la lumière avec tous les écrans,\net le bruit du monde couvre la voix des parents.\n\nÀ la maison, on parle encore de respect,\nde famille, d'efforts, de parole donnée.\nPas pour les contrôler, pas pour couper leurs ailes,\nmais pour qu'ils tiennent debout quand la vie devient réelle.\n\nOn leur dit : fais ce que tu veux, mais qui leur apprend à réfléchir ?\nOn leur dit : tout se vaut, mais qui leur apprend à se construire ?\nTout est permis, sauf dire non, sauf parler de limites à la maison.\nOn appelle ça liberté, moi j'y vois des enfants livrés trop tôt.\n\nNos enfants ne sont pas des tendances, pas des écrans, pas des combats.\nCe sont des âmes qui naissent, des petits mondes qu'on ne presse pas.\nDonnez-leur des racines, donnez-leur le temps d'être soi.", "en": "They come home with words too heavy in their hands,\nscreen-made truths, morning slogans they don't understand.\nThe world tells them: choose, hurry up and be you,\nbut how do you find yourself when everything is new?\n\nThey talk about their bodies before seeing their eyes,\ntheir doubts before they can even be happy.\nAnd I see childhood trembling under the noise,\nlike a small flame pushed into the night.\n\nI just want to keep alive what the world abandons.\nValues, landmarks, a voice that answers them.\n\nWe can give them choices without stealing their roots.\nThe body wasn't made for shop windows,\nlove wasn't made for machines.\nEvery age has its season, every thing has its time.\nReal life isn't scrolled through, it's built slowly, line by line.\n\nWe skip the promises, we swipe the feelings away,\nwe call it freedom when we refuse to stay.\nWe mistake the glow of screens for the sun,\nand the world's noise drowns what parents have begun.\n\nAt home, we still speak of respect,\nof family, effort, of keeping one's word.\nNot to control them, not to clip their wings,\nbut so they stand tall when life becomes real.\n\nWe tell them: do what you want, but who teaches them to think?\nWe tell them: everything is equal, but who teaches them to build themselves?\nEverything is allowed, except saying no, except limits at home.\nYou call that freedom, I see children given away too soon.\n\nOur children are not trends, not screens, not battles.\nThey are souls being born, small worlds not to be rushed.\nGive them roots, give them time to be themselves."},nb15:{"en": "He doesn't throw words around. Not him.\nHe measures them, almost too much.\nLike every sentence could hurt someone\nif it came out wrong.\n\nSo he keeps things inside.\nThe part that shakes, the part that needs too much.\nThen he looks down:\nI failed again. I got it wrong. I'm not enough.\nHe says it so quietly you could almost miss it.\nBut I don't.\n\nHe's not cold, he's careful.\nHe's not far away.\nHe's just trying not to lose\nwhat still matters to him.\n\nSo he puts his headphones on.\nNot just for the music, for the silence inside it.\nFor a place where nobody asks,\nwhere nobody needs him to explain himself.\nThe noise outside fades, the noise inside softens too.\n\nAnd somewhere in that sound, God finds him.\nNot with big speeches, just enough peace\nfor him to breathe again.\n\nHe carries things he doesn't always name.\nSometimes they show up in a silence, in a song.\nThere are places in him he touches carefully now.\nBecause some things have already broken once,\nand he doesn't want them handled the wrong way again.\n\nSo sometimes he steps back.\nNot to hurt anyone, not to disappear.\nJust to protect what he still doesn't know\nhow to give safely.\n\nThere is a softness in him he hides too quickly.\nMaybe he thinks it makes him weak.\nBut it doesn't.\nIt is the part of him that survived quietly,\nwithout asking for attention.\n\nHe says: I'm not enough.\nBut when he is there, lost in the sound,\ntrying to find his breath, still holding on,\nwhere he sees what is missing in him,\nI see the light.", "fr": "Il ne jette pas les mots à la légère. Pas lui.\nIl les mesure, presque trop.\nComme si chaque phrase pouvait blesser quelqu'un\nsi elle sortait de travers.\n\nAlors il garde les choses en lui.\nLa partie qui tremble, la partie qui a trop besoin.\nPuis il baisse les yeux :\nJ'ai encore échoué. Je me suis trompé. Je ne suis pas assez.\nIl le dit si doucement qu'on pourrait presque le manquer.\nMais pas moi.\n\nIl n'est pas froid, il est prudent.\nIl n'est pas loin.\nIl essaie juste de ne pas perdre\nce qui compte encore pour lui.\n\nAlors il met ses écouteurs.\nPas seulement pour la musique, pour le silence qu'elle contient.\nPour un endroit où personne ne demande,\noù personne n'a besoin qu'il s'explique.\nLe bruit du dehors s'efface, le bruit du dedans s'adoucit aussi.\n\nEt quelque part dans ce son, Dieu le trouve.\nPas avec de grands discours, juste assez de paix\npour qu'il puisse respirer à nouveau.\n\nIl porte des choses qu'il ne nomme pas toujours.\nParfois elles apparaissent dans un silence, dans une chanson.\nIl y a des endroits en lui qu'il touche avec précaution maintenant.\nParce que certaines choses ont déjà brisé une fois,\net il ne veut pas qu'on les manipule de la mauvaise façon.\n\nAlors parfois il recule.\nPas pour blesser, pas pour disparaître.\nJuste pour protéger ce qu'il ne sait pas encore\ncomment donner en sécurité.\n\nIl y a une douceur en lui qu'il cache trop vite.\nPeut-être qu'il pense que ça le rend faible.\nMais non.\nC'est la partie de lui qui a survécu en silence,\nsans demander l'attention.\n\nIl dit : Je ne suis pas assez.\nMais quand il est là, perdu dans le son,\nessayant de trouver son souffle, tenant encore,\nlà où il voit ce qui lui manque,\nmoi je vois la lumière."},nb16:{"en": "He's in a meeting with every department,\nquiet in the corner of the call.\nListening, nodding, saying nothing,\ntrying to understand it all.\n\nThen somewhere between two serious voices,\nhis hand starts drifting on the page.\nNot really taking notes anymore,\njust leaking out a quiet little rage.\n\nOne eye appears, way too intense,\none brow arrives already mad.\nA nose shows up like, Not again,\nand the mouth looks deeply sad.\n\nHe thinks he's just doodling,\nnothing deep, nothing planned.\nBut the paper knows the truth\nbefore he even understands.\n\nThat's not a sketch, that's a cry for space,\na tiny nervous breakdown with a face.\nHe didn't speak, he played it cool,\nbut his pen said, Peace. Not another rule.\n\nThat's not a doodle, that's his inner scream,\ndrawn politely during Microsoft Teams.\nHe drew one line, she found a sign.\nHe drew one face, she built a case.\n\nThen she sees the drawing and freezes,\nlike she found a secret file.\nShe zooms into the eyebrow,\nand investigates the smile.\n\nMaybe he's tired, maybe he's fine,\nmaybe the meeting was just too long.\nBut that eye looked like a man\nwho didn't know where he belonged.\n\nLike everybody moved around him,\nlike he missed his own damn seat.\nLike home was full of people,\nbut he still needed room to breathe.\n\nShe thought, He doesn't need a castle,\nor a throne, or a dramatic track.\nMaybe this poor haunted eyeball\njust wants his living room back.\n\nThe eyebrow says, Do not disturb.\nThe nose says, I've lost my nerve.\nThe mouth says, Please let this end.\nThe eye says, Girl, you good, my friend?\n\nShe knows she might be dramatic,\nshe knows she reads too far.\nBut if a doodle looks that haunted,\nit deserves its own guitar.\n\nThat's not a sketch, that's a whole situation,\na paper-born emotional translation.\nHe stayed calm, he stayed composed,\nbut the drawing completely exposed.\n\nHe drew one line, she found a sign.\nHe drew one face, she built a case.\n\nAnd all it said was:\nPlease give me space,\nand maybe my living room back.", "fr": "Il est en réunion avec tous les départements,\nsilencieux dans le coin de l'appel.\nIl écoute, hoche la tête, ne dit rien,\nessayant de tout comprendre.\n\nPuis quelque part entre deux voix sérieuses,\nsa main commence à dériver sur la page.\nIl ne prend plus vraiment de notes,\nil laisse juste fuir une petite rage tranquille.\n\nUn œil apparaît, beaucoup trop intense,\nun sourcil arrive déjà fâché.\nUn nez débarque comme, Pas encore,\net la bouche a l'air profondément triste.\n\nIl pense qu'il gribouille juste,\nrien de profond, rien de prévu.\nMais le papier connaît la vérité\navant même qu'il comprenne.\n\nCe n'est pas un croquis, c'est un cri d'espace,\nune petite crise de nerfs avec un visage.\nIl n'a pas parlé, il est resté calme,\nmais son stylo a dit, Paix. Pas une règle de plus.\n\nCe n'est pas un gribouillis, c'est son cri intérieur,\ndessiné poliment pendant Microsoft Teams.\nIl a dessiné une ligne, elle a trouvé un signe.\nIl a dessiné un visage, elle a monté un dossier.\n\nPuis elle voit le dessin et se fige,\ncomme si elle avait trouvé un fichier secret.\nElle zoome sur le sourcil,\net enquête sur le sourire.\n\nPeut-être qu'il est fatigué, peut-être qu'il va bien,\npeut-être que la réunion était juste trop longue.\nMais cet œil ressemblait à un homme\nqui ne savait pas où il appartenait.\n\nComme si tout le monde bougeait autour de lui,\ncomme s'il avait raté sa propre place.\nComme si la maison était pleine de gens,\nmais qu'il avait encore besoin d'air pour respirer.\n\nElle a pensé, Il n'a pas besoin d'un château,\nni d'un trône, ni d'un grand drame.\nPeut-être que ce pauvre œil hanté\nveut juste retrouver son salon.\n\nLe sourcil dit, Ne pas déranger.\nLe nez dit, J'ai perdu mon courage.\nLa bouche dit, S'il te plaît, que ça finisse.\nL'œil dit, Toi, ça va, mon amie ?\n\nElle sait qu'elle est peut-être dramatique,\nelle sait qu'elle lit trop loin.\nMais si un gribouillis a l'air aussi hanté,\nil mérite sa propre guitare.\n\nCe n'est pas un croquis, c'est toute une situation,\nune traduction émotionnelle née sur papier.\nIl est resté calme, il est resté posé,\nmais le dessin a complètement révélé.\n\nIl a dessiné une ligne, elle a trouvé un signe.\nIl a dessiné un visage, elle a monté un dossier.\n\nEt tout ce qu'il disait était :\nDonne-moi de l'espace,\net peut-être mon salon."},nm02:{"fr": "Sur mes mains, le henné se souvient.\nDans mes pas, deux soleils se rejoignent.\n\nDu Pakistan viennent des femmes\nau regard calme, au cœur en foi,\ncelles qui portent sans faire de bruit\nla pudeur, la force et la voix.\n\nLeurs bracelets parlent en silence,\nleur lumière n'a rien à prouver,\nelles traversent les nuits, les absences,\net restent debout sans plier.\n\nSur mes mains, le henné rouge\ngarde encore les jours anciens,\ndes prières murmurées tout bas,\ndes mains fortes qui font le bien.\n\nPuis l'Espagne ouvre sa porte,\navec son soleil et sa clarté,\net la vie entre comme une danse,\ncomme une flamme de liberté.\n\nDu Pakistan, je porte en moi\nla foi paisible, la force en soi,\nle henné rouge, les fins tissus,\net l'amour profond que j'ai reçu.\n\nDe l'Espagne, je porte le vent,\nla robe longue, le mouvement,\nla lumière qui danse en moi,\nla joie d'être encore là.\n\nDe deux terres est née ma voix,\nlarge et forte, faite de foi,\nfemme formée par deux beautés,\ndebout entière, dans ma clarté.\n\nDe l'Espagne viennent les couleurs,\nles murs blancs, les soirs salés,\nle jasmin dans l'air des maisons,\net la mer comme un chant levé.\n\nLe flamenco descend dans ma robe,\nrelève mon cœur, redresse ma peine,\net dans chaque tour de tissu,\nla douleur devient plus sereine.\n\nDans ma bouche chantent deux langues,\nourdou de l'âme, espagnol du soleil,\nl'une murmure, l'autre s'enflamme,\net toutes deux veillent à mon réveil.\n\nEt rien en moi ne se sépare,\nni la joie, ni la dévotion,\ncar une femme peut être plusieurs\nsans diviser son cœur profond.\n\nAaja, regarde mes mains,\nles vieux jardins s'ouvrent enfin.\nOlé, regarde ma robe,\nelle prend le vent pour le chemin.\n\nMusulmane dans ma pudeur,\nandalouse dans ma lumière,\nouverte au monde, mais gardant\nce qui fait mon âme entière.\n\nJasmin, soleil, sel du rivage,\nfoi tranquille, amour vivant,\ndeux mondes battent dans ma poitrine,\net rendent mon cœur plus grand.", "en": "On my hands, the henna remembers.\nIn my steps, two suns reunite.\n\nFrom Pakistan come women\nwith calm eyes, hearts in faith,\nthose who carry without noise\nmodesty, strength, and voice.\n\nTheir bracelets speak in silence,\ntheir light has nothing to prove,\nthey cross the nights, the absences,\nand stand tall without bending.\n\nOn my hands, the red henna\nstill keeps the ancient days,\nprayers whispered low,\nstrong hands that do good.\n\nThen Spain opens its door,\nwith its sun and its clarity,\nand life enters like a dance,\nlike a flame of freedom.\n\nFrom Pakistan, I carry within me\npeaceful faith, strength in itself,\nred henna, fine fabrics,\nand the deep love I received.\n\nFrom Spain, I carry the wind,\nthe long dress, the movement,\nthe light that dances in me,\nthe joy of still being here.\n\nFrom two lands my voice was born,\nwide and strong, made of faith,\nwoman formed by two beauties,\nstanding whole, in my clarity.\n\nFrom Spain come the colors,\nwhite walls, salty evenings,\njasmine in the air of houses,\nand the sea like a rising song.\n\nFlamenco descends into my dress,\nlifts my heart, straightens my pain,\nand in each turn of fabric,\nsorrow becomes more serene.\n\nIn my mouth two languages sing,\nUrdu of the soul, Spanish of the sun,\none whispers, the other ignites,\nand both watch over my awakening.\n\nAnd nothing in me separates,\nneither joy nor devotion,\nfor a woman can be plural\nwithout dividing her deep heart.\n\nAaja, look at my hands,\nold gardens finally open.\nOlé, look at my dress,\nit takes the wind as its path.\n\nMuslim in my modesty,\nAndalusian in my light,\nopen to the world, yet keeping\nwhat makes my soul whole.\n\nJasmine, sun, salt of the shore,\nquiet faith, living love,\ntwo worlds beat in my chest,\nand make my heart greater."},nb04:{"en": "I know that you love me,\nI feel it in your heart.\nBut lately when you hold me,\nyou still feel far apart.\n\nYou say God is in the center,\nholding us as one.\nBut I'm still reaching for you,\nwhile you're reaching for the sun.\n\nYou're too close to heaven,\nI'm still here on the ground.\nI don't want to lose you\nin the peace you found.\n\nI don't want less God in you,\nI just need room there too.\nNot above Him, not instead of Him,\njust somewhere close to you.\n\nIf it was another woman,\nI'd know what to fight for.\nBut this is God before me,\nso I lay my weapons on the floor.\n\nYou're trying to get closer to Him,\nI'm trying to get closer to you.\nMaybe we're both looking for heaven,\nfrom different sides of the room.\n\nYou're too close to heaven,\nI'm still here on the ground.\nI don't want to lose you\nin the peace you found.\n\nI don't want less God in you,\nI just need room there too.\nNot above Him, not instead of Him,\njust somewhere close to you.", "fr": "Je sais que tu m'aimes,\nje le sens dans ton cœur.\nMais ces derniers temps quand tu me tiens,\ntu sembles encore loin.\n\nTu dis que Dieu est au centre,\nqu'il nous tient comme un.\nMais je tends encore les bras vers toi,\npendant que toi tu tends les bras vers le soleil.\n\nTu es trop près du ciel,\nmoi je suis encore sur la terre.\nJe ne veux pas te perdre\ndans la paix que tu as trouvée.\n\nJe ne veux pas moins de Dieu en toi,\nj'ai juste besoin de place là aussi.\nPas au-dessus de Lui, pas à Sa place,\njuste quelque part près de toi.\n\nSi c'était une autre femme,\nje saurais pour quoi me battre.\nMais c'est Dieu devant moi,\nalors je dépose mes armes au sol.\n\nToi tu essaies de te rapprocher de Lui,\nmoi j'essaie de me rapprocher de toi.\nPeut-être qu'on cherche tous les deux le ciel,\nmais de côtés différents de la pièce.\n\nTu es trop près du ciel,\nmoi je suis encore sur la terre.\nJe ne veux pas te perdre\ndans la paix que tu as trouvée.\n\nJe ne veux pas moins de Dieu en toi,\nj'ai juste besoin de place là aussi.\nPas au-dessus de Lui, pas à Sa place,\njuste quelque part près de toi."}};
+const CATALOGUE=[
+{id:"nm01",artist:"nila-moha",title:"Miss Catastrophe",lang:"fr",versions:[{label:"Final Master",file:"nila-moha/Miss Catastrophe (Final Master).mp3",type:"final"},{label:"Extended",file:"nila-moha/Miss Catastrophe (Extended Version).mp3",type:"final"}]},
+{id:"nm02",artist:"nila-moha",title:"Henné deux soleils",lang:"fr",versions:[{label:"Final Master",file:"nila-moha/Henne deux soleils (Final Master).mp3",type:"final"},{label:"Mix",file:"nila-moha/Henne deux soleils (Mix).mp3",type:"mix"}]},
+{id:"nm03",artist:"nila-moha",title:"Let's Go",lang:"en",versions:[{label:"Final Master",file:"nila-moha/Lets Go (Final Master).mp3",type:"final"}]},
+{id:"nm04",artist:"nila-moha",title:"Deux pieds gauches",lang:"fr",versions:[{label:"Final Master",file:"nila-moha/Deux pieds gauches (Final Master).mp3",type:"final"}]},
+{id:"nm05",artist:"nila-moha",title:"Luz de mi corazón",lang:"es",versions:[{label:"Final Master",file:"nila-moha/Luz de mi corazon (Final Master).mp3",type:"final"}]},
+{id:"nm06",artist:"nila-moha",title:"I Want to Run",lang:"en",versions:[{label:"Final Master",file:"nila-moha/I Want to Run (Final Master).mp3",type:"final"}]},
+{id:"nm07",artist:"nila-moha",title:"Ce soir amour danse",lang:"fr",versions:[{label:"Final Master",file:"nila-moha/Ce soir amour danse (Final Master).mp3",type:"final"},{label:"Version 2",file:"nila-moha/Ce soir amour danse (Final Master V2).mp3",type:"final"}]},
+{id:"nm08",artist:"nila-moha",title:"Dos mundos arden",lang:"es",versions:[{label:"Final Master",file:"nila-moha/Dos mundos arden (Final Master).mp3",type:"final"}]},
+{id:"nm09",artist:"nila-moha",title:"Ma force",lang:"fr",versions:[{label:"Final Master",file:"nila-moha/Ma force (Final Master).mp3",type:"final"}]},
+{id:"nm10",artist:"nila-moha",title:"Hija de dos tierras",lang:"es",versions:[{label:"Final Master",file:"nila-moha/Hija de dos tierras (Final Master).mp3",type:"final"},{label:"Mix V2",file:"nila-moha/Hija de dos tierras (Mix V2).mp3",type:"mix"},{label:"Mix V2.1",file:"nila-moha/Hija de dos tierras (Mix V2.1).mp3",type:"mix"},{label:"Mix V2.2",file:"nila-moha/Hija de dos tierras (Mix V2.2).mp3",type:"mix"}]},
+{id:"nm11",artist:"nila-moha",title:"Mode Replay",lang:"fr",versions:[{label:"Final Master",file:"nila-moha/Mode Replay (Final Master).mp3",type:"final"}]},
+{id:"nm12",artist:"nila-moha",title:"Roots Before the Wind",lang:"en",versions:[{label:"Acoustic V1",file:"nila-moha/Roots Before the Wind (Acoustic V1).mp3",type:"brut"},{label:"Mixed V2",file:"nila-moha/Roots Before the Wind (Mixed V2).mp3",type:"mix"},{label:"Mixed V3",file:"nila-moha/Roots Before the Wind (Mixed V3).mp3",type:"mix"}]},
+{id:"nm13",artist:"nila-moha",title:"Mots trop lourds",lang:"fr",versions:[{label:"Mix V1",file:"nila-moha/Mots trop lourds (Mix V1).mp3",type:"mix"},{label:"Mix V2",file:"nila-moha/Mots trop lourds (Mix V2).mp3",type:"mix"}]},
+{id:"nm14",artist:"nila-moha",title:"Éclats de ciel",lang:"fr",versions:[{label:"Final Master",file:"nila-moha/Eclats de ciel (Final Master).mp3",type:"final"}]},
+{id:"nm15",artist:"nila-moha",title:"Quiero huir",lang:"es",versions:[{label:"Final Master",file:"nila-moha/Quiero huir (Final Master).mp3",type:"final"}]},
+{id:"nm16",artist:"nila-moha",title:"Soleil au cœur",lang:"fr",versions:[{label:"Final Master",file:"nila-moha/Soleil au coeur (Final Master).mp3",type:"final"}]},
+{id:"nm17",artist:"nila-moha",title:"Ma belle âme",lang:"fr",versions:[{label:"Mix",file:"nila-moha/Ma belle ame (Mix en cours).mp3",type:"mix"}]},
+{id:"nm18",artist:"nila-moha",title:"Miroir craquelé",lang:"fr",versions:[{label:"Mix",file:"nila-moha/Miroir craquele (Mix en cours).mp3",type:"mix"}]},
+{id:"nm19",artist:"nila-moha",title:"Chœurs Voilés",lang:"fr",versions:[{label:"Mix",file:"nila-moha/Choeurs Voiles (Mix en cours).mp3",type:"mix"}]},
+{id:"nm20",artist:"nila-moha",title:"Ella lleva más flamenco",lang:"es",versions:[{label:"Final Master",file:"nila-moha/Ella lleva mas flamenco (Final Master).mp3",type:"final"}]},
+{id:"nm21",artist:"nila-moha",title:"Halfway Anything",lang:"en",versions:[{label:"Mix",file:"nila-moha/Halfway Anything (Mix).mp3",type:"mix"},{label:"Remastered",file:"nila-moha/Halfway Anything (Remastered).mp3",type:"final"}]},
+{id:"nm22",artist:"nila-moha",title:"Mirror War Declaration",lang:"en",versions:[{label:"Démo V1",file:"nila-moha/Mirror War Declaration (Demo V1).mp3",type:"brut"}]},
+{id:"nm23",artist:"nila-moha",title:"Whisper Tabla Lament",lang:"inst",versions:[{label:"Instrumental",file:"nila-moha/Whisper Tabla Lament (Instrumental Remastered).mp3",type:"final"}]},
+{id:"nb01",artist:"nnbh",title:"Le Couloir",lang:"fr",versions:[{label:"Final Master",file:"nnbh/Le Couloir (Final Master).mp3",type:"final"}]},
+{id:"nb02",artist:"nnbh",title:"Trois heures",lang:"fr",versions:[{label:"Final Master",file:"nnbh/Trois heures (Final Master).mp3",type:"final"}]},
+{id:"nb03",artist:"nnbh",title:"When the World Disappears",lang:"en",versions:[{label:"V1 Brut",file:"nnbh/When the World Disappears (V1 Brut).mp3",type:"brut"},{label:"V2 Mix",file:"nnbh/When the World Disappears (V2 Mix).mp3",type:"mix"},{label:"V3 Mix",file:"nnbh/When the World Disappears (V3 Mix).mp3",type:"mix"},{label:"Final Master",file:"nnbh/When the World Disappears (Final Master V4).mp3",type:"final"},{label:"Alt",file:"nnbh/When the World Disappears (Version Alternative).mp3",type:"mix"}]},
+{id:"nb04",artist:"nnbh",title:"Too Close to Heaven",lang:"en",versions:[{label:"Final Master",file:"nnbh/Too Close to Heaven (Final Master).mp3",type:"final"},{label:"Mix",file:"nnbh/Too Close to Heaven (Mix).mp3",type:"mix"},{label:"World Music",file:"nnbh/Too Close to Heaven (World Music Version).mp3",type:"mix"}]},
+{id:"nb05",artist:"nnbh",title:"God Kept Me",lang:"en",versions:[{label:"Final Master",file:"nnbh/God Kept Me (Final Master).mp3",type:"final"}]},
+{id:"nb06",artist:"nnbh",title:"What He Gave Me",lang:"en",versions:[{label:"Final Master",file:"nnbh/What He Gave Me (Final Master).mp3",type:"final"}]},
+{id:"nb07",artist:"nnbh",title:"Fire and Calm",lang:"en",versions:[{label:"Final Master",file:"nnbh/Fire and Calm (Final Master).mp3",type:"final"}]},
+{id:"nb08",artist:"nnbh",title:"Cross",lang:"en",versions:[{label:"Final Master",file:"nnbh/Cross (Final Master).mp3",type:"final"}]},
+{id:"nb09",artist:"nnbh",title:"Little Iris",lang:"en",versions:[{label:"Final Master HQ",file:"nnbh/Little Iris (Final Master HQ).mp3",type:"final"}]},
+{id:"nb10",artist:"nnbh",title:"Under This Dome",lang:"en",versions:[{label:"Final Master",file:"nnbh/Under This Dome (Final Master).mp3",type:"final"}]},
+{id:"nb11",artist:"nnbh",title:"I Must Relearn You",lang:"en",versions:[{label:"Final Master",file:"nnbh/I Must Relearn You (Final Master).mp3",type:"final"}]},
+{id:"nb12",artist:"nnbh",title:"You Held Me",lang:"en",versions:[{label:"V1",file:"nnbh/You Held Me (V1).mp3",type:"brut"},{label:"V2 Mix",file:"nnbh/You Held Me (V2 Mix).mp3",type:"mix"}]},
+{id:"nb13",artist:"nnbh",title:"Your Hand",lang:"en",versions:[{label:"Final Master",file:"nnbh/Your Hand (Final Master).mp3",type:"final"}]},
+{id:"nb14",artist:"nnbh",title:"Fragments of My Soul",lang:"en",versions:[{label:"Final Master",file:"nnbh/Fragments of My Soul (Final Master).mp3",type:"final"}]},
+{id:"nb15",artist:"nnbh",title:"Breathe",lang:"en",versions:[{label:"Acoustic V1",file:"nnbh/Breathe (Acoustic V1).mp3",type:"brut"},{label:"Mix V2",file:"nnbh/Breathe (Mix V2).mp3",type:"mix"},{label:"Tanpura",file:"nnbh/Breathe (Tanpura Instrumental).mp3",type:"inst"}]},
+{id:"nb16",artist:"nnbh",title:"Brow Doodle Rage",lang:"exp",versions:[{label:"Démo V1",file:"nnbh/Brow Doodle Rage (Demo V1).mp3",type:"brut"},{label:"Mix V2",file:"nnbh/Brow Doodle Rage (Mix V2).mp3",type:"mix"}]},
+{id:"nb17",artist:"nnbh",title:"Œil Teams Call",lang:"exp",versions:[{label:"Expérimental",file:"nnbh/Oeil Teams Call (Experimental).mp3",type:"brut"}]},
+{id:"nb18",artist:"nnbh",title:"Meeting",lang:"en",versions:[{label:"Final Master",file:"nnbh/Meeting (Final Master).mp3",type:"final"}]},
+{id:"nb19",artist:"nnbh",title:"Song",lang:"en",versions:[{label:"Mix V1",file:"nnbh/Song (Mix V1).mp3",type:"mix"},{label:"Mix V2",file:"nnbh/Song (Mix V2).mp3",type:"mix"}]},
+{id:"nb20",artist:"nnbh",title:"Three Hour Door",lang:"exp",versions:[{label:"Brut",file:"nnbh/Three Hour Door (Brut).mp3",type:"brut"}]}
 ];
+let userRole="guest",currentUserId=null,currentFilter="all",currentTrackId=null,currentVersionIdx=0,filteredTracks=[];
+let favorites={}; // {trackId: versionLabel} - only 1 favorite version per track
+const audio=document.getElementById("audio-el");
 
-// ── STATE ──
-let userRole = "guest";
-let currentFilter = "all";
-let currentTrackId = null;
-let currentVersionIdx = 0;
-let isPlaying = false;
-let filteredTracks = [];
-
-const audio = document.getElementById("audio-el");
-
-// ── AUTH ──
-async function doLogin() {
-  const email = document.getElementById("email-input").value.trim();
-  const pass = document.getElementById("pass-input").value;
-  const err = document.getElementById("login-error");
-  err.style.display = "none";
-  try {
-    await auth.signInWithEmailAndPassword(email, pass);
-  } catch(e) {
-    err.style.display = "block";
-  }
+async function doLogin(){
+  const email=document.getElementById("email-input").value.trim();
+  const pass=document.getElementById("pass-input").value;
+  document.getElementById("login-error").style.display="none";
+  try{await auth.signInWithEmailAndPassword(email,pass);}
+  catch(e){document.getElementById("login-error").style.display="block";}
 }
+document.getElementById("pass-input").addEventListener("keydown",e=>{if(e.key==="Enter")doLogin();});
+function doLogout(){auth.signOut();}
 
-document.getElementById("pass-input").addEventListener("keydown", e => {
-  if (e.key === "Enter") doLogin();
-});
-
-function doLogout() {
-  auth.signOut();
-}
-
-auth.onAuthStateChanged(async (user) => {
-  if (user) {
-    const doc = await db.collection("Users").doc(user.uid).get();
-    if (!doc.exists) {
-      const emailDoc = await db.collection("Users").where("email","==",user.email).get();
-      if (!emailDoc.empty) {
-        userRole = emailDoc.docs[0].data().role || "guest";
-      }
-    } else {
-      userRole = doc.data().role || "guest";
-    }
+auth.onAuthStateChanged(async(user)=>{
+  if(user){
+    currentUserId=user.uid;
+    try{
+      const snap=await db.collection("Users").where("email","==",user.email).get();
+      userRole=snap.empty?"guest":(snap.docs[0].data().role||"guest");
+    }catch(e){userRole="guest";}
+    await loadFavorites();
     showApp();
-  } else {
-    showLogin();
-  }
+  }else{currentUserId=null;showLogin();}
 });
 
-function showApp() {
-  document.getElementById("login-screen").style.display = "none";
-  document.getElementById("app").style.display = "block";
-  document.getElementById("user-role-label").textContent = userRole;
-  if (userRole === "vip" || userRole === "admin") {
-    document.querySelector(".vip-only").style.display = "flex";
-  }
-  renderTracks();
+async function loadFavorites(){
+  if(!currentUserId)return;
+  try{
+    const doc=await db.collection("Favorites").doc(currentUserId).get();
+    favorites=doc.exists?(doc.data().favs||{}):{};
+  }catch(e){favorites={};}
 }
 
-function showLogin() {
-  document.getElementById("login-screen").style.display = "flex";
-  document.getElementById("app").style.display = "none";
-  document.getElementById("player").style.display = "none";
+async function saveFavorites(){
+  if(!currentUserId)return;
+  try{await db.collection("Favorites").doc(currentUserId).set({favs:favorites});}
+  catch(e){console.log("save fav err",e);}
 }
 
-// ── FILTERS ──
-function setFilter(f, btn) {
-  currentFilter = f;
-  document.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
+function showApp(){
+  document.getElementById("login-screen").style.display="none";
+  document.getElementById("app").style.display="block";
+  document.getElementById("user-role-label").textContent=userRole;
+  if(userRole==="vip"||userRole==="admin")document.querySelector(".vip-only").style.display="flex";
+  renderCards();
+}
+function showLogin(){
+  document.getElementById("login-screen").style.display="flex";
+  document.getElementById("app").style.display="none";
+  document.getElementById("player").style.display="none";
+}
+
+function setFilter(f,btn){
+  currentFilter=f;
+  document.querySelectorAll(".filter-btn").forEach(b=>b.classList.remove("active"));
   btn.classList.add("active");
-  renderTracks();
+  renderCards();
 }
 
-function matchFilter(t) {
-  const canSeeNNBH = userRole === "vip" || userRole === "admin";
-  if (t.artist === "nnbh" && !canSeeNNBH) return false;
-  if (currentFilter === "all") return true;
-  if (currentFilter === "nila") return t.artist === "nila-moha";
-  if (currentFilter === "nnbh") return t.artist === "nnbh";
-  if (currentFilter === "fr") return t.lang === "fr";
-  if (currentFilter === "en") return t.lang === "en";
-  if (currentFilter === "es") return t.lang === "es";
-  if (currentFilter === "inst") return t.lang === "inst" || t.lang === "exp";
-  if (currentFilter === "final") return t.versions.some(v => v.type === "final");
+function matchFilter(t){
+  const canNNBH=userRole==="vip"||userRole==="admin";
+  if(t.artist==="nnbh"&&!canNNBH)return false;
+  if(currentFilter==="all")return true;
+  if(currentFilter==="fav")return !!favorites[t.id];
+  if(currentFilter==="nila")return t.artist==="nila-moha";
+  if(currentFilter==="nnbh")return t.artist==="nnbh";
+  if(currentFilter==="fr")return t.lang==="fr";
+  if(currentFilter==="en")return t.lang==="en";
+  if(currentFilter==="es")return t.lang==="es";
+  if(currentFilter==="inst")return t.lang==="inst"||t.lang==="exp";
+  if(currentFilter==="final")return t.versions.some(v=>v.type==="final");
   return true;
 }
 
-function renderTracks() {
-  const q = document.getElementById("search-input").value.toLowerCase();
-  const container = document.getElementById("track-container");
-
-  let tracks = CATALOGUE.filter(t => {
-    if (!matchFilter(t)) return false;
-    if (q && !t.title.toLowerCase().includes(q)) return false;
+function renderCards(){
+  const q=document.getElementById("search-input").value.toLowerCase();
+  const container=document.getElementById("cards-container");
+  let tracks=CATALOGUE.filter(t=>{
+    if(!matchFilter(t))return false;
+    if(q&&!t.title.toLowerCase().includes(q))return false;
     return true;
   });
+  filteredTracks=tracks;
+  if(tracks.length===0){container.innerHTML='<div class="empty">Aucun titre trouvé</div>';return;}
 
-  filteredTracks = tracks;
+  const nila=tracks.filter(t=>t.artist==="nila-moha");
+  const nnbh=tracks.filter(t=>t.artist==="nnbh");
+  const canNNBH=userRole==="vip"||userRole==="admin";
+  let html="";
 
-  if (tracks.length === 0) {
-    container.innerHTML = '<div class="empty">Aucun titre trouvé</div>';
-    return;
+  if(nila.length>0){
+    if(canNNBH&&nnbh.length>0)html+='<div class="section-title">Nila Moha</div>';
+    nila.forEach(t=>{html+=cardHTML(t);});
   }
-
-  const nilaSection = tracks.filter(t => t.artist === "nila-moha");
-  const nnbhSection = tracks.filter(t => t.artist === "nnbh");
-  const canSeeNNBH = userRole === "vip" || userRole === "admin";
-
-  let html = "";
-
-  if (nilaSection.length > 0 && (currentFilter === "all" || currentFilter === "nila" || ["fr","en","es","inst","final"].includes(currentFilter))) {
-    if (canSeeNNBH && nnbhSection.length > 0) {
-      html += '<div class="section-title">Nila Moha</div>';
-    }
-    nilaSection.forEach((t, i) => { html += trackHTML(t, i + 1); });
+  if(nnbh.length>0&&canNNBH){
+    html+='<div class="section-title">NNBH</div>';
+    nnbh.forEach(t=>{html+=cardHTML(t);});
   }
-
-  if (nnbhSection.length > 0 && canSeeNNBH) {
-    html += '<div class="section-title">NNBH</div>';
-    nnbhSection.forEach((t, i) => { html += trackHTML(t, i + 1); });
-  }
-
-  container.innerHTML = html;
+  container.innerHTML=html;
 }
 
-function trackHTML(t, num) {
-  const langMap = { fr:"FR", en:"EN", es:"ES", inst:"INST", exp:"EXP" };
-  const hasFinal = t.versions.some(v => v.type === "final");
-  const isNNBH = t.artist === "nnbh";
-  const playing = t.id === currentTrackId;
-
-  return `<div class="track-item ${playing ? 'playing' : ''}" onclick="playTrack('${t.id}', 0)">
-    <div class="track-num">${playing ? '♪' : num}</div>
-    <div class="track-info">
-      <div class="track-title">${t.title}</div>
-      <div class="track-meta">${t.versions.length > 1 ? t.versions.length + ' versions' : t.versions[0].label}</div>
-    </div>
-    <div class="track-badges">
-      <span class="badge badge-lang">${langMap[t.lang] || t.lang.toUpperCase()}</span>
-      ${hasFinal ? '<span class="badge badge-final">FINAL</span>' : ''}
-      ${isNNBH ? '<span class="badge badge-vip">VIP</span>' : ''}
+function cardHTML(t){
+  const langMap={fr:"FR",en:"EN",es:"ES",inst:"INST",exp:"EXP"};
+  const hasFinal=t.versions.some(v=>v.type==="final");
+  const isNNBH=t.artist==="nnbh";
+  const playing=t.id===currentTrackId;
+  const img=IMG[t.id]||"";
+  const isFav=!!favorites[t.id];
+  return `<div class="card ${playing?'playing':''}" onclick="openSong('${t.id}')">
+    <div class="card-img" style="background-image:url('${img}')"></div>
+    <div class="card-overlay"></div>
+    <button class="card-fav ${isFav?'on':''}" onclick="event.stopPropagation();quickFav('${t.id}',event)" title="Favori">${isFav?'♥':'♡'}</button>
+    <div class="card-content">
+      <div class="card-badges">
+        <span class="badge badge-lang">${langMap[t.lang]||t.lang.toUpperCase()}</span>
+        ${hasFinal?'<span class="badge badge-final">Final</span>':''}
+        ${isNNBH?'<span class="badge badge-vip">VIP</span>':''}
+      </div>
+      <div class="card-title">${t.title}</div>
+      <div class="card-meta">${t.versions.length>1?t.versions.length+' versions':t.versions[0].label}</div>
     </div>
   </div>`;
 }
 
-// ── PLAYER ──
-function playTrack(id, versionIdx) {
-  const track = CATALOGUE.find(t => t.id === id);
-  if (!track) return;
+async function quickFav(id,ev){
+  const t=CATALOGUE.find(x=>x.id===id);
+  if(!t)return;
+  if(favorites[id]){delete favorites[id];}
+  else{favorites[id]=t.versions[0].label;}
+  await saveFavorites();
+  renderCards();
+}
 
-  currentTrackId = id;
-  currentVersionIdx = versionIdx;
+async function setFavVersion(id,verLabel){
+  if(favorites[id]===verLabel){delete favorites[id];}
+  else{favorites[id]=verLabel;}
+  await saveFavorites();
+  if(currentTrackId===id)renderModalVersions(id);
+  renderCards();
+}
 
-  const version = track.versions[versionIdx];
-  const url = R2 + "/" + encodeURIComponent(version.file).replace(/%2F/g, "/");
+function openSong(id){
+  const t=CATALOGUE.find(x=>x.id===id);
+  if(!t)return;
+  const langMap={fr:"Français",en:"Anglais",es:"Espagnol",inst:"Instrumental",exp:"Expérimental"};
+  document.getElementById("modal-title-label").textContent=t.artist==="nila-moha"?"Nila Moha":"NNBH";
+  document.getElementById("modal-hero-img").style.backgroundImage="url('"+(IMG[t.id]||"")+"')";
+  document.getElementById("modal-hero-title").textContent=t.title;
+  document.getElementById("modal-hero-sub").textContent=langMap[t.lang]+" · "+t.versions.length+" version"+(t.versions.length>1?"s":"");
+  
+  renderModalVersions(id);
+  
+  const lyricsSection=document.getElementById("modal-lyrics-section");
+  const ly=LYRICS[id];
+  if(ly){
+    const langs=Object.keys(ly);
+    const labels={fr:"Paroles",en:"Lyrics",es:"Letra"};
+    let tabsHTML='<div class="lyrics-tabs">';
+    langs.forEach((l,i)=>{tabsHTML+=`<button class="lyric-tab ${i===0?'active':''}" onclick="switchLyric('${l}',this)">${labels[l]||l.toUpperCase()}</button>`;});
+    tabsHTML+='</div>';
+    let contentHTML='';
+    langs.forEach((l,i)=>{
+      const text=ly[l].replace(/</g,"&lt;").replace(/>/g,"&gt;");
+      contentHTML+=`<div class="lyrics-content ${i===0?'active':''}" data-lang="${l}"><div class="lyrics-text">${text}</div></div>`;
+    });
+    lyricsSection.innerHTML=tabsHTML+contentHTML;
+  }else{
+    lyricsSection.innerHTML='<div class="lyrics-empty">Les paroles seront ajoutées prochainement.</div>';
+  }
+  
+  document.getElementById("song-modal").style.display="block";
+  window.scrollTo(0,0);
+  if(currentTrackId!==id)playTrack(id,0);
+}
 
-  audio.src = url;
+function renderModalVersions(id){
+  const t=CATALOGUE.find(x=>x.id===id);
+  if(!t)return;
+  const section=document.getElementById("modal-ver-section");
+  const favVer=favorites[id];
+  let html='<div class="ver-section-label">Versions</div><div class="ver-list">';
+  t.versions.forEach((v,i)=>{
+    const isPlaying=currentTrackId===id&&currentVersionIdx===i;
+    const isFav=favVer===v.label;
+    html+=`<div class="ver-item ${isPlaying?'active':''}" onclick="playFromModal('${id}',${i})">
+      <span class="ver-item-icon">${isPlaying?'❚❚':'▶'}</span>
+      <span class="ver-item-name">${v.label}</span>
+      <button class="ver-item-fav ${isFav?'on':''}" onclick="event.stopPropagation();setFavVersion('${id}','${v.label.replace(/'/g,"\\'")}')" title="Marquer comme version préférée">${isFav?'★':'☆'}</button>
+    </div>`;
+  });
+  html+='</div>';
+  section.innerHTML=html;
+}
+
+function switchLyric(lang,btn){
+  document.querySelectorAll(".lyric-tab").forEach(t=>t.classList.remove("active"));
+  btn.classList.add("active");
+  document.querySelectorAll(".lyrics-content").forEach(c=>{
+    c.classList.toggle("active",c.dataset.lang===lang);
+  });
+}
+
+function closeModal(){document.getElementById("song-modal").style.display="none";}
+function openCurrentSong(){if(currentTrackId)openSong(currentTrackId);}
+
+function playFromModal(id,vIdx){
+  playTrack(id,vIdx);
+  renderModalVersions(id);
+}
+
+function playTrack(id,vIdx){
+  const t=CATALOGUE.find(x=>x.id===id);
+  if(!t)return;
+  currentTrackId=id;
+  currentVersionIdx=vIdx;
+  const v=t.versions[vIdx];
+  audio.src=R2+"/"+encodeURIComponent(v.file).replace(/%2F/g,"/");
   audio.play();
-  isPlaying = true;
-
-  document.getElementById("player").style.display = "block";
-  document.getElementById("player-title").textContent = track.title;
-  document.getElementById("player-version").textContent = version.label;
-  document.getElementById("play-btn").innerHTML = "&#9646;&#9646;";
-
-  // Version tabs
-  const tabs = document.getElementById("version-tabs");
-  if (track.versions.length > 1) {
-    tabs.innerHTML = track.versions.map((v, i) =>
-      `<button class="ver-btn ${i === versionIdx ? 'active' : ''}" onclick="playTrack('${id}', ${i})">${v.label}</button>`
-    ).join("");
-    tabs.style.display = "flex";
-  } else {
-    tabs.style.display = "none";
-  }
-
-  renderTracks();
+  document.getElementById("player").style.display="block";
+  document.getElementById("player-title").textContent=t.title;
+  document.getElementById("player-version").textContent=v.label;
+  document.getElementById("player-thumb").style.backgroundImage="url('"+(IMG[id]||"")+"')";
+  document.getElementById("play-btn").textContent="❚❚";
+  renderCards();
 }
 
-function togglePlay() {
-  if (audio.paused) {
-    audio.play();
-    isPlaying = true;
-    document.getElementById("play-btn").innerHTML = "&#9646;&#9646;";
-  } else {
-    audio.pause();
-    isPlaying = false;
-    document.getElementById("play-btn").innerHTML = "&#9654;";
-  }
+function togglePlay(){
+  if(audio.paused){audio.play();document.getElementById("play-btn").textContent="❚❚";}
+  else{audio.pause();document.getElementById("play-btn").textContent="▶";}
 }
 
-function prevTrack() {
-  const idx = filteredTracks.findIndex(t => t.id === currentTrackId);
-  if (idx > 0) playTrack(filteredTracks[idx - 1].id, 0);
+function prevTrack(){
+  const i=filteredTracks.findIndex(t=>t.id===currentTrackId);
+  if(i>0)playTrack(filteredTracks[i-1].id,0);
+}
+function nextTrack(){
+  const i=filteredTracks.findIndex(t=>t.id===currentTrackId);
+  if(i>=0&&i<filteredTracks.length-1)playTrack(filteredTracks[i+1].id,0);
 }
 
-function nextTrack() {
-  const idx = filteredTracks.findIndex(t => t.id === currentTrackId);
-  if (idx < filteredTracks.length - 1) playTrack(filteredTracks[idx + 1].id, 0);
-}
-
-audio.addEventListener("timeupdate", () => {
-  if (!audio.duration) return;
-  const pct = (audio.currentTime / audio.duration) * 100;
-  document.getElementById("progress-fill").style.width = pct + "%";
-  document.getElementById("time-cur").textContent = fmt(audio.currentTime);
-  document.getElementById("time-dur").textContent = fmt(audio.duration);
+audio.addEventListener("timeupdate",()=>{
+  if(!audio.duration)return;
+  document.getElementById("progress-fill").style.width=(audio.currentTime/audio.duration*100)+"%";
+  document.getElementById("time-cur").textContent=fmt(audio.currentTime);
+  document.getElementById("time-dur").textContent=fmt(audio.duration);
 });
+audio.addEventListener("ended",()=>{nextTrack();});
 
-audio.addEventListener("ended", () => { nextTrack(); });
-
-function seekAudio(e) {
-  const bar = document.getElementById("progress-bar");
-  const pct = e.offsetX / bar.offsetWidth;
-  audio.currentTime = pct * audio.duration;
+function seekAudio(e){
+  const bar=document.getElementById("progress-bar");
+  audio.currentTime=(e.offsetX/bar.offsetWidth)*audio.duration;
 }
-
-function fmt(s) {
-  const m = Math.floor(s / 60);
-  const sec = Math.floor(s % 60);
-  return m + ":" + (sec < 10 ? "0" : "") + sec;
-}
+function fmt(s){const m=Math.floor(s/60);const sec=Math.floor(s%60);return m+":"+(sec<10?"0":"")+sec;}
 </script>
 </body>
 </html>
