@@ -12,9 +12,9 @@
   --steel-100:#e7ecef;
   --bg:#f6f8f9;
   --surface:#ffffff;
-  --green-600:#1f8f6b;
-  --green-500:#2fa88a;
-  --green-100:#e2f4ee;
+  --green-600:#a8763a;
+  --green-500:#c9974f;
+  --green-100:#f7ecd9;
   --amber-500:#d9a441;
   --text:#101c26;
   --text-dim:#4b5c68;
@@ -94,12 +94,7 @@ header.site-header{
 .nav-row{display:flex;align-items:center;justify-content:space-between;padding:14px 24px;gap:24px}
 
 .logo-block{display:flex;align-items:center;gap:12px}
-.logo-mark{
-  width:44px;height:44px;border-radius:10px;flex:0 0 auto;
-  background:linear-gradient(135deg,var(--navy-800),var(--navy-950));
-  display:flex;align-items:center;justify-content:center;
-  color:var(--green-500);font-family:'Manrope',sans-serif;font-weight:800;font-size:1.1rem;
-}
+.logo-mark-img{height:42px;width:auto;flex:0 0 auto;display:block}
 .logo-text{display:flex;flex-direction:column;line-height:1.15}
 .logo-text .name{font-family:'Manrope',sans-serif;font-weight:800;font-size:1.15rem;letter-spacing:.02em;color:var(--navy-950)}
 .logo-text .slogan{font-size:.68rem;letter-spacing:.08em;color:var(--text-mute);text-transform:uppercase}
@@ -118,7 +113,7 @@ nav.main-nav a:hover,nav.main-nav a.active{background:var(--green-100);color:var
 /* ---------- Hero ---------- */
 .hero{
   position:relative;overflow:hidden;
-  background:radial-gradient(ellipse 900px 500px at 80% -10%,rgba(47,168,138,.35),transparent 60%),
+  background:radial-gradient(ellipse 900px 500px at 80% -10%,rgba(201,151,79,.32),transparent 60%),
              linear-gradient(160deg,var(--navy-950) 0%,var(--navy-900) 55%,var(--navy-800) 100%);
   color:#fff;padding:96px 0 110px;
 }
@@ -209,7 +204,7 @@ section.tight{padding:56px 0}
 }
 .contact-info-card h3{color:#fff;margin-bottom:22px}
 .contact-line{display:flex;gap:14px;margin-bottom:20px;align-items:flex-start}
-.contact-line .icon{width:38px;height:38px;border-radius:9px;background:rgba(47,168,138,.18);color:var(--green-500);display:flex;align-items:center;justify-content:center;flex:0 0 auto}
+.contact-line .icon{width:38px;height:38px;border-radius:9px;background:rgba(201,151,79,.18);color:var(--green-500);display:flex;align-items:center;justify-content:center;flex:0 0 auto}
 .contact-line .icon svg{width:18px;height:18px}
 .contact-line span{color:var(--steel-300);font-size:.92rem;display:block}
 .contact-line b{color:#fff;font-size:.98rem}
