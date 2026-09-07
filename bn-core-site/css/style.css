@@ -255,6 +255,7 @@ footer.site-footer{background:var(--brown-950);color:var(--sand-300);padding:64p
 .footer-col ul li{font-family:'Inter',sans-serif;margin-bottom:10px;font-size:.9rem}
 .footer-col ul li a:hover{color:#fff}
 .footer-col address{font-style:normal;font-family:'Inter',sans-serif;font-size:.9rem;line-height:1.7;color:var(--sand-300)}
+.footer-bottom-note{font-family:'Inter',sans-serif;padding:22px 0 0;font-size:.82rem;color:var(--sand-300)}
 .footer-bottom{font-family:'Inter',sans-serif;display:flex;justify-content:space-between;align-items:center;padding:24px 0;font-size:.8rem;color:var(--text-mute);flex-wrap:wrap;gap:10px}
 .footer-bottom strong{color:var(--sand-300)}
 
