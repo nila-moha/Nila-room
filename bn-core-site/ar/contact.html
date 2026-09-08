@@ -185,17 +185,29 @@
         <div class="conditional-group" data-need="workforce">
           <div class="form-row">
             <div class="form-field">
-              <label for="headcount">عدد الفنيين المطلوب</label>
+              <label for="profile-type">الملف (الملفات) المطلوبة</label>
+              <select id="profile-type" name="profile-type">
+                <option value="" selected disabled>اختر…</option>
+                <option value="engineer">مهندس</option>
+                <option value="electrician">فني كهرباء</option>
+                <option value="helper">مساعد تقني / عامل</option>
+                <option value="mixed">فريق مختلط (مهندس + فنيي كهرباء)</option>
+              </select>
+            </div>
+            <div class="form-field">
+              <label for="headcount">إجمالي حجم الفريق المطلوب</label>
               <input type="text" id="headcount" name="headcount" placeholder="مثال: 2">
             </div>
+          </div>
+          <div class="form-row">
             <div class="form-field">
               <label for="duration">مدة المهمة</label>
               <input type="text" id="duration" name="duration" placeholder="مثال: 3 أسابيع">
             </div>
-          </div>
-          <div class="form-field">
-            <label for="start-date">تاريخ البدء المرغوب</label>
-            <input type="text" id="start-date" name="start-date" placeholder="يوم/شهر/سنة">
+            <div class="form-field">
+              <label for="start-date">تاريخ البدء المرغوب</label>
+              <input type="text" id="start-date" name="start-date" placeholder="يوم/شهر/سنة">
+            </div>
           </div>
         </div>
 
@@ -280,7 +292,7 @@
   "url": "https://www.bncoregroup.com/ar/index.html",
   "logo": "https://www.bncoregroup.com/assets/logo.png",
   "image": "https://www.bncoregroup.com/assets/logo.png",
-  "description": "توفّر BN CORE GROUP الخدمات الميدانية التقنية وتوفير الكوادر التقنية التقنية المؤهلة لمشاريع التشغيل التجريبي والتشغيل والصيانة (O&M) لأنظمة تخزين الطاقة بالبطاريات (BESS) واسعة النطاق في أوروبا.",
+  "description": "توفّر BN CORE GROUP الخدمات الميدانية التقنية وتوفير الكوادر التقنية المؤهلة لمشاريع التشغيل التجريبي والتشغيل والصيانة (O&M) لأنظمة تخزين الطاقة بالبطاريات (BESS) واسعة النطاق في أوروبا.",
   "email": "info@bncoregroup.com",
   "telephone": "+32471990825",
   "address": {
@@ -300,7 +312,77 @@
     "Eastern Europe"
   ],
   "vatID": "BE1027.648.484",
-  "inLanguage": "ar"
+  "inLanguage": "ar",
+  "openingHoursSpecification": {
+    "@type": "OpeningHoursSpecification",
+    "dayOfWeek": [
+      "Monday",
+      "Tuesday",
+      "Wednesday",
+      "Thursday",
+      "Friday"
+    ],
+    "opens": "08:30",
+    "closes": "17:30"
+  },
+  "contactPoint": {
+    "@type": "ContactPoint",
+    "telephone": "+32471990825",
+    "contactType": "customer service",
+    "email": "info@bncoregroup.com",
+    "areaServed": [
+      "BE",
+      "FR",
+      "ES",
+      "PT",
+      "NL",
+      "LU"
+    ],
+    "availableLanguage": [
+      "English",
+      "French",
+      "Chinese",
+      "Arabic"
+    ]
+  },
+  "makesOffer": [
+    {
+      "@type": "Offer",
+      "itemOffered": {
+        "@type": "Service",
+        "name": "الخدمات الميدانية التقنية",
+        "description": "تدخل ميداني في التشغيل التجريبي والصيانة والإصلاح الهيكلي لحاويات BESS."
+      }
+    },
+    {
+      "@type": "Offer",
+      "itemOffered": {
+        "@type": "Service",
+        "name": "توفير الكوادر التقنية",
+        "description": "توفير مهندسين وفنيين مؤهلين لتعزيز فريقكم الخاص، تحت إشرافكم."
+      }
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "الرئيسية",
+      "item": "https://www.bncoregroup.com/ar/index.html"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "اتصل بنا",
+      "item": "https://www.bncoregroup.com/ar/contact.html"
+    }
+  ]
 }
 </script>
 </body>

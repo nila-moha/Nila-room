@@ -183,17 +183,29 @@
         <div class="conditional-group" data-need="workforce">
           <div class="form-row">
             <div class="form-field">
-              <label for="headcount">Nombre de techniciens souhaité</label>
+              <label for="profile-type">Profil(s) recherché(s)</label>
+              <select id="profile-type" name="profile-type">
+                <option value="" selected disabled>Sélectionnez…</option>
+                <option value="engineer">Ingénieur</option>
+                <option value="electrician">Électricien</option>
+                <option value="helper">Aide technique / manœuvre</option>
+                <option value="mixed">Équipe mixte (ingénieur + électriciens)</option>
+              </select>
+            </div>
+            <div class="form-field">
+              <label for="headcount">Taille d'équipe totale souhaitée</label>
               <input type="text" id="headcount" name="headcount" placeholder="Ex. : 2">
             </div>
+          </div>
+          <div class="form-row">
             <div class="form-field">
               <label for="duration">Durée de la mission</label>
               <input type="text" id="duration" name="duration" placeholder="Ex. : 3 semaines">
             </div>
-          </div>
-          <div class="form-field">
-            <label for="start-date">Date de début souhaitée</label>
-            <input type="text" id="start-date" name="start-date" placeholder="JJ/MM/AAAA">
+            <div class="form-field">
+              <label for="start-date">Date de début souhaitée</label>
+              <input type="text" id="start-date" name="start-date" placeholder="JJ/MM/AAAA">
+            </div>
           </div>
         </div>
 
@@ -298,7 +310,77 @@
     "Eastern Europe"
   ],
   "vatID": "BE1027.648.484",
-  "inLanguage": "fr"
+  "inLanguage": "fr",
+  "openingHoursSpecification": {
+    "@type": "OpeningHoursSpecification",
+    "dayOfWeek": [
+      "Monday",
+      "Tuesday",
+      "Wednesday",
+      "Thursday",
+      "Friday"
+    ],
+    "opens": "08:30",
+    "closes": "17:30"
+  },
+  "contactPoint": {
+    "@type": "ContactPoint",
+    "telephone": "+32471990825",
+    "contactType": "customer service",
+    "email": "info@bncoregroup.com",
+    "areaServed": [
+      "BE",
+      "FR",
+      "ES",
+      "PT",
+      "NL",
+      "LU"
+    ],
+    "availableLanguage": [
+      "English",
+      "French",
+      "Chinese",
+      "Arabic"
+    ]
+  },
+  "makesOffer": [
+    {
+      "@type": "Offer",
+      "itemOffered": {
+        "@type": "Service",
+        "name": "Technical Field Services",
+        "description": "Intervention terrain pour le commissioning, l'O&M et la réparation structurelle de conteneurs BESS."
+      }
+    },
+    {
+      "@type": "Offer",
+      "itemOffered": {
+        "@type": "Service",
+        "name": "Technical Workforce Deployment",
+        "description": "Ingénieurs et techniciens qualifiés mis à disposition pour renforcer votre équipe, sous votre supervision."
+      }
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Accueil",
+      "item": "https://www.bncoregroup.com/fr/index.html"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Contact",
+      "item": "https://www.bncoregroup.com/fr/contact.html"
+    }
+  ]
 }
 </script>
 </body>
