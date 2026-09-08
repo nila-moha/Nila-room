@@ -1,8 +1,13 @@
 // ============================================================
 // BN CORE GROUP — App de suivi chantier
-// Firebase Auth (email/mot de passe, comptes créés par l'admin dans la
-// console Firebase) + Firestore (données) + Firestore Security Rules
-// (contrôle d'accès réel, voir firestore.rules).
+// Firebase Auth (email/mot de passe) + Firestore (données) + Firestore
+// Security Rules (contrôle d'accès réel, voir firestore.rules).
+//
+// Comptes : l'admin génère un lien d'invitation (onglet "Comptes"),
+// la personne l'ouvre et crée elle-même son compte (nom/email/mot de
+// passe) — auto-inscription encadrée par un code à usage unique.
+// L'admin peut retirer l'accès de n'importe qui à tout moment
+// ("revoked"), sans supprimer son historique.
 // ============================================================
 
 const app = document.getElementById('app');
@@ -164,6 +169,84 @@ function renderLogin(errorMsg) {
   });
 }
 
+function renderSignup(code) {
+  clearSubscriptions();
+  app.innerHTML = `<div class="center-wrap"><div class="loading">Vérification de l'invitation…</div></div>`;
+  db.collection('invites').doc(code).get().then(snap => {
+    if (!snap.exists || snap.data().used) {
+      app.innerHTML = `<div class="center-wrap"><div class="card error-box">
+        Ce lien d'invitation n'est plus valide ou a déjà été utilisé. Contactez BN CORE GROUP pour en obtenir un nouveau.
+      </div></div>`;
+      return;
+    }
+    const invite = snap.data();
+    app.innerHTML = `
+      <div class="center-wrap">
+        <div style="text-align:center;margin-bottom:24px">
+          <h1 style="font-size:1.6rem">BN CORE GROUP</h1>
+          <p style="color:var(--text-dim);font-size:0.9rem">Créer votre accès — ${esc(ROLE_LABELS[invite.role] || invite.role)}</p>
+        </div>
+        <div class="card">
+          <form id="signup-form">
+            <div class="field"><label>Nom complet</label><input type="text" id="su-name" required value="${esc(invite.suggestedName || '')}"></div>
+            <div class="field"><label>Email</label><input type="email" id="su-email" required autocomplete="username"></div>
+            <div class="field"><label>Mot de passe</label><input type="password" id="su-password" required minlength="6" autocomplete="new-password"></div>
+            <button type="submit" class="btn btn-primary btn-block">Créer mon compte</button>
+          </form>
+        </div>
+      </div>`;
+
+    document.getElementById('signup-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const name = document.getElementById('su-name').value.trim();
+      const email = document.getElementById('su-email').value.trim();
+      const password = document.getElementById('su-password').value;
+      const form = e.target;
+      const btn = form.querySelector('button[type=submit]');
+      btn.disabled = true;
+      btn.textContent = 'Création…';
+      try {
+        const cred = await auth.createUserWithEmailAndPassword(email, password);
+        await db.collection('people').doc(cred.user.uid).set({
+          name, role: invite.role, teamId: invite.teamId || null, clientId: invite.clientId || null,
+          revoked: false, inviteCode: code,
+        });
+        await db.collection('invites').doc(code).update({
+          used: true, usedBy: cred.user.uid, usedAt: firebase.firestore.FieldValue.serverTimestamp(),
+        });
+        history.replaceState(null, '', location.pathname + location.search);
+        await loadPersonAndRoute(cred.user);
+      } catch (err) {
+        btn.disabled = false;
+        btn.textContent = 'Créer mon compte';
+        showError(form, translateSignupError(err));
+      }
+    });
+  }).catch(err => {
+    app.innerHTML = `<div class="center-wrap"><div class="card error-box">Erreur : ${esc(err.message)}</div></div>`;
+  });
+}
+
+function translateSignupError(err) {
+  const map = {
+    'auth/email-already-in-use': "Cet email est déjà utilisé par un autre compte.",
+    'auth/invalid-email': "Adresse email invalide.",
+    'auth/weak-password': "Le mot de passe doit contenir au moins 6 caractères.",
+  };
+  return map[err.code] || ("Erreur : " + err.message);
+}
+
+function generateInviteCode() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // sans caractères ambigus (0/O, 1/I)
+  let code = '';
+  for (let i = 0; i < 8; i++) code += chars[Math.floor(Math.random() * chars.length)];
+  return code;
+}
+
+function inviteLinkFor(code) {
+  return location.origin + location.pathname + '#invite/' + code;
+}
+
 function translateAuthError(err) {
   const map = {
     'auth/invalid-email': "Adresse email invalide.",
@@ -181,14 +264,13 @@ async function logout() {
   await auth.signOut();
 }
 
-auth.onAuthStateChanged(async (user) => {
+function checkInviteHash() {
+  const m = location.hash.match(/^#invite\/(.+)$/);
+  return m ? decodeURIComponent(m[1]) : null;
+}
+
+async function loadPersonAndRoute(user) {
   clearSubscriptions();
-  if (!user) {
-    currentUser = null;
-    currentPerson = null;
-    renderLogin();
-    return;
-  }
   currentUser = user;
   app.innerHTML = '<div class="loading">Chargement de votre profil…</div>';
   try {
@@ -197,15 +279,45 @@ auth.onAuthStateChanged(async (user) => {
       app.innerHTML = `<div class="center-wrap"><div class="card">
         <h2>Compte non configuré</h2>
         <p style="margin-top:12px;color:var(--text-dim)">Votre compte existe mais n'a pas encore de profil (rôle, équipe ou client) associé. Contactez votre administrateur.</p>
-        <button class="btn btn-outline mt-16" style="margin-top:16px" onclick="logout()">Se déconnecter</button>
+        <button class="btn btn-outline" style="margin-top:16px" onclick="logout()">Se déconnecter</button>
       </div></div>`;
       return;
     }
-    currentPerson = { id: user.uid, ...snap.data() };
+    const person = { id: user.uid, ...snap.data() };
+    if (person.revoked) {
+      app.innerHTML = `<div class="center-wrap"><div class="card">
+        <h2>Accès révoqué</h2>
+        <p style="margin-top:12px;color:var(--text-dim)">Votre accès à cette application a été retiré. Contactez BN CORE GROUP si vous pensez qu'il s'agit d'une erreur.</p>
+        <button class="btn btn-outline" style="margin-top:16px" onclick="logout()">Se déconnecter</button>
+      </div></div>`;
+      return;
+    }
+    currentPerson = person;
     routeByRole();
   } catch (err) {
     app.innerHTML = `<div class="center-wrap"><div class="card error-box">Erreur de chargement du profil : ${esc(err.message)}</div></div>`;
   }
+}
+
+auth.onAuthStateChanged((user) => {
+  clearSubscriptions();
+  const inviteCode = checkInviteHash();
+  if (!user) {
+    currentUser = null;
+    currentPerson = null;
+    if (inviteCode) renderSignup(inviteCode);
+    else renderLogin();
+    return;
+  }
+  if (inviteCode) history.replaceState(null, '', location.pathname + location.search);
+  loadPersonAndRoute(user);
+});
+
+window.addEventListener('hashchange', () => {
+  if (auth.currentUser) return; // an existing session ignores stray invite links in the address bar
+  const inviteCode = checkInviteHash();
+  if (inviteCode) renderSignup(inviteCode);
+  else renderLogin();
 });
 
 function routeByRole() {
@@ -437,84 +549,142 @@ function renderAdminClients(content) {
 
 // ---- Admin: Comptes (people) ----
 function renderAdminPeople(content) {
-  const unsub = db.collection('people').onSnapshot(async (snap) => {
-    const [teamsSnap, clientsSnap] = await Promise.all([db.collection('teams').get(), db.collection('clients').get()]);
+  content.innerHTML = '<div class="loading">Chargement…</div>';
+  Promise.all([db.collection('teams').get(), db.collection('clients').get()]).then(([teamsSnap, clientsSnap]) => {
     const teams = Object.fromEntries(teamsSnap.docs.map(d => [d.id, d.data()]));
     const clients = Object.fromEntries(clientsSnap.docs.map(d => [d.id, d.data()]));
     const teamOptions = Object.entries(teams).map(([id, t]) => `<option value="${id}">${esc(t.name)}</option>`).join('');
     const clientOptions = Object.entries(clients).map(([id, c]) => `<option value="${id}">${esc(c.name)}</option>`).join('');
+    const staffRoles = ['engineer', 'electrician', 'worker'];
 
     content.innerHTML = `
-      <div class="note-box">
-        <b>Comment ça marche :</b> créez d'abord le compte de connexion (email + mot de passe) dans la
-        <a href="https://console.firebase.google.com" target="_blank" rel="noopener">console Firebase</a> →
-        Authentication → Add user. Copiez ensuite l'identifiant (UID) généré et complétez le profil ci-dessous
-        avec ce même identifiant.
-      </div>
       <div class="card">
-        <h3>Associer un profil à un compte existant</h3>
-        <form id="new-person-form" style="margin-top:10px">
-          <div class="row">
-            <div class="field"><label>UID du compte (Firebase Authentication)</label><input type="text" id="np2-uid" required placeholder="Copié depuis la console Firebase"></div>
-            <div class="field"><label>Nom complet</label><input type="text" id="np2-name" required placeholder="Ex. : Ahmed B."></div>
-          </div>
+        <h3>Inviter une nouvelle personne</h3>
+        <p class="empty" style="font-style:normal;margin:4px 0 12px">
+          Générez un lien, envoyez-le par WhatsApp ou email — la personne crée elle-même son compte
+          (nom, email, mot de passe) en l'ouvrant. Vous gardez le contrôle : vous pouvez retirer son
+          accès à tout moment ci-dessous.
+        </p>
+        <form id="new-invite-form">
           <div class="row">
             <div class="field"><label>Rôle</label>
-              <select id="np2-role">
-                ${Object.entries(ROLE_LABELS).map(([k, v]) => `<option value="${k}">${v}</option>`).join('')}
+              <select id="inv-role">
+                ${Object.entries(ROLE_LABELS).filter(([k]) => k !== 'admin').map(([k, v]) => `<option value="${k}">${v}</option>`).join('')}
               </select>
             </div>
-            <div class="field" id="np2-team-field"><label>Équipe (si personnel)</label><select id="np2-team"><option value="">—</option>${teamOptions}</select></div>
-            <div class="field" id="np2-client-field" style="display:none"><label>Client (si compte client)</label><select id="np2-client"><option value="">—</option>${clientOptions}</select></div>
+            <div class="field" id="inv-team-field"><label>Équipe</label><select id="inv-team">${teamOptions || '<option value="">Créez d\'abord une équipe</option>'}</select></div>
+            <div class="field" id="inv-client-field" style="display:none"><label>Client</label><select id="inv-client">${clientOptions || '<option value="">Créez d\'abord un client</option>'}</select></div>
           </div>
-          <button type="submit" class="btn btn-primary">Enregistrer le profil</button>
+          <div class="field"><label>Nom suggéré (optionnel)</label><input type="text" id="inv-name" placeholder="Pré-remplit le formulaire de la personne"></div>
+          <button type="submit" class="btn btn-primary">Générer le lien d'invitation</button>
         </form>
+        <div id="invite-result"></div>
       </div>
       <div class="card">
-        ${snap.empty ? '<p class="empty">Aucun profil enregistré.</p>' : snap.docs.map(d => {
-          const p = d.data();
-          const context = p.role === 'client' ? (clients[p.clientId]?.name || '—') : (teams[p.teamId]?.name || '—');
-          return `<div class="list-row">
-            <div class="main"><div class="name">${esc(p.name)}</div><div class="sub">${ROLE_LABELS[p.role] || p.role} · ${esc(context)}</div></div>
-            <div class="actions"><button class="btn btn-danger btn-sm" data-del-person="${d.id}">Retirer l'accès</button></div>
-          </div>`;
-        }).join('')}
+        <h3>Invitations en attente</h3>
+        <div id="pending-invites"><p class="empty">Chargement…</p></div>
+      </div>
+      <div class="card">
+        <h3>Comptes actifs</h3>
+        <div id="people-list"><p class="empty">Chargement…</p></div>
       </div>`;
 
-    const roleSelect = document.getElementById('np2-role');
+    const roleSelect = document.getElementById('inv-role');
     const toggleFields = () => {
       const isClient = roleSelect.value === 'client';
-      document.getElementById('np2-team-field').style.display = isClient ? 'none' : '';
-      document.getElementById('np2-client-field').style.display = isClient ? '' : 'none';
+      document.getElementById('inv-team-field').style.display = isClient ? 'none' : '';
+      document.getElementById('inv-client-field').style.display = isClient ? '' : 'none';
     };
     roleSelect.addEventListener('change', toggleFields);
     toggleFields();
 
-    document.getElementById('new-person-form').addEventListener('submit', async (e) => {
+    document.getElementById('new-invite-form').addEventListener('submit', async (e) => {
       e.preventDefault();
-      const uid = document.getElementById('np2-uid').value.trim();
-      const name = document.getElementById('np2-name').value.trim();
       const role = roleSelect.value;
-      const teamId = document.getElementById('np2-team').value || null;
-      const clientId = document.getElementById('np2-client').value || null;
-      if (!uid) return;
-      try {
-        await db.collection('people').doc(uid).set({ name, role, teamId: role === 'client' ? null : teamId, clientId: role === 'client' ? clientId : null });
-        e.target.reset();
-        toggleFields();
-      } catch (err) {
-        showError(content, "Erreur : " + err.message);
-      }
+      const teamId = document.getElementById('inv-team').value || null;
+      const clientId = document.getElementById('inv-client').value || null;
+      const suggestedName = document.getElementById('inv-name').value.trim();
+      if (role !== 'client' && !teamId) { showError(content, "Créez d'abord au moins une équipe."); return; }
+      if (role === 'client' && !clientId) { showError(content, "Créez d'abord au moins un client."); return; }
+      const code = generateInviteCode();
+      await db.collection('invites').doc(code).set({
+        role, teamId: role === 'client' ? null : teamId, clientId: role === 'client' ? clientId : null,
+        suggestedName, used: false, createdAt: firebase.firestore.FieldValue.serverTimestamp(), createdBy: currentPerson.name,
+      });
+      const link = inviteLinkFor(code);
+      const resultBox = document.getElementById('invite-result');
+      resultBox.innerHTML = `
+        <div class="note-box" style="margin-top:14px">
+          <b>Lien généré — envoyez-le à la personne :</b><br>
+          <input type="text" readonly value="${esc(link)}" style="width:100%;margin-top:8px;padding:8px;border:1px solid var(--border);border-radius:6px" onclick="this.select()">
+          <button type="button" class="btn btn-outline btn-sm" style="margin-top:8px" id="copy-invite-link">Copier le lien</button>
+        </div>`;
+      document.getElementById('copy-invite-link').addEventListener('click', () => {
+        navigator.clipboard.writeText(link).then(() => {
+          document.getElementById('copy-invite-link').textContent = 'Copié !';
+        });
+      });
+      e.target.reset();
+      toggleFields();
     });
 
-    content.querySelectorAll('[data-del-person]').forEach(btn => {
+    renderPendingInvites(document.getElementById('pending-invites'), teams, clients);
+    renderPeopleList(document.getElementById('people-list'), teams, clients);
+  }).catch(err => showError(content, "Erreur : " + err.message));
+}
+
+function renderPendingInvites(target, teams, clients) {
+  const unsub = db.collection('invites').where('used', '==', false).onSnapshot(snap => {
+    target.innerHTML = snap.empty ? '<p class="empty">Aucune invitation en attente.</p>' : snap.docs.map(d => {
+      const inv = d.data();
+      const context = inv.role === 'client' ? (clients[inv.clientId]?.name || '—') : (teams[inv.teamId]?.name || '—');
+      return `<div class="list-row">
+        <div class="main">
+          <div class="name">${esc(inv.suggestedName || '(sans nom)')} · ${ROLE_LABELS[inv.role] || inv.role}</div>
+          <div class="sub">${esc(context)} · lien : <code>${esc(inviteLinkFor(d.id))}</code></div>
+        </div>
+        <div class="actions"><button class="btn btn-danger btn-sm" data-del-invite="${d.id}">Annuler</button></div>
+      </div>`;
+    }).join('');
+    target.querySelectorAll('[data-del-invite]').forEach(btn => {
       btn.addEventListener('click', async () => {
-        if (confirm("Retirer l'accès de cette personne ? Son compte de connexion restera dans Firebase Authentication — désactivez-le là-bas si besoin.")) {
-          await db.collection('people').doc(btn.dataset.delPerson).delete();
+        await db.collection('invites').doc(btn.dataset.delInvite).delete();
+      });
+    });
+  }, err => showError(target, "Erreur : " + err.message));
+  unsubscribers.push(unsub);
+}
+
+function renderPeopleList(target, teams, clients) {
+  const unsub = db.collection('people').onSnapshot(snap => {
+    target.innerHTML = snap.empty ? '<p class="empty">Aucun compte actif pour le moment.</p>' : snap.docs.map(d => {
+      const p = d.data();
+      const context = p.role === 'client' ? (clients[p.clientId]?.name || '—') : (teams[p.teamId]?.name || '—');
+      return `<div class="list-row">
+        <div class="main">
+          <div class="name">${esc(p.name)} ${p.revoked ? '<span class="badge badge-closed">Accès révoqué</span>' : ''}</div>
+          <div class="sub">${ROLE_LABELS[p.role] || p.role} · ${esc(context)}</div>
+        </div>
+        <div class="actions">
+          ${p.revoked
+            ? `<button class="btn btn-outline btn-sm" data-reactivate="${d.id}">Réactiver l'accès</button>`
+            : `<button class="btn btn-danger btn-sm" data-revoke="${d.id}">Retirer l'accès</button>`}
+        </div>
+      </div>`;
+    }).join('');
+    target.querySelectorAll('[data-revoke]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        if (confirm("Retirer l'accès de cette personne ? Elle ne pourra plus se connecter ni voir aucune donnée, mais son historique est conservé.")) {
+          await db.collection('people').doc(btn.dataset.revoke).update({ revoked: true });
         }
       });
     });
-  }, err => showError(content, "Erreur : " + err.message));
+    target.querySelectorAll('[data-reactivate]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        await db.collection('people').doc(btn.dataset.reactivate).update({ revoked: false });
+      });
+    });
+  }, err => showError(target, "Erreur : " + err.message));
   unsubscribers.push(unsub);
 }
 

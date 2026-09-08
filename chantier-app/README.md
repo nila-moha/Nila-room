@@ -8,9 +8,10 @@ client).
 ## Ce que ça fait
 
 - **Administrateur (vous)** : crée les équipes, les clients, les
-  projets ; associe chaque compte (créé dans Firebase) à un rôle, une
-  équipe ou un client ; valide les problèmes avant qu'ils ne soient
-  visibles côté client ; répond aux demandes clients.
+  projets ; génère un lien d'invitation par personne (rôle + équipe ou
+  client déjà attaché au lien) ; valide les problèmes avant qu'ils ne
+  soient visibles côté client ; répond aux demandes clients ; peut
+  retirer l'accès de n'importe qui à tout moment.
 - **Personnel (ingénieur / électricien / aide technique)** : voit les
   projets de son équipe, coche les étapes d'avancement (reprises du
   Manuel de contrôle interne), publie des mises à jour, signale des
@@ -26,8 +27,6 @@ client).
   ordinateur, sans rien installer.
 - Pas de photos jointes aux problèmes ou aux mises à jour (à ajouter
   dans une version future si besoin).
-- L'auto-inscription n'existe pas : vous créez chaque compte vous-même
-  (voir plus bas).
 
 ## Ce qu'il faut pour la mettre en ligne
 
@@ -41,18 +40,34 @@ client).
    les projets d'une autre équipe.
 4. Héberger les fichiers (`index.html`, `js/`) sur un service comme
    Netlify — la même méthode que pour le site vitrine.
-5. Créer les comptes de connexion (email + mot de passe) dans Firebase
-   Authentication, puis leur associer un profil dans l'onglet
-   "Comptes" de l'application (rôle, équipe ou client).
+5. Depuis l'onglet "Comptes" de l'application, générer un lien
+   d'invitation par personne (rôle + équipe ou client) et le lui
+   envoyer — elle crée elle-même son compte en l'ouvrant.
 
 Le guide détaillé, étape par étape, est à faire ensemble en conversation
 plutôt que lu seule dans ce fichier.
 
+## Comment fonctionnent les accès
+
+- Vous générez un **lien d'invitation** (rôle + équipe ou client déjà
+  choisis) et l'envoyez par WhatsApp ou email.
+- La personne l'ouvre, choisit son email et son mot de passe : son
+  compte est créé, avec exactement le rôle et l'équipe/client que vous
+  aviez fixés — elle ne peut pas se donner elle-même un accès plus
+  large.
+- Chaque lien ne sert qu'une fois.
+- Vous pouvez **retirer l'accès** de n'importe qui à tout moment
+  (onglet "Comptes" → "Retirer l'accès") : la personne ne peut plus se
+  connecter ni voir aucune donnée, mais son historique (heures,
+  problèmes signalés, etc.) reste conservé. Vous pouvez réactiver
+  l'accès plus tard si besoin.
+
 ## Limite de sécurité à connaître
 
 Les mots de passe sont gérés par Firebase Authentication (sécurisé,
-standard de l'industrie). En revanche, il n'y a pas de vérification
-d'identité (carte d'identité, etc.) à la création d'un compte — la
-sécurité repose sur le fait que **vous seule créez les comptes** et
-partagez les identifiants de façon sûre (pas par SMS non chiffré à un
-inconnu, par exemple).
+standard de l'industrie), et les règles Firestore empêchent réellement
+un client de voir les données d'un autre client, ou une personne
+révoquée d'accéder à quoi que ce soit — ce n'est pas juste caché à
+l'écran. Le seul maillon qui dépend de vous : ne partagez un lien
+d'invitation qu'avec la bonne personne, puisque quiconque l'ouvre en
+premier obtient l'accès qui lui est attaché.
