@@ -97,6 +97,15 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
+    // ---- Assignments (planning) ----
+    // Qui va sur quel chantier, quel jour. L'admin gère tout ; chacun ne
+    // lit que ses propres créneaux (jamais ceux d'un collègue, ni les
+    // clients).
+    match /assignments/{assignmentId} {
+      allow get, list: if isAdmin() || (isActive() && resource.data.personUid == request.auth.uid);
+      allow write: if isAdmin();
+    }
+
     // ---- Projects ----
     match /projects/{projectId} {
       allow get: if isAdmin() || isMyTeamProject(projectId) || isMyClientProject(projectId);

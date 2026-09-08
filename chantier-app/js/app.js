@@ -101,6 +101,18 @@ const ROLE_LABELS = {
   client: 'Client',
 };
 
+const PROJECT_COLORS = [
+  { name: 'Or', value: '#a8763a' },
+  { name: 'Bleu ardoise', value: '#3d5a80' },
+  { name: 'Sauge', value: '#5f7a52' },
+  { name: 'Terracotta', value: '#b5533c' },
+  { name: 'Prune', value: '#6b4c6b' },
+  { name: 'Bleu canard', value: '#2f6f6f' },
+  { name: 'Rouille', value: '#8a5a2b' },
+  { name: 'Bleu nuit', value: '#2e3d5c' },
+];
+const DEFAULT_PROJECT_COLOR = PROJECT_COLORS[0].value;
+
 // ---- Utilitaires ----
 function esc(s) {
   return String(s ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
@@ -194,6 +206,62 @@ function photoGalleryHtml(urls) {
     ${urls.map(u => `<a href="${esc(u)}" target="_blank" rel="noopener"><img src="${esc(u)}" style="width:84px;height:84px;object-fit:cover;border-radius:8px;border:1px solid var(--border)"></a>`).join('')}
   </div>`;
 }
+// ---- Calendrier de planning ----
+function firstName(fullName) {
+  return String(fullName || '').trim().split(/\s+/)[0] || fullName;
+}
+function dateStrOf(year, month, day) {
+  return `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+}
+function fmtDateLabel(dateStr) {
+  const [y, m, d] = dateStr.split('-').map(Number);
+  const label = new Date(y, m - 1, d).toLocaleDateString('fr-BE', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' });
+  return label.charAt(0).toUpperCase() + label.slice(1);
+}
+function monthGridHtml(year, month, assignmentsByDate) {
+  const first = new Date(year, month, 1);
+  const startWeekday = (first.getDay() + 6) % 7; // lundi = 0
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const monthLabel = first.toLocaleDateString('fr-BE', { month: 'long', year: 'numeric' });
+  const weekdayLabels = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
+  let cells = '';
+  for (let i = 0; i < startWeekday; i++) cells += `<div class="cal-cell cal-empty"></div>`;
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dateStr = dateStrOf(year, month, d);
+    const items = assignmentsByDate[dateStr] || [];
+    cells += `<div class="cal-cell" data-date="${dateStr}">
+      <div class="cal-daynum">${d}</div>
+      ${items.map(a => `<div class="cal-chip" style="background:${esc(a.projectColor || DEFAULT_PROJECT_COLOR)}" title="${esc(a.personName)} — ${esc(a.projectName)}">${esc(firstName(a.personName))}</div>`).join('')}
+    </div>`;
+  }
+  return `
+    <div class="cal-header">
+      <button type="button" class="btn btn-outline btn-sm" id="cal-prev">←</button>
+      <h3 style="text-transform:capitalize">${esc(monthLabel)}</h3>
+      <button type="button" class="btn btn-outline btn-sm" id="cal-next">→</button>
+    </div>
+    <div class="cal-grid cal-weekdays">${weekdayLabels.map(w => `<div class="cal-cell cal-weekday">${w}</div>`).join('')}</div>
+    <div class="cal-grid">${cells}</div>`;
+}
+function colorSwatchesHtml(inputId, selected) {
+  const sel = selected || DEFAULT_PROJECT_COLOR;
+  return `<div id="${inputId}-swatches" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:6px">
+      ${PROJECT_COLORS.map(c => `<span class="color-swatch ${c.value === sel ? 'selected' : ''}" data-color="${c.value}" title="${esc(c.name)}" style="background:${c.value}"></span>`).join('')}
+    </div>
+    <input type="hidden" id="${inputId}" value="${sel}">`;
+}
+function wireColorSwatches(inputId) {
+  const wrap = document.getElementById(inputId + '-swatches');
+  const input = document.getElementById(inputId);
+  wrap.querySelectorAll('.color-swatch').forEach(sw => {
+    sw.addEventListener('click', () => {
+      wrap.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('selected'));
+      sw.classList.add('selected');
+      input.value = sw.dataset.color;
+    });
+  });
+}
+
 function showError(container, message) {
   const box = document.createElement('div');
   box.className = 'error-box';
@@ -446,6 +514,7 @@ function renderAdminTabs() {
   const wrap = document.getElementById('admin-wrap');
   const tabs = [
     ['projects', 'Projets'],
+    ['calendar', 'Calendrier'],
     ['problems', 'Problèmes à valider'],
     ['requests', 'Demandes clients'],
     ['teams', 'Équipes'],
@@ -467,6 +536,7 @@ function renderAdminTabs() {
 
   const content = document.getElementById('admin-tab-content');
   if (adminTab === 'projects') renderAdminProjects(content);
+  else if (adminTab === 'calendar') renderAdminCalendar(content);
   else if (adminTab === 'problems') renderAdminProblems(content);
   else if (adminTab === 'requests') renderAdminRequests(content);
   else if (adminTab === 'teams') renderAdminTeams(content);
@@ -488,7 +558,7 @@ function renderAdminProjects(content) {
           const p = d.data();
           return `<div class="card project-card" data-project="${d.id}">
             <div style="display:flex;justify-content:space-between;align-items:center">
-              <h3>${esc(p.name)}</h3>
+              <h3><span class="color-swatch" style="width:14px;height:14px;border-radius:4px;vertical-align:middle;margin-right:8px;background:${esc(p.color || DEFAULT_PROJECT_COLOR)}"></span>${esc(p.name)}</h3>
               <span class="badge badge-${p.status}">${p.status === 'active' ? 'Actif' : 'Clôturé'}</span>
             </div>
             <p class="empty" style="margin-top:4px;font-style:normal">
@@ -525,10 +595,12 @@ function openNewProjectForm(teams, clients) {
         <div class="field"><label>Équipe</label><select id="np-team" required>${teamOptions || '<option value="">Aucune équipe créée</option>'}</select></div>
         <div class="field"><label>Client</label><select id="np-client" required>${clientOptions || '<option value="">Aucun client créé</option>'}</select></div>
       </div>
+      <div class="field"><label>Couleur (pour le calendrier)</label>${colorSwatchesHtml('np-color')}</div>
       <button type="submit" class="btn btn-primary">Créer le projet</button>
       <button type="button" class="btn btn-outline" id="np-cancel">Annuler</button>
     </form>`;
   document.getElementById('project-list').before(overlay);
+  wireColorSwatches('np-color');
 
   document.getElementById('np-cancel').addEventListener('click', () => overlay.remove());
   document.getElementById('new-project-form').addEventListener('submit', async (e) => {
@@ -537,10 +609,11 @@ function openNewProjectForm(teams, clients) {
     const type = document.getElementById('np-type').value;
     const teamId = document.getElementById('np-team').value;
     const clientId = document.getElementById('np-client').value;
+    const color = document.getElementById('np-color').value;
     if (!teamId || !clientId) { showError(overlay, "Créez d'abord au moins une équipe et un client."); return; }
     try {
       const projectRef = await db.collection('projects').add({
-        name, type, teamId, clientId, status: 'active', createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+        name, type, teamId, clientId, color, status: 'active', createdAt: firebase.firestore.FieldValue.serverTimestamp(),
       });
       const steps = CHECKLIST_TEMPLATES[type] || [];
       const batch = db.batch();
@@ -553,6 +626,93 @@ function openNewProjectForm(teams, clients) {
     } catch (err) {
       showError(overlay, "Erreur : " + err.message);
     }
+  });
+}
+
+// ---- Admin: Calendrier (planning) ----
+let calRefDate = new Date();
+
+function renderAdminCalendar(content) {
+  const year = calRefDate.getFullYear(), month = calRefDate.getMonth();
+  const startStr = dateStrOf(year, month, 1);
+  const endStr = dateStrOf(year, month, new Date(year, month + 1, 0).getDate());
+
+  content.innerHTML = '<div class="loading">Chargement…</div>';
+  Promise.all([
+    db.collection('assignments').where('date', '>=', startStr).where('date', '<=', endStr).get(),
+    db.collection('people').where('role', 'in', ['engineer', 'electrician', 'worker']).get(),
+    db.collection('projects').where('status', '==', 'active').get(),
+  ]).then(([assignSnap, peopleSnap, projectsSnap]) => {
+    const byDate = {};
+    assignSnap.docs.forEach(d => {
+      const a = d.data();
+      (byDate[a.date] ||= []).push({ id: d.id, ...a });
+    });
+    const people = peopleSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+    const projects = projectsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+    content.innerHTML = `<div class="card">${monthGridHtml(year, month, byDate)}</div><div id="cal-day-detail"></div>`;
+
+    document.getElementById('cal-prev').addEventListener('click', () => {
+      calRefDate = new Date(year, month - 1, 1);
+      renderAdminCalendar(content);
+    });
+    document.getElementById('cal-next').addEventListener('click', () => {
+      calRefDate = new Date(year, month + 1, 1);
+      renderAdminCalendar(content);
+    });
+    content.querySelectorAll('.cal-cell[data-date]').forEach(cell => {
+      cell.addEventListener('click', () => renderCalDayDetail(cell.dataset.date, byDate[cell.dataset.date] || [], people, projects, content));
+    });
+  }).catch(err => showError(content, "Erreur : " + err.message));
+}
+
+function renderCalDayDetail(dateStr, items, people, projects, parentContent) {
+  const detail = document.getElementById('cal-day-detail');
+  const peopleOptions = people.map(p => `<option value="${p.id}" data-name="${esc(p.name)}">${esc(p.name)}</option>`).join('');
+  const projectOptions = projects.map(p => `<option value="${p.id}" data-name="${esc(p.name)}" data-color="${esc(p.color || DEFAULT_PROJECT_COLOR)}">${esc(p.name)}</option>`).join('');
+  detail.innerHTML = `
+    <div class="card">
+      <h3>${fmtDateLabel(dateStr)}</h3>
+      <div style="margin-top:10px">
+        ${items.length === 0 ? '<p class="empty">Personne d\'assigné ce jour-là.</p>' : items.map(a => `
+          <div class="list-row">
+            <div class="main"><span class="badge" style="background:${esc(a.projectColor || DEFAULT_PROJECT_COLOR)};color:#fff">${esc(a.projectName)}</span> ${esc(a.personName)}</div>
+            <div class="actions"><button class="btn btn-danger btn-sm" data-del-assign="${a.id}">Retirer</button></div>
+          </div>`).join('')}
+      </div>
+      <form id="assign-form" style="margin-top:14px">
+        <div class="row">
+          <div class="field"><label>Personne</label><select id="assign-person" required>${peopleOptions || '<option value="">Aucun compte actif</option>'}</select></div>
+          <div class="field"><label>Chantier</label><select id="assign-project" required>${projectOptions || '<option value="">Aucun projet actif</option>'}</select></div>
+        </div>
+        <button type="submit" class="btn btn-primary btn-sm">Assigner ce jour</button>
+      </form>
+    </div>`;
+
+  detail.querySelectorAll('[data-del-assign]').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      await db.collection('assignments').doc(btn.dataset.delAssign).delete();
+      renderAdminCalendar(parentContent);
+    });
+  });
+
+  const form = document.getElementById('assign-form');
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const personSel = document.getElementById('assign-person');
+    const projectSel = document.getElementById('assign-project');
+    if (!personSel.value || !projectSel.value) return;
+    await db.collection('assignments').add({
+      personUid: personSel.value,
+      personName: personSel.selectedOptions[0].dataset.name,
+      projectId: projectSel.value,
+      projectName: projectSel.selectedOptions[0].dataset.name,
+      projectColor: projectSel.selectedOptions[0].dataset.color,
+      date: dateStr,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+    });
+    renderAdminCalendar(parentContent);
   });
 }
 
@@ -873,10 +1033,28 @@ function renderAdminRequests(content) {
 // VUE PERSONNEL (ingénieur / électricien / aide technique)
 // ============================================================
 
+let staffTab = 'projects';
+let staffCalRefDate = new Date();
+
 async function renderStaff() {
   clearSubscriptions();
-  app.innerHTML = topbarHtml() + `<div class="wrap" id="staff-wrap"><div class="loading">Chargement de vos projets…</div></div>`;
+  app.innerHTML = topbarHtml() + `
+    <div class="wrap">
+      <div class="tabs">
+        <button class="tab ${staffTab === 'projects' ? 'active' : ''}" data-stab="projects">Vos projets</button>
+        <button class="tab ${staffTab === 'calendar' ? 'active' : ''}" data-stab="calendar">Votre planning</button>
+      </div>
+      <div id="staff-wrap"><div class="loading">Chargement…</div></div>
+    </div>`;
+  document.querySelectorAll('[data-stab]').forEach(btn => {
+    btn.addEventListener('click', () => { staffTab = btn.dataset.stab; renderStaff(); });
+  });
   const wrap = document.getElementById('staff-wrap');
+  if (staffTab === 'calendar') renderStaffCalendar(wrap);
+  else renderStaffProjectsList(wrap);
+}
+
+function renderStaffProjectsList(wrap) {
   if (!currentPerson.teamId) {
     wrap.innerHTML = '<p class="empty">Aucune équipe ne vous est associée pour le moment. Contactez votre administrateur.</p>';
     return;
@@ -895,6 +1073,27 @@ async function renderStaff() {
       });
     }, err => showError(wrap, "Erreur : " + err.message));
   unsubscribers.push(unsub);
+}
+
+function renderStaffCalendar(wrap) {
+  wrap.innerHTML = '<div class="loading">Chargement…</div>';
+  db.collection('assignments').where('personUid', '==', currentUser.uid).get().then(snap => {
+    const all = snap.docs.map(d => d.data());
+    const year = staffCalRefDate.getFullYear(), month = staffCalRefDate.getMonth();
+    const startStr = dateStrOf(year, month, 1);
+    const endStr = dateStrOf(year, month, new Date(year, month + 1, 0).getDate());
+    const byDate = {};
+    all.filter(a => a.date >= startStr && a.date <= endStr).forEach(a => { (byDate[a.date] ||= []).push(a); });
+    wrap.innerHTML = `<div class="card">${monthGridHtml(year, month, byDate)}</div>`;
+    document.getElementById('cal-prev').addEventListener('click', () => {
+      staffCalRefDate = new Date(year, month - 1, 1);
+      renderStaffCalendar(wrap);
+    });
+    document.getElementById('cal-next').addEventListener('click', () => {
+      staffCalRefDate = new Date(year, month + 1, 1);
+      renderStaffCalendar(wrap);
+    });
+  }).catch(err => showError(wrap, "Erreur : " + err.message));
 }
 
 function renderStaffProjectDetail(projectId) {

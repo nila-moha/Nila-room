@@ -100,6 +100,23 @@ a{color:var(--gold-600)}
 .project-card{cursor:pointer;transition:box-shadow .15s}
 .project-card:hover{box-shadow:0 8px 28px rgba(46,33,20,0.14)}
 
+.cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.cal-header h3{font-size:1.1rem;margin:0}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.cal-grid.cal-weekdays{margin-bottom:6px}
+.cal-cell{min-height:74px;border:1px solid var(--border);border-radius:8px;padding:5px;background:#fff;cursor:pointer;overflow:hidden}
+.cal-cell:hover{border-color:var(--gold-500)}
+.cal-cell.cal-empty{border:none;background:transparent;cursor:default}
+.cal-cell.cal-weekday{min-height:auto;border:none;background:transparent;text-align:center;font-size:0.72rem;font-weight:700;color:var(--text-mute);text-transform:uppercase;cursor:default;padding:2px}
+.cal-daynum{font-size:0.76rem;font-weight:700;color:var(--text-dim);margin-bottom:3px}
+.cal-chip{font-size:0.68rem;color:#fff;padding:1px 6px;border-radius:5px;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.color-swatch{display:inline-block;width:22px;height:22px;border-radius:6px;cursor:pointer;border:2px solid transparent}
+.color-swatch.selected{border-color:var(--brown-900)}
+@media (max-width:640px){
+  .cal-cell{min-height:52px;font-size:0.8rem}
+  .cal-chip{font-size:0.6rem}
+}
+
 .timesheet-clock{display:flex;gap:10px;align-items:center;margin-bottom:10px}
 .timesheet-clock .status{font-size:0.85rem;color:var(--text-dim)}
 
