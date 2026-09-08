@@ -1,0 +1,99 @@
+rules_version = '2';
+
+// ============================================================
+// Règles de sécurité Firestore — BN CORE GROUP, App Chantier
+// ============================================================
+// À copier-coller dans Console Firebase > Firestore Database > Règles.
+//
+// Logique :
+//  - "admin" (vous) voit et modifie tout.
+//  - Un membre d'équipe (engineer/electrician/worker) ne voit que les
+//    projets assignés à SON équipe (teamId).
+//  - Un client ne voit que les projets liés à SON client (clientId), et
+//    uniquement le contenu marqué "visibleToClient".
+//  - Personne ne peut se créer un rôle ou changer son propre accès :
+//    seul l'admin écrit dans /people.
+// ============================================================
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() { return request.auth != null; }
+    function myPerson() { return get(/databases/$(database)/documents/people/$(request.auth.uid)).data; }
+    function isAdmin() { return isSignedIn() && myPerson().role == 'admin'; }
+    function myTeamId() { return myPerson().teamId; }
+    function myClientId() { return myPerson().clientId; }
+
+    function projectOf(projectId) {
+      return get(/databases/$(database)/documents/projects/$(projectId)).data;
+    }
+    function isMyTeamProject(projectId) {
+      return isSignedIn() && projectOf(projectId).teamId == myTeamId();
+    }
+    function isMyClientProject(projectId) {
+      return isSignedIn() && projectOf(projectId).clientId == myClientId();
+    }
+
+    // ---- People (accounts) ----
+    match /people/{personId} {
+      allow read: if isAdmin() || (isSignedIn() && request.auth.uid == personId);
+      allow write: if isAdmin();
+    }
+
+    // ---- Teams ----
+    match /teams/{teamId} {
+      allow read: if isAdmin() || (isSignedIn() && myTeamId() == teamId);
+      allow write: if isAdmin();
+    }
+
+    // ---- Clients ----
+    match /clients/{clientId} {
+      allow read: if isAdmin() || (isSignedIn() && myClientId() == clientId);
+      allow write: if isAdmin();
+    }
+
+    // ---- Projects ----
+    match /projects/{projectId} {
+      allow get: if isAdmin() || isMyTeamProject(projectId) || isMyClientProject(projectId);
+      // "list" queries must filter by teamId or clientId client-side (see app.js) —
+      // Firestore evaluates this rule against each document the query would return.
+      allow list: if isAdmin() ||
+        (isSignedIn() && (resource.data.teamId == myTeamId() || resource.data.clientId == myClientId()));
+      allow write: if isAdmin();
+
+      match /checklist/{stepId} {
+        allow read: if isAdmin() || isMyTeamProject(projectId) || isMyClientProject(projectId);
+        allow create, update: if isAdmin() || isMyTeamProject(projectId);
+        allow delete: if isAdmin();
+      }
+
+      match /journal/{entryId} {
+        allow read: if isAdmin() || isMyTeamProject(projectId) ||
+          (isMyClientProject(projectId) && resource.data.visibleToClient == true);
+        allow create: if isAdmin() || isMyTeamProject(projectId);
+        allow update, delete: if isAdmin();
+      }
+
+      match /problems/{problemId} {
+        allow read: if isAdmin() || isMyTeamProject(projectId) ||
+          (isMyClientProject(projectId) && resource.data.visibleToClient == true);
+        allow create: if isAdmin() || isMyTeamProject(projectId);
+        allow update: if isAdmin();
+        allow delete: if isAdmin();
+      }
+
+      match /requests/{requestId} {
+        allow read: if isAdmin() || isMyTeamProject(projectId) || isMyClientProject(projectId);
+        allow create: if isAdmin() || isMyClientProject(projectId);
+        allow update: if isAdmin();
+        allow delete: if isAdmin();
+      }
+
+      match /timesheets/{entryId} {
+        allow read: if isAdmin() || isMyTeamProject(projectId);
+        allow create: if isAdmin() || isMyTeamProject(projectId);
+        allow update, delete: if isAdmin();
+      }
+    }
+  }
+}
