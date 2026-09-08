@@ -10,6 +10,20 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
+  var projectType = document.querySelector('#project-type');
+  var conditionalGroups = document.querySelectorAll('.conditional-group');
+  if (projectType && conditionalGroups.length) {
+    function updateConditionalGroups() {
+      var val = projectType.value;
+      conditionalGroups.forEach(function (group) {
+        var needs = (group.getAttribute('data-need') || '').split(' ');
+        group.hidden = needs.indexOf(val) === -1;
+      });
+    }
+    projectType.addEventListener('change', updateConditionalGroups);
+    updateConditionalGroups();
+  }
+
   var langSwitch = document.querySelector('.lang-switch');
   if (langSwitch) {
     var btn = langSwitch.querySelector('button');

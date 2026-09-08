@@ -22,7 +22,7 @@
       <span>🕐 الإثنين–الجمعة، 8:30–17:30</span>
     </div>
     <div class="topbar-links">
-      <a href="tel:+32471990825">📞 ‎+32 471 99 08 25</a>
+      <a href="https://wa.me/32471990825" target="_blank" rel="noopener">📱 واتساب: +32 471 99 08 25</a>
       <a href="mailto:info@bncoregroup.com">✉️ info@bncoregroup.com</a>
     </div>
   </div>
@@ -83,7 +83,7 @@
           </div>
           <div class="contact-line">
             <div class="icon"><svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6" fill="none"><path d="M22 16.9v3a2 2 0 01-2.2 2 19.8 19.8 0 01-8.6-3 19.5 19.5 0 01-6-6 19.8 19.8 0 01-3-8.7A2 2 0 014.1 2h3a2 2 0 012 1.7c.1.9.3 1.8.6 2.7a2 2 0 01-.4 2.1L8 9.9a16 16 0 006 6l1.4-1.3a2 2 0 012.1-.4c.9.3 1.8.5 2.7.6a2 2 0 011.7 2.1z"/></svg></div>
-            <div><b>الهاتف</b><br><span><a href="tel:+32471990825">‎+32 471 99 08 25</a></span></div>
+            <div><b>واتساب</b><br><span><a href="https://wa.me/32471990825" target="_blank" rel="noopener">‎+32 471 99 08 25</a></span></div>
           </div>
           <div class="contact-line">
             <div class="icon"><svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6" fill="none"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 6l10 7 10-7"/></svg></div>
@@ -136,13 +136,52 @@
             <option value="" selected disabled>اختر نوع الاحتياج…</option>
             <option value="field-services">خدمات ميدانية تقنية (تشغيل تجريبي / صيانة)</option>
             <option value="workforce">توفير كوادر تقنية</option>
+            <option value="container">إصلاح حاويات / أعمال لحام</option>
             <option value="autre">أخرى / يُحدَّد لاحقاً</option>
           </select>
         </div>
 
+        <div class="conditional-group" data-need="field-services container">
+          <div class="form-row">
+            <div class="form-field">
+              <label for="site-location">موقع المشروع</label>
+              <input type="text" id="site-location" name="site-location" placeholder="المدينة، البلد">
+            </div>
+            <div class="form-field">
+              <label for="urgency">درجة الاستعجال</label>
+              <select id="urgency" name="urgency">
+                <option value="" selected disabled>اختر…</option>
+                <option value="urgent">عاجل (أقل من 48 ساعة)</option>
+                <option value="planifiee">مُخطَّط له</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-field">
+            <label for="installation-type">نوع المنشأة / القدرة</label>
+            <input type="text" id="installation-type" name="installation-type" placeholder="مثال: نظام BESS واسع النطاق، 20 ميغاواط ساعة">
+          </div>
+        </div>
+
+        <div class="conditional-group" data-need="workforce">
+          <div class="form-row">
+            <div class="form-field">
+              <label for="headcount">عدد الفنيين المطلوب</label>
+              <input type="text" id="headcount" name="headcount" placeholder="مثال: 2">
+            </div>
+            <div class="form-field">
+              <label for="duration">مدة المهمة</label>
+              <input type="text" id="duration" name="duration" placeholder="مثال: 3 أسابيع">
+            </div>
+          </div>
+          <div class="form-field">
+            <label for="start-date">تاريخ البدء المرغوب</label>
+            <input type="text" id="start-date" name="start-date" placeholder="يوم/شهر/سنة">
+          </div>
+        </div>
+
         <div class="form-field">
           <label for="message">الرسالة *</label>
-          <textarea id="message" name="message" required placeholder="صفوا منشأتكم (القدرة، السعة، الموقع، الجدول الزمني…)"></textarea>
+          <textarea id="message" name="message" required placeholder="صفوا احتياجكم (القدرة، السعة، الموقع، الجدول الزمني…)"></textarea>
         </div>
 
         <label class="form-consent">
@@ -196,7 +235,7 @@
           Ll. Graffplein 15<br>
           1780 Wemmel، بلجيكا<br>
           الرقم الضريبي BE1027.648.484<br><br>
-          الهاتف: <a href="tel:+32471990825">‎+32 471 99 08 25</a><br>
+          واتساب: <a href="https://wa.me/32471990825" target="_blank" rel="noopener">+32 471 99 08 25</a><br>
           البريد الإلكتروني: <a href="mailto:info@bncoregroup.com">info@bncoregroup.com</a>
         </address>
       </div>
