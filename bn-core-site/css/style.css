@@ -114,6 +114,52 @@ nav.main-nav a:hover,nav.main-nav a.active{background:var(--gold-100);color:var(
 .nav-toggle{display:none;background:none;border:none;cursor:pointer;padding:8px}
 .nav-toggle span{display:block;width:24px;height:2px;background:var(--brown-950);margin:5px 0;border-radius:2px}
 
+/* ---------- Language switcher ---------- */
+.lang-switch{position:relative}
+.lang-switch>button{
+  display:flex;align-items:center;gap:6px;background:var(--sand-100);border:1px solid var(--border);
+  border-radius:4px;padding:8px 12px;font-family:'Inter',sans-serif;font-size:.82rem;font-weight:600;
+  color:var(--brown-900);cursor:pointer;
+}
+.lang-switch .chev{font-size:.65rem;color:var(--text-mute)}
+.lang-menu{
+  position:absolute;top:calc(100% + 6px);right:0;background:var(--surface);border:1px solid var(--border);
+  border-radius:6px;box-shadow:var(--shadow-lg);min-width:150px;padding:6px;display:none;z-index:200;
+}
+.lang-switch.open .lang-menu{display:block}
+.lang-menu a{
+  display:flex;align-items:center;justify-content:space-between;gap:8px;padding:9px 10px;border-radius:4px;
+  font-family:'Inter',sans-serif;font-size:.85rem;color:var(--text);
+}
+.lang-menu a:hover{background:var(--gold-100);color:var(--gold-600)}
+.lang-menu a.active{color:var(--gold-600);font-weight:700}
+[dir="rtl"] .lang-menu{right:auto;left:0}
+
+/* ---------- RTL support (Arabic) ---------- */
+[dir="rtl"]{text-align:right}
+[dir="rtl"] .topbar .wrap,
+[dir="rtl"] .nav-row,
+[dir="rtl"] .logo-block,
+[dir="rtl"] .topbar-links,
+[dir="rtl"] .cta-row,
+[dir="rtl"] .nav-cta,
+[dir="rtl"] .contact-line,
+[dir="rtl"] .value-tile,
+[dir="rtl"] .footer-bottom,
+[dir="rtl"] .signrow{direction:rtl}
+[dir="rtl"] .eyebrow::before{order:2}
+[dir="rtl"] .service-row{grid-template-columns:200px 1fr 90px}
+[dir="rtl"] .service-row .num{order:3}
+[dir="rtl"] .service-row .service-link{justify-self:start}
+[dir="rtl"] .breadcrumb,[dir="rtl"] .section-head,[dir="rtl"] .hero-copy{text-align:right}
+[dir="rtl"] .card ul li,[dir="rtl"] .value-tile{flex-direction:row-reverse;text-align:right}
+[dir="rtl"] .contact-line{flex-direction:row-reverse}
+[dir="rtl"] .footer-grid,[dir="rtl"] .grid-2,[dir="rtl"] .grid-3,[dir="rtl"] .grid-4{direction:rtl}
+[dir="rtl"] .btn span{direction:rtl}
+@media (max-width:960px){
+  [dir="rtl"] .hero .wrap{direction:rtl}
+}
+
 /* ---------- Hero ---------- */
 .hero{
   position:relative;overflow:hidden;
