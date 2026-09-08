@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Suivi chantier — BN CORE GROUP</title>
+<meta name="theme-color" content="#1f1710">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,800;1,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --brown-950:#1f1710; --brown-900:#2e2114; --brown-800:#3d2c1a; --brown-700:#4d3922;
+  --sand-500:#8a7154; --sand-300:#c9b28f; --sand-100:#efe4d0;
+  --bg:#faf3e7; --surface:#fffdf9;
+  --gold-600:#a8763a; --gold-500:#c9974f; --gold-100:#f7ecd9;
+  --text:#2a2016; --text-dim:#5e5140; --text-mute:#8c7c65;
+  --border:#e8ddc9; --radius:12px;
+  --shadow:0 4px 24px rgba(46,33,20,0.08);
+  --red:#a83232; --red-bg:#fbeaea;
+  --green:#1f6b3a; --green-bg:#e9f4ec;
+  --amber:#8a6216; --amber-bg:#fbefe0;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Inter,-apple-system,sans-serif;background:var(--bg);color:var(--text);line-height:1.5;min-height:100vh}
+h1,h2,h3{font-family:'Playfair Display',Georgia,serif;color:var(--brown-900)}
+button{font:inherit;cursor:pointer}
+input,select,textarea{font:inherit}
+a{color:var(--gold-600)}
+
+.topbar{background:var(--brown-950);color:var(--sand-100);padding:14px 20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
+.topbar .brand{font-family:'Playfair Display',serif;font-weight:700;font-size:1.05rem;color:#fff}
+.topbar .who{font-size:0.85rem;color:var(--sand-300);display:flex;align-items:center;gap:12px}
+.topbar button{background:transparent;border:1px solid var(--sand-500);color:var(--sand-100);padding:6px 14px;border-radius:8px;font-size:0.82rem}
+.topbar button:hover{background:var(--brown-800)}
+
+.wrap{max-width:1040px;margin:0 auto;padding:28px 20px 60px}
+.center-wrap{max-width:400px;margin:0 auto;padding:80px 20px}
+
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:22px;box-shadow:var(--shadow)}
+.card + .card{margin-top:16px}
+.card h3{font-size:1.05rem;margin-bottom:4px}
+.section-title{font-size:1.4rem;margin:28px 0 14px}
+.section-title:first-child{margin-top:0}
+
+.field{margin-bottom:14px}
+.field label{display:block;font-size:0.82rem;font-weight:600;color:var(--text-dim);margin-bottom:5px;text-transform:uppercase;letter-spacing:.03em}
+.field input,.field select,.field textarea{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;background:#fff;color:var(--text)}
+.field textarea{min-height:80px;resize:vertical}
+.row{display:flex;gap:12px;flex-wrap:wrap}
+.row > *{flex:1;min-width:160px}
+
+.btn{display:inline-block;padding:10px 18px;border-radius:8px;border:1px solid transparent;font-weight:600;font-size:0.92rem;text-align:center}
+.btn-primary{background:var(--gold-600);color:#fff}
+.btn-primary:hover{background:var(--brown-800)}
+.btn-outline{background:transparent;border-color:var(--gold-600);color:var(--gold-600)}
+.btn-outline:hover{background:var(--gold-100)}
+.btn-danger{background:transparent;border-color:var(--red);color:var(--red)}
+.btn-sm{padding:5px 12px;font-size:0.8rem}
+.btn-block{width:100%}
+.btn[disabled]{opacity:.5;cursor:not-allowed}
+
+.badge{display:inline-block;padding:3px 10px;border-radius:999px;font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.03em}
+.badge-active{background:var(--green-bg);color:var(--green)}
+.badge-closed{background:#eee;color:#777}
+.badge-reported{background:var(--amber-bg);color:var(--amber)}
+.badge-published{background:var(--gold-100);color:var(--gold-600)}
+.badge-resolved{background:var(--green-bg);color:var(--green)}
+.badge-open{background:var(--amber-bg);color:var(--amber)}
+.badge-answered{background:var(--green-bg);color:var(--green)}
+
+.error-box{background:var(--red-bg);color:var(--red);border:1px solid #eecccc;border-radius:8px;padding:10px 14px;font-size:0.88rem;margin-bottom:14px}
+.note-box{background:var(--gold-100);border:1px solid var(--sand-300);border-radius:8px;padding:12px 14px;font-size:0.86rem;color:var(--text-dim);margin-bottom:16px}
+.empty{color:var(--text-mute);font-style:italic;font-size:0.9rem;padding:10px 0}
+
+.checklist-item{display:flex;align-items:flex-start;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)}
+.checklist-item:last-child{border-bottom:none}
+.checklist-item input[type=checkbox]{width:20px;height:20px;margin-top:2px;accent-color:var(--gold-600)}
+.checklist-item .label{flex:1}
+.checklist-item .label.done{color:var(--text-mute);text-decoration:line-through}
+.checklist-item .meta{font-size:0.76rem;color:var(--text-mute);margin-top:2px}
+
+.journal-entry{border-left:3px solid var(--gold-500);padding:8px 0 8px 14px;margin-bottom:10px}
+.journal-entry .meta{font-size:0.76rem;color:var(--text-mute);margin-bottom:3px}
+
+.tabs{display:flex;gap:4px;border-bottom:2px solid var(--border);margin-bottom:20px;flex-wrap:wrap}
+.tab{padding:9px 16px;border-radius:8px 8px 0 0;font-size:0.88rem;font-weight:600;color:var(--text-dim);border:none;background:transparent}
+.tab.active{background:var(--surface);color:var(--gold-600);border:1px solid var(--border);border-bottom:2px solid var(--surface);margin-bottom:-2px}
+
+.list-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 0;border-bottom:1px solid var(--border)}
+.list-row:last-child{border-bottom:none}
+.list-row .main{flex:1;min-width:0}
+.list-row .main .name{font-weight:600}
+.list-row .main .sub{font-size:0.8rem;color:var(--text-mute)}
+.list-row .actions{display:flex;gap:6px;flex-shrink:0}
+
+.project-card{cursor:pointer;transition:box-shadow .15s}
+.project-card:hover{box-shadow:0 8px 28px rgba(46,33,20,0.14)}
+
+.cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.cal-header h3{font-size:1.1rem;margin:0}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.cal-grid.cal-weekdays{margin-bottom:6px}
+.cal-cell{min-height:74px;border:1px solid var(--border);border-radius:8px;padding:5px;background:#fff;cursor:pointer;overflow:hidden}
+.cal-cell:hover{border-color:var(--gold-500)}
+.cal-cell.cal-empty{border:none;background:transparent;cursor:default}
+.cal-cell.cal-weekday{min-height:auto;border:none;background:transparent;text-align:center;font-size:0.72rem;font-weight:700;color:var(--text-mute);text-transform:uppercase;cursor:default;padding:2px}
+.cal-daynum{font-size:0.76rem;font-weight:700;color:var(--text-dim);margin-bottom:3px}
+.cal-chip{font-size:0.68rem;color:#fff;padding:1px 6px;border-radius:5px;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.color-swatch{display:inline-block;width:22px;height:22px;border-radius:6px;cursor:pointer;border:2px solid transparent}
+.color-swatch.selected{border-color:var(--brown-900)}
+@media (max-width:640px){
+  .cal-cell{min-height:52px;font-size:0.8rem}
+  .cal-chip{font-size:0.6rem}
+}
+
+.timesheet-clock{display:flex;gap:10px;align-items:center;margin-bottom:10px}
+.timesheet-clock .status{font-size:0.85rem;color:var(--text-dim)}
+
+table{width:100%;border-collapse:collapse;font-size:0.86rem}
+th,td{text-align:left;padding:7px 10px;border-bottom:1px solid var(--border)}
+th{color:var(--text-dim);font-size:0.76rem;text-transform:uppercase;letter-spacing:.03em}
+
+.loading{text-align:center;padding:60px 20px;color:var(--text-mute)}
+.back-link{display:inline-block;margin-bottom:16px;font-size:0.88rem;color:var(--gold-600);text-decoration:none}
+</style>
+</head>
+<body>
+
+<div id="app"><div class="loading">Chargement…</div></div>
+
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-storage-compat.js"></script>
+<script src="js/firebase-config.js"></script>
+<script src="js/app.js"></script>
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('sw.js').catch(() => {
+        // Pas grave si ça échoue (ex. ouvert en local sans HTTPS) — l'app
+        // fonctionne quand même, juste sans le mode hors-ligne complet.
+      });
+    });
+  }
+</script>
+</body>
+</html>
