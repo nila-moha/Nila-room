@@ -1,0 +1,40 @@
+rules_version = '2';
+
+// ============================================================
+// Règles de sécurité Firebase Storage — BN CORE GROUP, App Chantier
+// ============================================================
+// À copier-coller dans Console Firebase > Storage > Règles.
+//
+// Simplification assumée : toute personne connectée et non révoquée
+// (admin, personnel ou client) peut lire et déposer des photos sous
+// /projects/** — la répartition fine "quelle équipe/quel client voit
+// quel projet précis" reste appliquée par les règles Firestore sur les
+// documents qui référencent ces photos (un client qui n'a pas accès au
+// document "problème" ne reçoit jamais l'URL de la photo pour commencer).
+// Si vous stockez un jour des photos réellement confidentielles, il
+// faudra des règles plus fines ici, croisant Firestore comme dans
+// firestore.rules.
+//
+// SECOURS : si la console Firebase refuse ces règles au moment de les
+// coller (syntaxe "firestore.get" indisponible sur votre version),
+// remplacez le contenu du bloc "match /projects/..." ci-dessous par :
+//   allow read, write: if request.auth != null;
+// C'est moins précis (ça n'exclut pas un compte révoqué de Storage,
+// alors que Firestore continuerait de lui refuser les données), mais
+// ça fonctionne partout — dites-le-moi et on affine ensemble.
+// ============================================================
+
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    function isActive() {
+      return request.auth != null &&
+        firestore.exists(/databases/(default)/documents/people/$(request.auth.uid)) &&
+        firestore.get(/databases/(default)/documents/people/$(request.auth.uid)).data.revoked != true;
+    }
+
+    match /projects/{projectId}/{allPaths=**} {
+      allow read, write: if isActive();
+    }
+  }
+}

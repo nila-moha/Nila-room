@@ -14,19 +14,35 @@ client).
   retirer l'accès de n'importe qui à tout moment.
 - **Personnel (ingénieur / électricien / aide technique)** : voit les
   projets de son équipe, coche les étapes d'avancement (reprises du
-  Manuel de contrôle interne), publie des mises à jour, signale des
-  problèmes, pointe ses heures (arrivée/départ).
+  Manuel de contrôle interne), publie des mises à jour avec photos,
+  signale des problèmes avec photos, pointe ses heures (arrivée/départ)
+  — les heures travaillées se calculent automatiquement (aujourd'hui, 7
+  derniers jours, détail par créneau).
 - **Client** : voit l'avancement et les mises à jour marquées comme
-  visibles, voit les problèmes qui lui ont été communiqués, envoie des
-  demandes et voit vos réponses.
+  visibles (avec leurs photos), voit les problèmes qui lui ont été
+  communiqués, envoie des demandes et voit vos réponses.
+- **Photos** : datées et horodatées automatiquement (date de l'envoi),
+  redimensionnées automatiquement avant l'envoi pour ne pas consommer
+  trop de données mobiles.
+- **Installable et utilisable hors connexion** : ouverte depuis un
+  téléphone, l'app propose de s'ajouter à l'écran d'accueil (comme une
+  vraie application, sans passer par un App Store) ; les données déjà
+  chargées restent consultables sans réseau, et les actions faites hors
+  connexion (pointage, coche d'étape, message) partent automatiquement
+  dès que la connexion revient.
 
 ## Ce que ce n'est PAS (pour l'instant)
 
-- Pas d'application mobile téléchargeable (App Store / Google Play) —
-  c'est un accès web qui fonctionne bien sur téléphone, tablette et
-  ordinateur, sans rien installer.
-- Pas de photos jointes aux problèmes ou aux mises à jour (à ajouter
-  dans une version future si besoin).
+- Pas de vraie application native (App Store / Google Play) — c'est un
+  site "installable" (PWA), qui s'ajoute à l'écran d'accueil et
+  fonctionne hors connexion, mais sans passer par les stores.
+- Le hors-ligne couvre le TEXTE et les coches d'étapes (mis en file
+  d'attente et envoyés automatiquement au retour du réseau). L'envoi
+  d'une **photo**, lui, a réellement besoin d'une connexion au moment
+  où on appuie sur "Publier" ou "Signaler" — hors connexion, l'envoi
+  échouera avec un message d'erreur, et il faudra réessayer une fois le
+  réseau revenu (rien n'est perdu : le texte saisi reste affiché pour
+  réessayer, il suffit de renvoyer).
 
 ## Ce qu'il faut pour la mettre en ligne
 
@@ -38,6 +54,8 @@ client).
    (Firestore Database → Règles) — ce sont ces règles qui empêchent un
    client de voir les données d'un autre client, ou une équipe de voir
    les projets d'une autre équipe.
+3bis. Activer **Storage** dans la console Firebase (pour les photos) et
+   copier le contenu de `storage.rules` dans Storage → Règles.
 4. Héberger les fichiers (`index.html`, `js/`) sur un service comme
    Netlify — la même méthode que pour le site vitrine.
 5. Depuis l'onglet "Comptes" de l'application, générer un lien

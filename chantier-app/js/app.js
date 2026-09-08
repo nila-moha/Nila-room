@@ -33,6 +33,16 @@ if (CONFIG_MISSING) {
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
+const storage = firebase.storage();
+
+// Cache local des données + file d'attente des écritures hors connexion —
+// l'app reste utilisable sans réseau et se resynchronise seule au retour.
+db.enablePersistence({ synchronizeTabs: true }).catch((err) => {
+  // 'failed-precondition' : plusieurs onglets ouverts, un seul peut tenir le cache.
+  // 'unimplemented' : navigateur trop ancien. Dans les deux cas l'app marche,
+  // juste sans le mode hors-ligne complet.
+  console.warn('Persistance hors-ligne non activée :', err.code);
+});
 
 // ---- Gabarits de check-list par type de projet ----
 // (repris du Manuel de contrôle interne — mêmes étapes, même logique de contrôle)
@@ -104,6 +114,85 @@ function fmtDate(ts) {
   if (!ts) return '—';
   const d = ts.toDate ? ts.toDate() : new Date(ts);
   return d.toLocaleDateString('fr-BE', { day: '2-digit', month: '2-digit', year: 'numeric' });
+}
+function tsMillis(ts) {
+  if (!ts) return 0;
+  if (ts.toMillis) return ts.toMillis();
+  if (ts instanceof Date) return ts.getTime();
+  return 0;
+}
+function fmtDuration(ms) {
+  if (ms == null) return '—';
+  const totalMin = Math.round(ms / 60000);
+  const h = Math.floor(totalMin / 60), m = totalMin % 60;
+  return `${h}h${String(m).padStart(2, '0')}`;
+}
+
+// ---- Pointage : reconstitue les créneaux (arrivée→départ) et leur durée ----
+function computeShifts(entries) {
+  const sorted = entries.slice().sort((a, b) => tsMillis(a.timestamp) - tsMillis(b.timestamp));
+  const shifts = [];
+  let openIn = null;
+  for (const e of sorted) {
+    if (e.type === 'in') {
+      if (openIn) shifts.push({ in: openIn, out: null, ms: null, ongoing: false, incomplete: true });
+      openIn = e;
+    } else if (e.type === 'out') {
+      if (openIn) {
+        shifts.push({ in: openIn, out: e, ms: tsMillis(e.timestamp) - tsMillis(openIn.timestamp) });
+        openIn = null;
+      } else {
+        shifts.push({ in: null, out: e, ms: null, incomplete: true });
+      }
+    }
+  }
+  if (openIn) shifts.push({ in: openIn, out: null, ms: null, ongoing: true });
+  return shifts.reverse(); // le plus récent en premier
+}
+function sumShiftMs(shifts, sinceMs) {
+  return shifts.filter(s => s.ms != null && (!sinceMs || tsMillis(s.in.timestamp) >= sinceMs))
+    .reduce((sum, s) => sum + s.ms, 0);
+}
+
+// ---- Photos : redimensionnement côté client puis envoi vers Firebase Storage ----
+function resizeImageFile(file, maxDim = 1600, quality = 0.82) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      let { width, height } = img;
+      if (width > maxDim || height > maxDim) {
+        const scale = maxDim / Math.max(width, height);
+        width = Math.round(width * scale);
+        height = Math.round(height * scale);
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+      canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error('Échec de conversion de l\'image')), 'image/jpeg', quality);
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('Image illisible')); };
+    img.src = url;
+  });
+}
+async function uploadPhotos(basePath, files) {
+  const urls = [];
+  for (const file of files) {
+    const blob = await resizeImageFile(file);
+    const filename = Date.now() + '-' + Math.random().toString(36).slice(2, 8) + '.jpg';
+    const ref = storage.ref(basePath + '/' + filename);
+    await ref.put(blob, { contentType: 'image/jpeg' });
+    urls.push(await ref.getDownloadURL());
+  }
+  return urls;
+}
+function photoGalleryHtml(urls) {
+  if (!urls || urls.length === 0) return '';
+  return `<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
+    ${urls.map(u => `<a href="${esc(u)}" target="_blank" rel="noopener"><img src="${esc(u)}" style="width:84px;height:84px;object-fit:cover;border-radius:8px;border:1px solid var(--border)"></a>`).join('')}
+  </div>`;
 }
 function showError(container, message) {
   const box = document.createElement('div');
@@ -720,6 +809,7 @@ async function renderProblemsAggregate(content, projectDocs) {
           <span class="badge badge-reported">Signalé</span>
         </div>
         <p style="margin-top:10px">${esc(p.description)}</p>
+        ${photoGalleryHtml(p.photoUrls)}
         <div style="margin-top:14px;display:flex;gap:8px">
           <button class="btn btn-primary btn-sm" data-publish="${p.projectId}|${p.id}">Publier au client</button>
           <button class="btn btn-outline btn-sm" data-internal="${p.projectId}|${p.id}">Garder en interne</button>
@@ -884,7 +974,7 @@ function renderProjectDetailShared(container, projectId, mode) {
       if (activeTab === 'checklist') renderChecklistTab(target, projectId, mode);
       else if (activeTab === 'journal') renderJournalTab(target, projectId, mode);
       else if (activeTab === 'problems') renderProblemsTab(target, projectId, mode);
-      else if (activeTab === 'timesheet') renderTimesheetTab(target, projectId);
+      else if (activeTab === 'timesheet') renderTimesheetTab(target, projectId, mode);
       else if (activeTab === 'requests') renderRequestsTab(target, projectId, mode);
     };
     container.querySelectorAll('[data-ptab]').forEach(btn => {
@@ -940,6 +1030,7 @@ function renderJournalTab(target, projectId, mode) {
         <div class="card">
           <form id="journal-form">
             <div class="field"><textarea id="journal-text" placeholder="Mise à jour du chantier…" required></textarea></div>
+            <div class="field"><label>Photos (optionnel)</label><input type="file" id="journal-photos" accept="image/*" capture="environment" multiple></div>
             <label style="display:flex;align-items:center;gap:8px;margin-bottom:10px;font-size:0.86rem;color:var(--text-dim)">
               <input type="checkbox" id="journal-visible" checked style="width:auto"> Visible par le client
             </label>
@@ -952,6 +1043,7 @@ function renderJournalTab(target, projectId, mode) {
           return `<div class="journal-entry">
             <div class="meta">${esc(e.authorName)} · ${fmtDateTime(e.createdAt)} ${e.visibleToClient ? '' : '<span class="badge badge-reported" style="margin-left:6px">Interne</span>'}</div>
             <div>${esc(e.text)}</div>
+            ${photoGalleryHtml(e.photoUrls)}
           </div>`;
         }).join('')}
       </div>`;
@@ -960,11 +1052,24 @@ function renderJournalTab(target, projectId, mode) {
         e.preventDefault();
         const text = document.getElementById('journal-text').value.trim();
         const visibleToClient = document.getElementById('journal-visible').checked;
+        const files = Array.from(document.getElementById('journal-photos').files || []);
         if (!text) return;
-        await db.collection('projects').doc(projectId).collection('journal').add({
-          text, visibleToClient, authorName: currentPerson.name, authorRole: currentPerson.role,
-          createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-        });
+        const form = e.target;
+        const btn = form.querySelector('button[type=submit]');
+        btn.disabled = true;
+        const docRef = db.collection('projects').doc(projectId).collection('journal').doc();
+        try {
+          btn.textContent = files.length ? 'Envoi des photos…' : 'Publication…';
+          const photoUrls = files.length ? await uploadPhotos(`projects/${projectId}/journal/${docRef.id}`, files) : [];
+          await docRef.set({
+            text, visibleToClient, photoUrls, authorName: currentPerson.name, authorRole: currentPerson.role,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+          });
+        } catch (err) {
+          showError(form, "Erreur d'envoi : " + err.message);
+          btn.disabled = false;
+          btn.textContent = 'Publier';
+        }
       });
     }
   }, err => showError(target, "Erreur : " + err.message));
@@ -981,6 +1086,7 @@ function renderProblemsTab(target, projectId, mode) {
           <form id="problem-form">
             <div class="field"><label>Titre</label><input type="text" id="problem-title" required></div>
             <div class="field"><label>Description</label><textarea id="problem-desc" required></textarea></div>
+            <div class="field"><label>Photos (optionnel)</label><input type="file" id="problem-photos" accept="image/*" capture="environment" multiple></div>
             <button type="submit" class="btn btn-primary btn-sm">Signaler</button>
           </form>
         </div>` : ''}
@@ -994,6 +1100,7 @@ function renderProblemsTab(target, projectId, mode) {
             </div>
             <p class="empty" style="font-style:normal;margin:4px 0">${esc(p.reportedByName)} · ${fmtDateTime(p.createdAt)}</p>
             <p>${esc(p.description)}</p>
+            ${photoGalleryHtml(p.photoUrls)}
           </div>`;
         }).join('')}
       </div>`;
@@ -1002,42 +1109,72 @@ function renderProblemsTab(target, projectId, mode) {
         e.preventDefault();
         const title = document.getElementById('problem-title').value.trim();
         const description = document.getElementById('problem-desc').value.trim();
+        const files = Array.from(document.getElementById('problem-photos').files || []);
         if (!title || !description) return;
-        await db.collection('projects').doc(projectId).collection('problems').add({
-          title, description, status: 'reported', visibleToClient: false,
-          reportedByName: currentPerson.name, createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-        });
-        e.target.reset();
+        const form = e.target;
+        const btn = form.querySelector('button[type=submit]');
+        btn.disabled = true;
+        const docRef = db.collection('projects').doc(projectId).collection('problems').doc();
+        try {
+          btn.textContent = files.length ? 'Envoi des photos…' : 'Signalement…';
+          const photoUrls = files.length ? await uploadPhotos(`projects/${projectId}/problems/${docRef.id}`, files) : [];
+          await docRef.set({
+            title, description, photoUrls, status: 'reported', visibleToClient: false,
+            reportedByName: currentPerson.name, createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+          });
+        } catch (err) {
+          showError(form, "Erreur d'envoi : " + err.message);
+          btn.disabled = false;
+          btn.textContent = 'Signaler';
+        }
       });
     }
   }, err => showError(target, "Erreur : " + err.message));
   unsubscribers.push(unsub);
 }
 
-function renderTimesheetTab(target, projectId) {
+function renderTimesheetTab(target, projectId, mode) {
+  if (mode === 'admin') return renderTimesheetTabAdmin(target, projectId);
+
   // Filtered by personUid only (no orderBy on a different field) so this never needs
   // a manually-created Firestore composite index — sorted client-side instead.
   const unsub = db.collection('projects').doc(projectId).collection('timesheets')
     .where('personUid', '==', currentUser.uid)
     .onSnapshot(snap => {
-      const docs = snap.docs.slice().sort((a, b) => {
-        const ta = a.data().timestamp?.toMillis ? a.data().timestamp.toMillis() : 0;
-        const tb = b.data().timestamp?.toMillis ? b.data().timestamp.toMillis() : 0;
-        return tb - ta;
-      }).slice(0, 30);
-      const last = docs[0]?.data();
-      const isIn = last && last.type === 'in';
+      const entries = snap.docs.map(d => d.data());
+      const shifts = computeShifts(entries); // le plus récent en premier
+      const last = shifts[0];
+      const isIn = last && last.ongoing;
+      const now = Date.now();
+      const startOfDay = new Date(); startOfDay.setHours(0, 0, 0, 0);
+      const todayMs = sumShiftMs(shifts, startOfDay.getTime());
+      const weekMs = sumShiftMs(shifts, now - 7 * 24 * 3600 * 1000);
+
       target.innerHTML = `
         <div class="card">
           <div class="timesheet-clock">
             <button class="btn btn-primary" id="clock-btn">${isIn ? 'Pointer le départ' : "Pointer l'arrivée"}</button>
-            <span class="status">${last ? `Dernier pointage : ${last.type === 'in' ? 'arrivée' : 'départ'} à ${fmtDateTime(last.timestamp)}` : 'Aucun pointage encore'}</span>
+            <span class="status">${last ? (isIn ? `En cours depuis ${fmtDateTime(last.in.timestamp)}` : `Dernier départ : ${fmtDateTime(last.out.timestamp)}`) : 'Aucun pointage encore'}</span>
+          </div>
+          <div class="row" style="margin-top:14px">
+            <div class="card" style="background:var(--gold-100);border:none;text-align:center;padding:14px">
+              <div style="font-size:1.4rem;font-weight:700;color:var(--brown-900)">${fmtDuration(todayMs)}</div>
+              <div class="empty" style="font-style:normal">Aujourd'hui</div>
+            </div>
+            <div class="card" style="background:var(--gold-100);border:none;text-align:center;padding:14px">
+              <div style="font-size:1.4rem;font-weight:700;color:var(--brown-900)">${fmtDuration(weekMs)}</div>
+              <div class="empty" style="font-style:normal">7 derniers jours</div>
+            </div>
           </div>
         </div>
         <div class="card">
           <table>
-            <thead><tr><th>Type</th><th>Date et heure</th></tr></thead>
-            <tbody>${docs.map(d => `<tr><td>${d.data().type === 'in' ? 'Arrivée' : 'Départ'}</td><td>${fmtDateTime(d.data().timestamp)}</td></tr>`).join('') || '<tr><td colspan="2" class="empty">Aucun pointage.</td></tr>'}</tbody>
+            <thead><tr><th>Arrivée</th><th>Départ</th><th>Durée</th></tr></thead>
+            <tbody>${shifts.map(s => `<tr>
+              <td>${s.in ? fmtDateTime(s.in.timestamp) : '—'}</td>
+              <td>${s.out ? fmtDateTime(s.out.timestamp) : (s.ongoing ? '<span class="badge badge-active">en cours</span>' : '—')}</td>
+              <td>${s.ongoing ? '—' : fmtDuration(s.ms)}</td>
+            </tr>`).join('') || '<tr><td colspan="3" class="empty">Aucun pointage.</td></tr>'}</tbody>
           </table>
         </div>`;
       document.getElementById('clock-btn').addEventListener('click', async () => {
@@ -1047,6 +1184,40 @@ function renderTimesheetTab(target, projectId) {
         });
       });
     }, err => showError(target, "Erreur : " + err.message));
+  unsubscribers.push(unsub);
+}
+
+function renderTimesheetTabAdmin(target, projectId) {
+  const unsub = db.collection('projects').doc(projectId).collection('timesheets').onSnapshot(snap => {
+    const byPerson = {};
+    snap.docs.forEach(d => {
+      const e = d.data();
+      (byPerson[e.personUid] ||= { name: e.personName, entries: [] }).entries.push(e);
+    });
+    const now = Date.now();
+    const startOfDay = new Date(); startOfDay.setHours(0, 0, 0, 0);
+
+    target.innerHTML = `
+      <div class="card">
+        <table>
+          <thead><tr><th>Personne</th><th>Aujourd'hui</th><th>7 derniers jours</th><th>Statut</th></tr></thead>
+          <tbody>
+          ${Object.values(byPerson).map(p => {
+            const shifts = computeShifts(p.entries);
+            const todayMs = sumShiftMs(shifts, startOfDay.getTime());
+            const weekMs = sumShiftMs(shifts, now - 7 * 24 * 3600 * 1000);
+            const ongoing = shifts[0]?.ongoing;
+            return `<tr>
+              <td>${esc(p.name)}</td>
+              <td>${fmtDuration(todayMs)}</td>
+              <td>${fmtDuration(weekMs)}</td>
+              <td>${ongoing ? '<span class="badge badge-active">Sur site</span>' : '—'}</td>
+            </tr>`;
+          }).join('') || '<tr><td colspan="4" class="empty">Aucun pointage sur ce projet.</td></tr>'}
+          </tbody>
+        </table>
+      </div>`;
+  }, err => showError(target, "Erreur : " + err.message));
   unsubscribers.push(unsub);
 }
 
