@@ -44,61 +44,471 @@ db.enablePersistence({ synchronizeTabs: true }).catch((err) => {
   console.warn('Persistance hors-ligne non activée :', err.code);
 });
 
+// ---- Langue de l'interface (FR/EN/RO) ----
+// Choisie par chaque personne sur son propre appareil (bouton dans la barre
+// du haut), mémorisée en local — n'affecte pas ce que voient les autres.
+// Le français reste la valeur de repli si une traduction venait à manquer.
+const LOCALE_MAP = { fr: 'fr-BE', en: 'en-GB', ro: 'ro-RO' };
+function getLang() {
+  try { return localStorage.getItem('bnLang') || 'fr'; } catch (e) { return 'fr'; }
+}
+function setLang(lang) {
+  try { localStorage.setItem('bnLang', lang); } catch (e) { /* pas grave */ }
+  routeByRole();
+}
+function t(key) {
+  const lang = getLang();
+  return (I18N[lang] && I18N[lang][key] !== undefined) ? I18N[lang][key] : I18N.fr[key] !== undefined ? I18N.fr[key] : key;
+}
+function langSwitcherHtml() {
+  // Fond plein sur chaque bouton (pas de transparence) pour rester lisible
+  // aussi bien sur la barre du haut sombre que sur les écrans clairs
+  // (connexion, inscription).
+  const lang = getLang();
+  return `<span style="display:inline-flex;gap:2px">${['fr', 'en', 'ro'].map(l =>
+    `<button type="button" data-lang="${l}" style="padding:4px 8px;font-size:0.72rem;font-weight:700;border-radius:6px;border:1px solid var(--sand-500);background:${l === lang ? 'var(--gold-600)' : 'var(--gold-100)'};color:${l === lang ? '#fff' : 'var(--brown-900)'}">${l.toUpperCase()}</button>`
+  ).join('')}</span>`;
+}
+function wireLangSwitcher(root) {
+  (root || document).querySelectorAll('[data-lang]').forEach(btn => {
+    btn.addEventListener('click', () => setLang(btn.dataset.lang));
+  });
+}
+
 // ---- Gabarits de check-list par type de projet ----
-// (repris du Manuel de contrôle interne — mêmes étapes, même logique de contrôle)
+// (repris du Manuel de contrôle interne — mêmes étapes, même logique de
+// contrôle — traduites en EN/RO pour une équipe non francophone. Les
+// documents Firestore ne stockent qu'un type + un index d'étape : le texte
+// affiché se traduit à la volée selon la langue de la personne qui regarde.)
 const CHECKLIST_TEMPLATES = {
-  commissioning: [
-    "Revue documentaire pré-commissioning (plans, fiches PCS/BMS/EMS, certificats fabricant)",
-    "Inspection visuelle de sécurité (câblage, mise à la terre, protections, étiquetage)",
-    "Tests fonctionnels (communication BMS-PCS-EMS)",
-    "Tests de performance (charge/décharge, capacité mesurée)",
-    "Tests de protection et de sécurité",
-    "Levée de réserves (punch list)",
-    "Émission du certificat de mise en service",
-  ],
-  om: [
-    "Plan de maintenance préventive écrit",
-    "Visite de maintenance préventive sur site",
-    "Monitoring continu (disponibilité, alarmes, SOH, température)",
-    "Intervention corrective si incident",
-    "Reporting périodique au client",
-  ],
-  container: [
-    "Évaluation de l'état du conteneur (photos avant travaux)",
-    "Obtention du permis de travail à chaud",
-    "Travaux de soudure et reprise structurelle",
-    "Traitement anticorrosion et remise en peinture",
-    "Contrôle final d'étanchéité et clôture du chantier",
-  ],
-  audit: [
-    "Collecte documentaire",
-    "Inspection technique sur site",
-    "Analyse de performance (réel vs garanti)",
-    "Recommandations priorisées",
-    "Rédaction et envoi du rapport final",
-  ],
-  workforce: [
-    "Qualification du besoin avec le client",
-    "Sélection et mobilisation du personnel",
-    "Intervention sur site sous supervision du client",
-    "Reporting et clôture de mission",
-  ],
+  fr: {
+    commissioning: [
+      "Revue documentaire pré-commissioning (plans, fiches PCS/BMS/EMS, certificats fabricant)",
+      "Inspection visuelle de sécurité (câblage, mise à la terre, protections, étiquetage)",
+      "Tests fonctionnels (communication BMS-PCS-EMS)",
+      "Tests de performance (charge/décharge, capacité mesurée)",
+      "Tests de protection et de sécurité",
+      "Levée de réserves (punch list)",
+      "Émission du certificat de mise en service",
+    ],
+    om: [
+      "Plan de maintenance préventive écrit",
+      "Visite de maintenance préventive sur site",
+      "Monitoring continu (disponibilité, alarmes, SOH, température)",
+      "Intervention corrective si incident",
+      "Reporting périodique au client",
+    ],
+    container: [
+      "Évaluation de l'état du conteneur (photos avant travaux)",
+      "Obtention du permis de travail à chaud",
+      "Travaux de soudure et reprise structurelle",
+      "Traitement anticorrosion et remise en peinture",
+      "Contrôle final d'étanchéité et clôture du chantier",
+    ],
+    audit: [
+      "Collecte documentaire",
+      "Inspection technique sur site",
+      "Analyse de performance (réel vs garanti)",
+      "Recommandations priorisées",
+      "Rédaction et envoi du rapport final",
+    ],
+    workforce: [
+      "Qualification du besoin avec le client",
+      "Sélection et mobilisation du personnel",
+      "Intervention sur site sous supervision du client",
+      "Reporting et clôture de mission",
+    ],
+  },
+  en: {
+    commissioning: [
+      "Pre-commissioning document review (drawings, PCS/BMS/EMS data sheets, manufacturer certificates)",
+      "Visual safety inspection (wiring, earthing, protections, labelling)",
+      "Functional tests (BMS-PCS-EMS communication)",
+      "Performance tests (charge/discharge, measured capacity)",
+      "Protection and safety tests",
+      "Punch list closeout",
+      "Issuance of the commissioning certificate",
+    ],
+    om: [
+      "Written preventive maintenance plan",
+      "On-site preventive maintenance visit",
+      "Continuous monitoring (availability, alarms, SOH, temperature)",
+      "Corrective intervention in case of incident",
+      "Periodic reporting to the client",
+    ],
+    container: [
+      "Container condition assessment (before-work photos)",
+      "Hot work permit obtained",
+      "Welding and structural repair work",
+      "Anti-corrosion treatment and repainting",
+      "Final leak-tightness check and site closeout",
+    ],
+    audit: [
+      "Document collection",
+      "On-site technical inspection",
+      "Performance analysis (actual vs. guaranteed)",
+      "Prioritised recommendations",
+      "Drafting and sending the final report",
+    ],
+    workforce: [
+      "Needs qualification with the client",
+      "Selection and mobilisation of personnel",
+      "On-site intervention under client supervision",
+      "Reporting and mission closeout",
+    ],
+  },
+  ro: {
+    commissioning: [
+      "Verificarea documentației înainte de punere în funcțiune (planuri, fișe tehnice PCS/BMS/EMS, certificate producător)",
+      "Inspecție vizuală de siguranță (cablaj, împământare, protecții, etichetare)",
+      "Teste funcționale (comunicare BMS-PCS-EMS)",
+      "Teste de performanță (încărcare/descărcare, capacitate măsurată)",
+      "Teste de protecție și siguranță",
+      "Rezolvarea neconformităților (punch list)",
+      "Emiterea certificatului de punere în funcțiune",
+    ],
+    om: [
+      "Plan scris de mentenanță preventivă",
+      "Vizită de mentenanță preventivă la fața locului",
+      "Monitorizare continuă (disponibilitate, alarme, SOH, temperatură)",
+      "Intervenție corectivă în caz de incident",
+      "Raportare periodică către client",
+    ],
+    container: [
+      "Evaluarea stării containerului (fotografii înainte de lucrări)",
+      "Obținerea permisului de lucru la cald",
+      "Lucrări de sudură și reparații structurale",
+      "Tratament anticoroziv și revopsire",
+      "Verificare finală de etanșeitate și închiderea șantierului",
+    ],
+    audit: [
+      "Colectarea documentației",
+      "Inspecție tehnică la fața locului",
+      "Analiza performanței (real vs. garantat)",
+      "Recomandări prioritizate",
+      "Redactarea și trimiterea raportului final",
+    ],
+    workforce: [
+      "Calificarea nevoii împreună cu clientul",
+      "Selecția și mobilizarea personalului",
+      "Intervenție la fața locului sub supervizarea clientului",
+      "Raportare și închiderea misiunii",
+    ],
+  },
 };
+// NOTE traduction : les étapes ci-dessus touchent à la sécurité électrique.
+// Traduction standard, pas relue par un technicien natif roumain — faites
+// vérifier la version RO par quelqu'un du métier avant un premier chantier
+// réel avec une équipe roumaine.
+function checklistStepLabel(type, index) {
+  const lang = getLang();
+  const arr = (CHECKLIST_TEMPLATES[lang] && CHECKLIST_TEMPLATES[lang][type]) || CHECKLIST_TEMPLATES.fr[type] || [];
+  return arr[index] !== undefined ? arr[index] : (CHECKLIST_TEMPLATES.fr[type] || [])[index] || '';
+}
 
-const PROJECT_TYPE_LABELS = {
-  commissioning: 'Commissioning',
-  om: 'O&M',
-  container: 'Réparation de conteneur',
-  audit: 'Audit technique',
-  workforce: 'Workforce Deployment',
+const PROJECT_TYPE_LABELS_I18N = {
+  fr: { commissioning: 'Commissioning', om: 'O&M', container: 'Réparation de conteneur', audit: 'Audit technique', workforce: 'Workforce Deployment' },
+  en: { commissioning: 'Commissioning', om: 'O&M', container: 'Container repair', audit: 'Technical audit', workforce: 'Workforce Deployment' },
+  ro: { commissioning: 'Punere în funcțiune', om: 'Mentenanță (O&M)', container: 'Reparație container', audit: 'Audit tehnic', workforce: 'Furnizare personal tehnic' },
 };
+function projectTypeLabel(type) {
+  const lang = getLang();
+  return (PROJECT_TYPE_LABELS_I18N[lang] && PROJECT_TYPE_LABELS_I18N[lang][type]) || PROJECT_TYPE_LABELS_I18N.fr[type] || type;
+}
+// Alias conservé pour les listes déroulantes admin (Object.entries(...)) —
+// toujours en français, l'interface de gestion reste FR uniquement pour l'instant.
+const PROJECT_TYPE_LABELS = PROJECT_TYPE_LABELS_I18N.fr;
 
-const ROLE_LABELS = {
-  admin: 'Administrateur',
-  engineer: 'Ingénieur',
-  electrician: 'Électricien',
-  worker: 'Aide technique',
-  client: 'Client',
+const ROLE_LABELS_I18N = {
+  fr: { admin: 'Administrateur', engineer: 'Ingénieur', electrician: 'Électricien', worker: 'Aide technique', client: 'Client' },
+  en: { admin: 'Administrator', engineer: 'Engineer', electrician: 'Electrician', worker: 'Technical assistant', client: 'Client' },
+  ro: { admin: 'Administrator', engineer: 'Inginer', electrician: 'Electrician', worker: 'Asistent tehnic', client: 'Client' },
+};
+function roleLabel(role) {
+  const lang = getLang();
+  return (ROLE_LABELS_I18N[lang] && ROLE_LABELS_I18N[lang][role]) || ROLE_LABELS_I18N.fr[role] || role;
+}
+const ROLE_LABELS = ROLE_LABELS_I18N.fr;
+
+// ---- Textes d'interface FR/EN/RO ----
+// Portée volontaire : tout ce qu'un ouvrier ou un client voit (connexion,
+// inscription, vue équipe, vue client, détail d'un chantier) est traduit.
+// L'interface de gestion de l'admin (équipes, clients, comptes) reste en
+// français uniquement — c'est votre propre outil.
+const I18N = {
+  fr: {
+    appTitle: 'BN CORE GROUP', appSubtitle: 'Suivi de chantier',
+    emailLabel: 'Email', passwordLabel: 'Mot de passe',
+    loginBtn: 'Se connecter', loggingIn: 'Connexion…',
+    noAccount: 'Pas encore de compte ? Contactez votre administrateur.',
+    verifyingInvite: "Vérification de l'invitation…",
+    loadingProfile: 'Chargement de votre profil…',
+    loadingGeneric: 'Chargement…',
+    inviteInvalid: "Ce lien d'invitation n'est plus valide ou a déjà été utilisé. Contactez BN CORE GROUP pour en obtenir un nouveau.",
+    createAccessFor: 'Créer votre accès',
+    fullNameLabel: 'Nom complet', createAccountBtn: 'Créer mon compte', creatingAccount: 'Création…',
+    notConfiguredTitle: 'Compte non configuré',
+    notConfiguredBody: "Votre compte existe mais n'a pas encore de profil (rôle, équipe ou client) associé. Contactez votre administrateur.",
+    revokedTitle: 'Accès révoqué',
+    revokedBody: "Votre accès à cette application a été retiré. Contactez BN CORE GROUP si vous pensez qu'il s'agit d'une erreur.",
+    disconnect: 'Se déconnecter',
+    authErrInvalidEmail: 'Adresse email invalide.',
+    authErrUserDisabled: 'Ce compte a été désactivé.',
+    authErrUserNotFound: 'Aucun compte avec cet email.',
+    authErrWrongPassword: 'Mot de passe incorrect.',
+    authErrInvalidCredential: 'Email ou mot de passe incorrect.',
+    authErrTooManyRequests: 'Trop de tentatives — réessayez dans quelques minutes.',
+    authErrPrefix: 'Erreur de connexion : ',
+    signupErrEmailInUse: 'Cet email est déjà utilisé par un autre compte.',
+    signupErrInvalidEmail: 'Adresse email invalide.',
+    signupErrWeakPassword: 'Le mot de passe doit contenir au moins 6 caractères.',
+    errorPrefix: 'Erreur : ',
+    yourProjects: 'Vos projets', yourPlanning: 'Votre planning',
+    noTeamAssigned: "Aucune équipe ne vous est associée pour le moment. Contactez votre administrateur.",
+    activeProjectsTitle: 'Vos projets en cours',
+    noActiveProjects: 'Aucun projet actif assigné à votre équipe.',
+    loadError: 'Erreur de chargement : ',
+    clientNoProject: 'Aucun projet ne vous est associé pour le moment. Contactez BN CORE GROUP.',
+    clientYourProjects: 'Vos projets',
+    noProjectsYet: 'Aucun projet pour le moment.',
+    statusActive: 'Actif', statusActiveClient: 'En cours', statusClosed: 'Clôturé',
+    exportBtn: 'Exporter / Imprimer',
+    closeProjectBtn: 'Clôturer le projet',
+    closeProjectConfirm: 'Clôturer ce projet ? Le client pourra alors laisser un avis de satisfaction.',
+    tabProgress: 'Avancement', tabJournal: 'Journal', tabProblems: 'Problèmes',
+    tabHours: 'Heures', tabMyRequests: 'Mes demandes', tabRequests: 'Demandes',
+    projectNotFound: 'Projet introuvable.',
+    closedOnClientThanks: (date) => `Projet clôturé le ${date}. Merci pour votre avis : `,
+    closedOnAdmin: (date) => `Projet clôturé le ${date} par `,
+    awaitingClientFeedback: "En attente de l'avis client.",
+    clientFeedback: 'Avis client : ',
+    feedbackPromptTitle: 'Projet clôturé — votre avis nous intéresse',
+    ratingLabel: 'Note',
+    rating5: '★★★★★ Excellent', rating4: '★★★★☆ Très bien', rating3: '★★★☆☆ Correct',
+    rating2: '★★☆☆☆ Insuffisant', rating1: '★☆☆☆☆ Mauvais',
+    commentLabelOptional: 'Commentaire (optionnel)',
+    sendFeedbackBtn: 'Envoyer mon avis',
+    stepsCompleted: (done, total) => `${done} / ${total} étapes complétées`,
+    noStepsDefined: 'Aucune étape définie.',
+    completedByOn: (by, date) => `Complété par ${by} le ${date}`,
+    stepNotePrompt: 'Note pour cette étape (optionnel) :',
+    journalPlaceholder: 'Mise à jour du chantier…',
+    photosOptionalLabel: 'Photos (optionnel)',
+    visibleToClientLabel: 'Visible par le client',
+    publishBtn: 'Publier', publishing: 'Publication…', sendingPhotos: 'Envoi des photos…',
+    noEntriesYet: 'Aucune entrée pour le moment.',
+    internalBadge: 'Interne',
+    sendErrorPrefix: "Erreur d'envoi : ",
+    problemTitleLabel: 'Titre',
+    stepConcernedLabel: 'Étape concernée (optionnel)',
+    noSpecificStep: 'Aucune étape spécifique',
+    descriptionLabel: 'Description',
+    reportBtn: 'Signaler', reporting: 'Signalement…',
+    noProblemsReported: 'Aucun problème signalé.',
+    stepConcernedInline: (label) => ` · Étape concernée : ${label}`,
+    problemStatusReported: 'Signalé', problemStatusPublished: 'Communiqué', problemStatusResolved: 'Résolu',
+    clockInBtn: "Pointer l'arrivée", clockOutBtn: 'Pointer le départ',
+    ongoingSince: (date) => `En cours depuis ${date}`,
+    ongoingBadge: 'en cours', onSiteBadge: 'Sur site',
+    lastClockOut: (date) => `Dernier départ : ${date}`,
+    noClockYet: 'Aucun pointage encore',
+    today: "Aujourd'hui", last7days: '7 derniers jours',
+    colArrival: 'Arrivée', colDeparture: 'Départ', colDuration: 'Durée',
+    noTimesheetRows: 'Aucun pointage.',
+    yourRequestLabel: 'Votre demande', sendBtn: 'Envoyer',
+    noRequests: 'Aucune demande.',
+    requestOpen: 'Ouverte', requestAnswered: 'Répondu',
+    responseLabel: 'Réponse : ',
+    popupBlocked: "Votre navigateur a bloqué l'ouverture du rapport. Autorisez les pop-ups pour ce site puis réessayez.",
+    reportTitlePrefix: 'Rapport — ',
+    reportHeadingPrefix: 'Rapport de chantier — ',
+    printSaveBtn: 'Imprimer / Enregistrer en PDF',
+    documentGeneratedOn: (date) => `Document généré le ${date}`,
+    reportCompletedOn: (date) => ` — complété le ${date}`,
+    feedbackHeading: 'Avis client',
+  },
+  en: {
+    appTitle: 'BN CORE GROUP', appSubtitle: 'Site tracking',
+    emailLabel: 'Email', passwordLabel: 'Password',
+    loginBtn: 'Log in', loggingIn: 'Signing in…',
+    noAccount: 'No account yet? Contact your administrator.',
+    verifyingInvite: 'Checking your invitation…',
+    loadingProfile: 'Loading your profile…',
+    loadingGeneric: 'Loading…',
+    inviteInvalid: 'This invitation link is no longer valid or has already been used. Contact BN CORE GROUP for a new one.',
+    createAccessFor: 'Create your access',
+    fullNameLabel: 'Full name', createAccountBtn: 'Create my account', creatingAccount: 'Creating…',
+    notConfiguredTitle: 'Account not set up',
+    notConfiguredBody: 'Your account exists but has no profile (role, team or client) attached yet. Contact your administrator.',
+    revokedTitle: 'Access revoked',
+    revokedBody: 'Your access to this application has been removed. Contact BN CORE GROUP if you believe this is a mistake.',
+    disconnect: 'Log out',
+    authErrInvalidEmail: 'Invalid email address.',
+    authErrUserDisabled: 'This account has been disabled.',
+    authErrUserNotFound: 'No account with this email.',
+    authErrWrongPassword: 'Incorrect password.',
+    authErrInvalidCredential: 'Incorrect email or password.',
+    authErrTooManyRequests: 'Too many attempts — try again in a few minutes.',
+    authErrPrefix: 'Login error: ',
+    signupErrEmailInUse: 'This email is already used by another account.',
+    signupErrInvalidEmail: 'Invalid email address.',
+    signupErrWeakPassword: 'The password must be at least 6 characters long.',
+    errorPrefix: 'Error: ',
+    yourProjects: 'Your projects', yourPlanning: 'Your schedule',
+    noTeamAssigned: 'No team is assigned to you yet. Contact your administrator.',
+    activeProjectsTitle: 'Your ongoing projects',
+    noActiveProjects: 'No active project assigned to your team.',
+    loadError: 'Loading error: ',
+    clientNoProject: 'No project is linked to you yet. Contact BN CORE GROUP.',
+    clientYourProjects: 'Your projects',
+    noProjectsYet: 'No project yet.',
+    statusActive: 'Active', statusActiveClient: 'In progress', statusClosed: 'Closed',
+    exportBtn: 'Export / Print',
+    closeProjectBtn: 'Close project',
+    closeProjectConfirm: 'Close this project? The client will then be able to leave a satisfaction rating.',
+    tabProgress: 'Progress', tabJournal: 'Journal', tabProblems: 'Issues',
+    tabHours: 'Hours', tabMyRequests: 'My requests', tabRequests: 'Requests',
+    projectNotFound: 'Project not found.',
+    closedOnClientThanks: (date) => `Project closed on ${date}. Thank you for your feedback: `,
+    closedOnAdmin: (date) => `Project closed on ${date} by `,
+    awaitingClientFeedback: 'Awaiting client feedback.',
+    clientFeedback: 'Client feedback: ',
+    feedbackPromptTitle: 'Project closed — we would like your feedback',
+    ratingLabel: 'Rating',
+    rating5: '★★★★★ Excellent', rating4: '★★★★☆ Very good', rating3: '★★★☆☆ Fair',
+    rating2: '★★☆☆☆ Poor', rating1: '★☆☆☆☆ Bad',
+    commentLabelOptional: 'Comment (optional)',
+    sendFeedbackBtn: 'Send my feedback',
+    stepsCompleted: (done, total) => `${done} / ${total} steps completed`,
+    noStepsDefined: 'No step defined.',
+    completedByOn: (by, date) => `Completed by ${by} on ${date}`,
+    stepNotePrompt: 'Note for this step (optional):',
+    journalPlaceholder: 'Site update…',
+    photosOptionalLabel: 'Photos (optional)',
+    visibleToClientLabel: 'Visible to the client',
+    publishBtn: 'Publish', publishing: 'Publishing…', sendingPhotos: 'Sending photos…',
+    noEntriesYet: 'No entry yet.',
+    internalBadge: 'Internal',
+    sendErrorPrefix: 'Sending error: ',
+    problemTitleLabel: 'Title',
+    stepConcernedLabel: 'Related step (optional)',
+    noSpecificStep: 'No specific step',
+    descriptionLabel: 'Description',
+    reportBtn: 'Report', reporting: 'Reporting…',
+    noProblemsReported: 'No issue reported.',
+    stepConcernedInline: (label) => ` · Related step: ${label}`,
+    problemStatusReported: 'Reported', problemStatusPublished: 'Shared', problemStatusResolved: 'Resolved',
+    clockInBtn: 'Clock in', clockOutBtn: 'Clock out',
+    ongoingSince: (date) => `In progress since ${date}`,
+    ongoingBadge: 'in progress', onSiteBadge: 'On site',
+    lastClockOut: (date) => `Last clock-out: ${date}`,
+    noClockYet: 'No clock entry yet',
+    today: 'Today', last7days: 'Last 7 days',
+    colArrival: 'Arrival', colDeparture: 'Departure', colDuration: 'Duration',
+    noTimesheetRows: 'No clock entry.',
+    yourRequestLabel: 'Your request', sendBtn: 'Send',
+    noRequests: 'No request.',
+    requestOpen: 'Open', requestAnswered: 'Answered',
+    responseLabel: 'Response: ',
+    popupBlocked: 'Your browser blocked the report window. Allow pop-ups for this site and try again.',
+    reportTitlePrefix: 'Report — ',
+    reportHeadingPrefix: 'Site report — ',
+    printSaveBtn: 'Print / Save as PDF',
+    documentGeneratedOn: (date) => `Document generated on ${date}`,
+    reportCompletedOn: (date) => ` — completed on ${date}`,
+    feedbackHeading: 'Client feedback',
+  },
+  ro: {
+    appTitle: 'BN CORE GROUP', appSubtitle: 'Urmărire șantier',
+    emailLabel: 'Email', passwordLabel: 'Parolă',
+    loginBtn: 'Conectare', loggingIn: 'Se conectează…',
+    noAccount: 'Nu aveți încă un cont? Contactați administratorul.',
+    verifyingInvite: 'Se verifică invitația…',
+    loadingProfile: 'Se încarcă profilul dvs.…',
+    loadingGeneric: 'Se încarcă…',
+    inviteInvalid: 'Acest link de invitație nu mai este valabil sau a fost deja folosit. Contactați BN CORE GROUP pentru unul nou.',
+    createAccessFor: 'Creați-vă accesul',
+    fullNameLabel: 'Nume complet', createAccountBtn: 'Creează contul', creatingAccount: 'Se creează…',
+    notConfiguredTitle: 'Cont neconfigurat',
+    notConfiguredBody: 'Contul dvs. există, dar nu are încă un profil (rol, echipă sau client) asociat. Contactați administratorul.',
+    revokedTitle: 'Acces revocat',
+    revokedBody: 'Accesul dvs. la această aplicație a fost retras. Contactați BN CORE GROUP dacă credeți că este o eroare.',
+    disconnect: 'Deconectare',
+    authErrInvalidEmail: 'Adresă de email invalidă.',
+    authErrUserDisabled: 'Acest cont a fost dezactivat.',
+    authErrUserNotFound: 'Niciun cont cu acest email.',
+    authErrWrongPassword: 'Parolă incorectă.',
+    authErrInvalidCredential: 'Email sau parolă incorectă.',
+    authErrTooManyRequests: 'Prea multe încercări — reîncercați peste câteva minute.',
+    authErrPrefix: 'Eroare de conectare: ',
+    signupErrEmailInUse: 'Acest email este deja folosit de alt cont.',
+    signupErrInvalidEmail: 'Adresă de email invalidă.',
+    signupErrWeakPassword: 'Parola trebuie să aibă cel puțin 6 caractere.',
+    errorPrefix: 'Eroare: ',
+    yourProjects: 'Proiectele dvs.', yourPlanning: 'Programul dvs.',
+    noTeamAssigned: 'Nu vă este asociată nicio echipă momentan. Contactați administratorul.',
+    activeProjectsTitle: 'Proiectele dvs. în curs',
+    noActiveProjects: 'Niciun proiect activ alocat echipei dvs.',
+    loadError: 'Eroare de încărcare: ',
+    clientNoProject: 'Niciun proiect nu vă este asociat momentan. Contactați BN CORE GROUP.',
+    clientYourProjects: 'Proiectele dvs.',
+    noProjectsYet: 'Niciun proiect momentan.',
+    statusActive: 'Activ', statusActiveClient: 'În curs', statusClosed: 'Închis',
+    exportBtn: 'Export / Printare',
+    closeProjectBtn: 'Închide proiectul',
+    closeProjectConfirm: 'Închideți acest proiect? Clientul va putea apoi lăsa o evaluare de satisfacție.',
+    tabProgress: 'Progres', tabJournal: 'Jurnal', tabProblems: 'Probleme',
+    tabHours: 'Ore', tabMyRequests: 'Cererile mele', tabRequests: 'Cereri',
+    projectNotFound: 'Proiect negăsit.',
+    closedOnClientThanks: (date) => `Proiect închis pe ${date}. Vă mulțumim pentru evaluare: `,
+    closedOnAdmin: (date) => `Proiect închis pe ${date} de `,
+    awaitingClientFeedback: 'În așteptarea evaluării clientului.',
+    clientFeedback: 'Evaluare client: ',
+    feedbackPromptTitle: 'Proiect închis — părerea dvs. ne interesează',
+    ratingLabel: 'Notă',
+    rating5: '★★★★★ Excelent', rating4: '★★★★☆ Foarte bine', rating3: '★★★☆☆ Satisfăcător',
+    rating2: '★★☆☆☆ Nesatisfăcător', rating1: '★☆☆☆☆ Slab',
+    commentLabelOptional: 'Comentariu (opțional)',
+    sendFeedbackBtn: 'Trimite evaluarea',
+    stepsCompleted: (done, total) => `${done} / ${total} etape finalizate`,
+    noStepsDefined: 'Nicio etapă definită.',
+    completedByOn: (by, date) => `Finalizat de ${by} pe ${date}`,
+    stepNotePrompt: 'Notă pentru această etapă (opțional):',
+    journalPlaceholder: 'Actualizare șantier…',
+    photosOptionalLabel: 'Fotografii (opțional)',
+    visibleToClientLabel: 'Vizibil pentru client',
+    publishBtn: 'Publică', publishing: 'Se publică…', sendingPhotos: 'Se trimit fotografiile…',
+    noEntriesYet: 'Nicio intrare momentan.',
+    internalBadge: 'Intern',
+    sendErrorPrefix: 'Eroare la trimitere: ',
+    problemTitleLabel: 'Titlu',
+    stepConcernedLabel: 'Etapă vizată (opțional)',
+    noSpecificStep: 'Nicio etapă specifică',
+    descriptionLabel: 'Descriere',
+    reportBtn: 'Semnalează', reporting: 'Se semnalează…',
+    noProblemsReported: 'Nicio problemă semnalată.',
+    stepConcernedInline: (label) => ` · Etapă vizată: ${label}`,
+    problemStatusReported: 'Semnalat', problemStatusPublished: 'Comunicat', problemStatusResolved: 'Rezolvat',
+    clockInBtn: 'Pontaj sosire', clockOutBtn: 'Pontaj plecare',
+    ongoingSince: (date) => `În desfășurare din ${date}`,
+    ongoingBadge: 'în desfășurare', onSiteBadge: 'La fața locului',
+    lastClockOut: (date) => `Ultima plecare: ${date}`,
+    noClockYet: 'Niciun pontaj încă',
+    today: 'Astăzi', last7days: 'Ultimele 7 zile',
+    colArrival: 'Sosire', colDeparture: 'Plecare', colDuration: 'Durată',
+    noTimesheetRows: 'Niciun pontaj.',
+    yourRequestLabel: 'Cererea dvs.', sendBtn: 'Trimite',
+    noRequests: 'Nicio cerere.',
+    requestOpen: 'Deschisă', requestAnswered: 'Răspuns',
+    responseLabel: 'Răspuns: ',
+    popupBlocked: 'Browserul dvs. a blocat deschiderea raportului. Permiteți ferestrele pop-up pentru acest site și încercați din nou.',
+    reportTitlePrefix: 'Raport — ',
+    reportHeadingPrefix: 'Raport de șantier — ',
+    printSaveBtn: 'Printare / Salvare ca PDF',
+    documentGeneratedOn: (date) => `Document generat pe ${date}`,
+    reportCompletedOn: (date) => ` — finalizat pe ${date}`,
+    feedbackHeading: 'Evaluare client',
+  },
 };
 
 const PROJECT_COLORS = [
@@ -215,15 +625,18 @@ function dateStrOf(year, month, day) {
 }
 function fmtDateLabel(dateStr) {
   const [y, m, d] = dateStr.split('-').map(Number);
-  const label = new Date(y, m - 1, d).toLocaleDateString('fr-BE', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' });
+  const label = new Date(y, m - 1, d).toLocaleDateString(LOCALE_MAP[getLang()], { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' });
   return label.charAt(0).toUpperCase() + label.slice(1);
 }
 function monthGridHtml(year, month, assignmentsByDate) {
+  const locale = LOCALE_MAP[getLang()];
   const first = new Date(year, month, 1);
   const startWeekday = (first.getDay() + 6) % 7; // lundi = 0
   const daysInMonth = new Date(year, month + 1, 0).getDate();
-  const monthLabel = first.toLocaleDateString('fr-BE', { month: 'long', year: 'numeric' });
-  const weekdayLabels = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
+  const monthLabel = first.toLocaleDateString(locale, { month: 'long', year: 'numeric' });
+  // Lundi 2024-01-01 comme point de repère pour générer les 7 noms de jour
+  // courts dans la bonne langue, plutôt que de les traduire à la main.
+  const weekdayLabels = [1, 2, 3, 4, 5, 6, 7].map(d => new Date(2024, 0, d).toLocaleDateString(locale, { weekday: 'short' }));
   let cells = '';
   for (let i = 0; i < startWeekday; i++) cells += `<div class="cal-cell cal-empty"></div>`;
   for (let d = 1; d <= daysInMonth; d++) {
@@ -288,27 +701,29 @@ function renderLogin(errorMsg) {
   app.innerHTML = `
     <div class="center-wrap">
       <div style="text-align:center;margin-bottom:24px">
-        <h1 style="font-size:1.6rem">BN CORE GROUP</h1>
-        <p style="color:var(--text-dim);font-size:0.9rem">Suivi de chantier</p>
+        <div style="margin-bottom:10px">${langSwitcherHtml()}</div>
+        <h1 style="font-size:1.6rem">${esc(t('appTitle'))}</h1>
+        <p style="color:var(--text-dim);font-size:0.9rem">${esc(t('appSubtitle'))}</p>
       </div>
       <div class="card">
         ${errorMsg ? `<div class="error-box">${esc(errorMsg)}</div>` : ''}
         <form id="login-form">
           <div class="field">
-            <label for="login-email">Email</label>
+            <label for="login-email">${esc(t('emailLabel'))}</label>
             <input type="email" id="login-email" required autocomplete="username">
           </div>
           <div class="field">
-            <label for="login-password">Mot de passe</label>
+            <label for="login-password">${esc(t('passwordLabel'))}</label>
             <input type="password" id="login-password" required autocomplete="current-password">
           </div>
-          <button type="submit" class="btn btn-primary btn-block">Se connecter</button>
+          <button type="submit" class="btn btn-primary btn-block">${esc(t('loginBtn'))}</button>
         </form>
         <p style="margin-top:16px;font-size:0.82rem;color:var(--text-mute);text-align:center">
-          Pas encore de compte ? Contactez votre administrateur.
+          ${esc(t('noAccount'))}
         </p>
       </div>
     </div>`;
+  wireLangSwitcher();
 
   document.getElementById('login-form').addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -316,7 +731,7 @@ function renderLogin(errorMsg) {
     const password = document.getElementById('login-password').value;
     const btn = e.target.querySelector('button[type=submit]');
     btn.disabled = true;
-    btn.textContent = 'Connexion…';
+    btn.textContent = t('loggingIn');
     try {
       await auth.signInWithEmailAndPassword(email, password);
       // onAuthStateChanged takes over from here
@@ -328,11 +743,11 @@ function renderLogin(errorMsg) {
 
 function renderSignup(code) {
   clearSubscriptions();
-  app.innerHTML = `<div class="center-wrap"><div class="loading">Vérification de l'invitation…</div></div>`;
+  app.innerHTML = `<div class="center-wrap"><div class="loading">${esc(t('verifyingInvite'))}</div></div>`;
   db.collection('invites').doc(code).get().then(snap => {
     if (!snap.exists || snap.data().used) {
       app.innerHTML = `<div class="center-wrap"><div class="card error-box">
-        Ce lien d'invitation n'est plus valide ou a déjà été utilisé. Contactez BN CORE GROUP pour en obtenir un nouveau.
+        ${esc(t('inviteInvalid'))}
       </div></div>`;
       return;
     }
@@ -340,18 +755,20 @@ function renderSignup(code) {
     app.innerHTML = `
       <div class="center-wrap">
         <div style="text-align:center;margin-bottom:24px">
-          <h1 style="font-size:1.6rem">BN CORE GROUP</h1>
-          <p style="color:var(--text-dim);font-size:0.9rem">Créer votre accès — ${esc(ROLE_LABELS[invite.role] || invite.role)}</p>
+          <div style="margin-bottom:10px">${langSwitcherHtml()}</div>
+          <h1 style="font-size:1.6rem">${esc(t('appTitle'))}</h1>
+          <p style="color:var(--text-dim);font-size:0.9rem">${esc(t('createAccessFor'))} — ${esc(roleLabel(invite.role))}</p>
         </div>
         <div class="card">
           <form id="signup-form">
-            <div class="field"><label>Nom complet</label><input type="text" id="su-name" required value="${esc(invite.suggestedName || '')}"></div>
-            <div class="field"><label>Email</label><input type="email" id="su-email" required autocomplete="username"></div>
-            <div class="field"><label>Mot de passe</label><input type="password" id="su-password" required minlength="6" autocomplete="new-password"></div>
-            <button type="submit" class="btn btn-primary btn-block">Créer mon compte</button>
+            <div class="field"><label>${esc(t('fullNameLabel'))}</label><input type="text" id="su-name" required value="${esc(invite.suggestedName || '')}"></div>
+            <div class="field"><label>${esc(t('emailLabel'))}</label><input type="email" id="su-email" required autocomplete="username"></div>
+            <div class="field"><label>${esc(t('passwordLabel'))}</label><input type="password" id="su-password" required minlength="6" autocomplete="new-password"></div>
+            <button type="submit" class="btn btn-primary btn-block">${esc(t('createAccountBtn'))}</button>
           </form>
         </div>
       </div>`;
+    wireLangSwitcher();
 
     document.getElementById('signup-form').addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -361,7 +778,7 @@ function renderSignup(code) {
       const form = e.target;
       const btn = form.querySelector('button[type=submit]');
       btn.disabled = true;
-      btn.textContent = 'Création…';
+      btn.textContent = t('creatingAccount');
       try {
         const cred = await auth.createUserWithEmailAndPassword(email, password);
         await db.collection('people').doc(cred.user.uid).set({
@@ -375,22 +792,22 @@ function renderSignup(code) {
         await loadPersonAndRoute(cred.user);
       } catch (err) {
         btn.disabled = false;
-        btn.textContent = 'Créer mon compte';
+        btn.textContent = t('createAccountBtn');
         showError(form, translateSignupError(err));
       }
     });
   }).catch(err => {
-    app.innerHTML = `<div class="center-wrap"><div class="card error-box">Erreur : ${esc(err.message)}</div></div>`;
+    app.innerHTML = `<div class="center-wrap"><div class="card error-box">${esc(t('errorPrefix'))}${esc(err.message)}</div></div>`;
   });
 }
 
 function translateSignupError(err) {
   const map = {
-    'auth/email-already-in-use': "Cet email est déjà utilisé par un autre compte.",
-    'auth/invalid-email': "Adresse email invalide.",
-    'auth/weak-password': "Le mot de passe doit contenir au moins 6 caractères.",
+    'auth/email-already-in-use': t('signupErrEmailInUse'),
+    'auth/invalid-email': t('signupErrInvalidEmail'),
+    'auth/weak-password': t('signupErrWeakPassword'),
   };
-  return map[err.code] || ("Erreur : " + err.message);
+  return map[err.code] || (t('errorPrefix') + err.message);
 }
 
 function generateInviteCode() {
@@ -406,14 +823,14 @@ function inviteLinkFor(code) {
 
 function translateAuthError(err) {
   const map = {
-    'auth/invalid-email': "Adresse email invalide.",
-    'auth/user-disabled': "Ce compte a été désactivé.",
-    'auth/user-not-found': "Aucun compte avec cet email.",
-    'auth/wrong-password': "Mot de passe incorrect.",
-    'auth/invalid-credential': "Email ou mot de passe incorrect.",
-    'auth/too-many-requests': "Trop de tentatives — réessayez dans quelques minutes.",
+    'auth/invalid-email': t('authErrInvalidEmail'),
+    'auth/user-disabled': t('authErrUserDisabled'),
+    'auth/user-not-found': t('authErrUserNotFound'),
+    'auth/wrong-password': t('authErrWrongPassword'),
+    'auth/invalid-credential': t('authErrInvalidCredential'),
+    'auth/too-many-requests': t('authErrTooManyRequests'),
   };
-  return map[err.code] || ("Erreur de connexion : " + err.message);
+  return map[err.code] || (t('authErrPrefix') + err.message);
 }
 
 async function logout() {
@@ -429,30 +846,30 @@ function checkInviteHash() {
 async function loadPersonAndRoute(user) {
   clearSubscriptions();
   currentUser = user;
-  app.innerHTML = '<div class="loading">Chargement de votre profil…</div>';
+  app.innerHTML = `<div class="loading">${esc(t('loadingProfile'))}</div>`;
   try {
     const snap = await db.collection('people').doc(user.uid).get();
     if (!snap.exists) {
       app.innerHTML = `<div class="center-wrap"><div class="card">
-        <h2>Compte non configuré</h2>
-        <p style="margin-top:12px;color:var(--text-dim)">Votre compte existe mais n'a pas encore de profil (rôle, équipe ou client) associé. Contactez votre administrateur.</p>
-        <button class="btn btn-outline" style="margin-top:16px" onclick="logout()">Se déconnecter</button>
+        <h2>${esc(t('notConfiguredTitle'))}</h2>
+        <p style="margin-top:12px;color:var(--text-dim)">${esc(t('notConfiguredBody'))}</p>
+        <button class="btn btn-outline" style="margin-top:16px" onclick="logout()">${esc(t('disconnect'))}</button>
       </div></div>`;
       return;
     }
     const person = { id: user.uid, ...snap.data() };
     if (person.revoked) {
       app.innerHTML = `<div class="center-wrap"><div class="card">
-        <h2>Accès révoqué</h2>
-        <p style="margin-top:12px;color:var(--text-dim)">Votre accès à cette application a été retiré. Contactez BN CORE GROUP si vous pensez qu'il s'agit d'une erreur.</p>
-        <button class="btn btn-outline" style="margin-top:16px" onclick="logout()">Se déconnecter</button>
+        <h2>${esc(t('revokedTitle'))}</h2>
+        <p style="margin-top:12px;color:var(--text-dim)">${esc(t('revokedBody'))}</p>
+        <button class="btn btn-outline" style="margin-top:16px" onclick="logout()">${esc(t('disconnect'))}</button>
       </div></div>`;
       return;
     }
     currentPerson = person;
     routeByRole();
   } catch (err) {
-    app.innerHTML = `<div class="center-wrap"><div class="card error-box">Erreur de chargement du profil : ${esc(err.message)}</div></div>`;
+    app.innerHTML = `<div class="center-wrap"><div class="card error-box">${esc(t('loadError'))}${esc(err.message)}</div></div>`;
   }
 }
 
@@ -490,9 +907,10 @@ function topbarHtml(extra) {
     <div class="topbar">
       <div class="brand">BN CORE GROUP — Chantier</div>
       <div class="who">
-        <span>${esc(currentPerson.name)} · ${esc(ROLE_LABELS[currentPerson.role] || currentPerson.role)}</span>
+        <span>${esc(currentPerson.name)} · ${esc(roleLabel(currentPerson.role))}</span>
+        ${langSwitcherHtml()}
         ${extra || ''}
-        <button onclick="logout()">Se déconnecter</button>
+        <button onclick="logout()">${esc(t('disconnect'))}</button>
       </div>
     </div>`;
 }
@@ -506,6 +924,7 @@ let adminTab = 'projects';
 async function renderAdmin() {
   clearSubscriptions();
   app.innerHTML = topbarHtml() + `<div class="wrap" id="admin-wrap"></div>`;
+  wireLangSwitcher();
   renderAdminTabs();
 }
 
@@ -615,12 +1034,14 @@ function openNewProjectForm(teams, clients) {
       const projectRef = await db.collection('projects').add({
         name, type, teamId, clientId, color, status: 'active', createdAt: firebase.firestore.FieldValue.serverTimestamp(),
       });
-      const steps = CHECKLIST_TEMPLATES[type] || [];
+      // Les étapes ne stockent qu'un index — le texte se traduit à l'affichage
+      // (checklistStepLabel) selon la langue de la personne qui regarde.
+      const stepCount = (CHECKLIST_TEMPLATES.fr[type] || []).length;
       const batch = db.batch();
-      steps.forEach((label, i) => {
+      for (let i = 0; i < stepCount; i++) {
         const stepRef = projectRef.collection('checklist').doc();
-        batch.set(stepRef, { label, order: i, done: false, doneBy: null, doneAt: null, note: '' });
-      });
+        batch.set(stepRef, { stepIndex: i, order: i, done: false, doneBy: null, doneAt: null, note: '' });
+      }
       await batch.commit();
       overlay.remove();
     } catch (err) {
@@ -1041,11 +1462,12 @@ async function renderStaff() {
   app.innerHTML = topbarHtml() + `
     <div class="wrap">
       <div class="tabs">
-        <button class="tab ${staffTab === 'projects' ? 'active' : ''}" data-stab="projects">Vos projets</button>
-        <button class="tab ${staffTab === 'calendar' ? 'active' : ''}" data-stab="calendar">Votre planning</button>
+        <button class="tab ${staffTab === 'projects' ? 'active' : ''}" data-stab="projects">${esc(t('yourProjects'))}</button>
+        <button class="tab ${staffTab === 'calendar' ? 'active' : ''}" data-stab="calendar">${esc(t('yourPlanning'))}</button>
       </div>
-      <div id="staff-wrap"><div class="loading">Chargement…</div></div>
+      <div id="staff-wrap"><div class="loading">${esc(t('loadingGeneric'))}</div></div>
     </div>`;
+  wireLangSwitcher();
   document.querySelectorAll('[data-stab]').forEach(btn => {
     btn.addEventListener('click', () => { staffTab = btn.dataset.stab; renderStaff(); });
   });
@@ -1056,27 +1478,27 @@ async function renderStaff() {
 
 function renderStaffProjectsList(wrap) {
   if (!currentPerson.teamId) {
-    wrap.innerHTML = '<p class="empty">Aucune équipe ne vous est associée pour le moment. Contactez votre administrateur.</p>';
+    wrap.innerHTML = `<p class="empty">${esc(t('noTeamAssigned'))}</p>`;
     return;
   }
   const unsub = db.collection('projects').where('teamId', '==', currentPerson.teamId).where('status', '==', 'active')
     .onSnapshot(snap => {
       wrap.innerHTML = `
-        <h2 class="section-title">Vos projets en cours</h2>
-        ${snap.empty ? '<p class="empty">Aucun projet actif assigné à votre équipe.</p>' : snap.docs.map(d => `
+        <h2 class="section-title">${esc(t('activeProjectsTitle'))}</h2>
+        ${snap.empty ? `<p class="empty">${esc(t('noActiveProjects'))}</p>` : snap.docs.map(d => `
           <div class="card project-card" data-project="${d.id}">
             <h3>${esc(d.data().name)}</h3>
-            <p class="empty" style="font-style:normal">${PROJECT_TYPE_LABELS[d.data().type] || d.data().type}</p>
+            <p class="empty" style="font-style:normal">${esc(projectTypeLabel(d.data().type))}</p>
           </div>`).join('')}`;
       wrap.querySelectorAll('[data-project]').forEach(el => {
         el.addEventListener('click', () => renderStaffProjectDetail(el.dataset.project));
       });
-    }, err => showError(wrap, "Erreur : " + err.message));
+    }, err => showError(wrap, t('loadError') + err.message));
   unsubscribers.push(unsub);
 }
 
 function renderStaffCalendar(wrap) {
-  wrap.innerHTML = '<div class="loading">Chargement…</div>';
+  wrap.innerHTML = `<div class="loading">${esc(t('loadingGeneric'))}</div>`;
   db.collection('assignments').where('personUid', '==', currentUser.uid).get().then(snap => {
     const all = snap.docs.map(d => d.data());
     const year = staffCalRefDate.getFullYear(), month = staffCalRefDate.getMonth();
@@ -1093,13 +1515,13 @@ function renderStaffCalendar(wrap) {
       staffCalRefDate = new Date(year, month + 1, 1);
       renderStaffCalendar(wrap);
     });
-  }).catch(err => showError(wrap, "Erreur : " + err.message));
+  }).catch(err => showError(wrap, t('loadError') + err.message));
 }
 
 function renderStaffProjectDetail(projectId) {
   clearSubscriptions();
   const wrap = document.getElementById('staff-wrap');
-  wrap.innerHTML = `<a href="#" class="back-link" id="back-to-staff">← Retour à vos projets</a><div id="project-detail"><div class="loading">Chargement…</div></div>`;
+  wrap.innerHTML = `<a href="#" class="back-link" id="back-to-staff">← ${esc(t('yourProjects'))}</a><div id="project-detail"><div class="loading">${esc(t('loadingGeneric'))}</div></div>`;
   document.getElementById('back-to-staff').addEventListener('click', (e) => { e.preventDefault(); renderStaff(); });
   renderProjectDetailShared(document.getElementById('project-detail'), projectId, 'staff');
 }
@@ -1110,35 +1532,36 @@ function renderStaffProjectDetail(projectId) {
 
 async function renderClient() {
   clearSubscriptions();
-  app.innerHTML = topbarHtml() + `<div class="wrap" id="client-wrap"><div class="loading">Chargement de vos projets…</div></div>`;
+  app.innerHTML = topbarHtml() + `<div class="wrap" id="client-wrap"><div class="loading">${esc(t('loadingGeneric'))}</div></div>`;
+  wireLangSwitcher();
   const wrap = document.getElementById('client-wrap');
   if (!currentPerson.clientId) {
-    wrap.innerHTML = '<p class="empty">Aucun projet ne vous est associé pour le moment. Contactez BN CORE GROUP.</p>';
+    wrap.innerHTML = `<p class="empty">${esc(t('clientNoProject'))}</p>`;
     return;
   }
   const unsub = db.collection('projects').where('clientId', '==', currentPerson.clientId)
     .onSnapshot(snap => {
       wrap.innerHTML = `
-        <h2 class="section-title">Vos projets</h2>
-        ${snap.empty ? '<p class="empty">Aucun projet pour le moment.</p>' : snap.docs.map(d => `
+        <h2 class="section-title">${esc(t('clientYourProjects'))}</h2>
+        ${snap.empty ? `<p class="empty">${esc(t('noProjectsYet'))}</p>` : snap.docs.map(d => `
           <div class="card project-card" data-project="${d.id}">
             <div style="display:flex;justify-content:space-between;align-items:center">
               <h3>${esc(d.data().name)}</h3>
-              <span class="badge badge-${d.data().status}">${d.data().status === 'active' ? 'En cours' : 'Clôturé'}</span>
+              <span class="badge badge-${d.data().status}">${d.data().status === 'active' ? esc(t('statusActiveClient')) : esc(t('statusClosed'))}</span>
             </div>
-            <p class="empty" style="font-style:normal">${PROJECT_TYPE_LABELS[d.data().type] || d.data().type}</p>
+            <p class="empty" style="font-style:normal">${esc(projectTypeLabel(d.data().type))}</p>
           </div>`).join('')}`;
       wrap.querySelectorAll('[data-project]').forEach(el => {
         el.addEventListener('click', () => renderClientProjectDetail(el.dataset.project));
       });
-    }, err => showError(wrap, "Erreur : " + err.message));
+    }, err => showError(wrap, t('loadError') + err.message));
   unsubscribers.push(unsub);
 }
 
 function renderClientProjectDetail(projectId) {
   clearSubscriptions();
   const wrap = document.getElementById('client-wrap');
-  wrap.innerHTML = `<a href="#" class="back-link" id="back-to-client">← Retour à vos projets</a><div id="project-detail"><div class="loading">Chargement…</div></div>`;
+  wrap.innerHTML = `<a href="#" class="back-link" id="back-to-client">← ${esc(t('clientYourProjects'))}</a><div id="project-detail"><div class="loading">${esc(t('loadingGeneric'))}</div></div>`;
   document.getElementById('back-to-client').addEventListener('click', (e) => { e.preventDefault(); renderClient(); });
   renderProjectDetailShared(document.getElementById('project-detail'), projectId, 'client');
 }
@@ -1150,33 +1573,33 @@ function renderClientProjectDetail(projectId) {
 function renderProjectDetailShared(container, projectId, mode) {
   // mode: 'admin' | 'staff' | 'client'
   db.collection('projects').doc(projectId).get().then(projSnap => {
-    if (!projSnap.exists) { container.innerHTML = '<p class="empty">Projet introuvable.</p>'; return; }
+    if (!projSnap.exists) { container.innerHTML = `<p class="empty">${esc(t('projectNotFound'))}</p>`; return; }
     const project = projSnap.data();
 
     container.innerHTML = `
       <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px">
         <h2 class="section-title" style="margin-bottom:0">${esc(project.name)}</h2>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <button class="btn btn-outline btn-sm" id="export-report-btn">Exporter / Imprimer</button>
-          ${mode === 'admin' && project.status === 'active' ? '<button class="btn btn-outline btn-sm" id="close-project-btn">Clôturer le projet</button>' : ''}
+          <button class="btn btn-outline btn-sm" id="export-report-btn">${esc(t('exportBtn'))}</button>
+          ${mode === 'admin' && project.status === 'active' ? `<button class="btn btn-outline btn-sm" id="close-project-btn">${esc(t('closeProjectBtn'))}</button>` : ''}
         </div>
       </div>
       <div id="project-status-bar" style="margin:14px 0"></div>
       <div class="tabs">
-        <button class="tab active" data-ptab="checklist">Avancement</button>
-        <button class="tab" data-ptab="journal">Journal</button>
-        <button class="tab" data-ptab="problems">Problèmes</button>
-        ${mode !== 'client' ? '<button class="tab" data-ptab="timesheet">Heures</button>' : ''}
-        ${mode === 'client' ? '<button class="tab" data-ptab="requests">Mes demandes</button>' : ''}
-        ${mode === 'admin' ? '<button class="tab" data-ptab="requests">Demandes</button>' : ''}
+        <button class="tab active" data-ptab="checklist">${esc(t('tabProgress'))}</button>
+        <button class="tab" data-ptab="journal">${esc(t('tabJournal'))}</button>
+        <button class="tab" data-ptab="problems">${esc(t('tabProblems'))}</button>
+        ${mode !== 'client' ? `<button class="tab" data-ptab="timesheet">${esc(t('tabHours'))}</button>` : ''}
+        ${mode === 'client' ? `<button class="tab" data-ptab="requests">${esc(t('tabMyRequests'))}</button>` : ''}
+        ${mode === 'admin' ? `<button class="tab" data-ptab="requests">${esc(t('tabRequests'))}</button>` : ''}
       </div>
-      <div id="ptab-content"><div class="loading">Chargement…</div></div>`;
+      <div id="ptab-content"><div class="loading">${esc(t('loadingGeneric'))}</div></div>`;
 
     document.getElementById('export-report-btn').addEventListener('click', () => exportProjectReport(projectId, mode));
 
     if (mode === 'admin' && project.status === 'active') {
       document.getElementById('close-project-btn').addEventListener('click', async () => {
-        if (!confirm("Clôturer ce projet ? Le client pourra alors laisser un avis de satisfaction.")) return;
+        if (!confirm(t('closeProjectConfirm'))) return;
         await db.collection('projects').doc(projectId).update({
           status: 'closed',
           closedAt: firebase.firestore.FieldValue.serverTimestamp(),
@@ -1193,9 +1616,9 @@ function renderProjectDetailShared(container, projectId, mode) {
       clearSubscriptions();
       container.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.ptab === activeTab));
       const target = document.getElementById('ptab-content');
-      if (activeTab === 'checklist') renderChecklistTab(target, projectId, mode);
+      if (activeTab === 'checklist') renderChecklistTab(target, projectId, mode, project.type);
       else if (activeTab === 'journal') renderJournalTab(target, projectId, mode);
-      else if (activeTab === 'problems') renderProblemsTab(target, projectId, mode);
+      else if (activeTab === 'problems') renderProblemsTab(target, projectId, mode, project.type);
       else if (activeTab === 'timesheet') renderTimesheetTab(target, projectId, mode);
       else if (activeTab === 'requests') renderRequestsTab(target, projectId, mode);
     };
@@ -1216,23 +1639,23 @@ function renderProjectStatusBar(target, project, projectId, mode) {
     const feedback = snap.exists ? snap.data() : null;
     if (mode === 'client') {
       if (feedback) {
-        target.innerHTML = `<div class="note-box">Projet clôturé le ${fmtDateTime(project.closedAt)}. Merci pour votre avis : <b>${stars(feedback.rating)}</b>${feedback.comment ? ' — ' + esc(feedback.comment) : ''}</div>`;
+        target.innerHTML = `<div class="note-box">${esc(t('closedOnClientThanks')(fmtDateTime(project.closedAt)))}<b>${stars(feedback.rating)}</b>${feedback.comment ? ' — ' + esc(feedback.comment) : ''}</div>`;
       } else {
         target.innerHTML = `
           <div class="card">
-            <h3 style="font-size:1rem">Projet clôturé — votre avis nous intéresse</h3>
+            <h3 style="font-size:1rem">${esc(t('feedbackPromptTitle'))}</h3>
             <form id="feedback-form" style="margin-top:10px">
-              <div class="field"><label>Note</label>
+              <div class="field"><label>${esc(t('ratingLabel'))}</label>
                 <select id="fb-rating">
-                  <option value="5">★★★★★ Excellent</option>
-                  <option value="4">★★★★☆ Très bien</option>
-                  <option value="3">★★★☆☆ Correct</option>
-                  <option value="2">★★☆☆☆ Insuffisant</option>
-                  <option value="1">★☆☆☆☆ Mauvais</option>
+                  <option value="5">${esc(t('rating5'))}</option>
+                  <option value="4">${esc(t('rating4'))}</option>
+                  <option value="3">${esc(t('rating3'))}</option>
+                  <option value="2">${esc(t('rating2'))}</option>
+                  <option value="1">${esc(t('rating1'))}</option>
                 </select>
               </div>
-              <div class="field"><label>Commentaire (optionnel)</label><textarea id="fb-comment"></textarea></div>
-              <button type="submit" class="btn btn-primary btn-sm">Envoyer mon avis</button>
+              <div class="field"><label>${esc(t('commentLabelOptional'))}</label><textarea id="fb-comment"></textarea></div>
+              <button type="submit" class="btn btn-primary btn-sm">${esc(t('sendFeedbackBtn'))}</button>
             </form>
           </div>`;
         document.getElementById('feedback-form').addEventListener('submit', async (e) => {
@@ -1248,13 +1671,13 @@ function renderProjectStatusBar(target, project, projectId, mode) {
             });
             renderProjectStatusBar(target, project, projectId, mode);
           } catch (err) {
-            showError(e.target, "Erreur : " + err.message);
+            showError(e.target, t('errorPrefix') + err.message);
             btn.disabled = false;
           }
         });
       }
     } else {
-      target.innerHTML = `<div class="note-box">Projet clôturé le ${fmtDateTime(project.closedAt)} par ${esc(project.closedByName || '—')}.${feedback ? ` Avis client : <b>${stars(feedback.rating)}</b>${feedback.comment ? ' — ' + esc(feedback.comment) : ''}` : " En attente de l'avis client."}</div>`;
+      target.innerHTML = `<div class="note-box">${esc(t('closedOnAdmin')(fmtDateTime(project.closedAt)))}${esc(project.closedByName || '—')}.${feedback ? ` ${esc(t('clientFeedback'))}<b>${stars(feedback.rating)}</b>${feedback.comment ? ' — ' + esc(feedback.comment) : ''}` : ' ' + esc(t('awaitingClientFeedback'))}</div>`;
     }
   });
 }
@@ -1282,11 +1705,12 @@ async function exportProjectReport(projectId, mode) {
   const totalCount = checklistSnap.size;
 
   const win = window.open('', '_blank');
-  if (!win) { alert("Votre navigateur a bloqué l'ouverture du rapport. Autorisez les pop-ups pour ce site puis réessayez."); return; }
+  if (!win) { alert(t('popupBlocked')); return; }
+  const lang = getLang();
 
   win.document.write(`<!DOCTYPE html>
-<html lang="fr"><head><meta charset="UTF-8">
-<title>Rapport — ${esc(project.name)}</title>
+<html lang="${lang}"><head><meta charset="UTF-8">
+<title>${esc(t('reportTitlePrefix'))}${esc(project.name)}</title>
 <style>
   body{font-family:Arial,Helvetica,sans-serif;color:#2a2016;max-width:800px;margin:0 auto;padding:30px 24px 60px}
   .letterhead{display:flex;align-items:center;gap:16px;border-bottom:3px solid #a8763a;padding-bottom:14px;margin-bottom:22px}
@@ -1309,7 +1733,7 @@ async function exportProjectReport(projectId, mode) {
   @media print { .print-bar{display:none} body{padding:0} }
 </style></head>
 <body>
-  <div class="print-bar"><button onclick="window.print()">Imprimer / Enregistrer en PDF</button></div>
+  <div class="print-bar"><button onclick="window.print()">${esc(t('printSaveBtn'))}</button></div>
   <div class="letterhead">
     <img src="${BN_LOGO_DATA_URI}" alt="BN CORE GROUP">
     <div>
@@ -1319,49 +1743,53 @@ async function exportProjectReport(projectId, mode) {
     </div>
   </div>
 
-  <h1>Rapport de chantier — ${esc(project.name)}</h1>
-  <div class="meta">${esc(PROJECT_TYPE_LABELS[project.type] || project.type)} · Statut : ${project.status === 'active' ? 'En cours' : 'Clôturé'}${project.status === 'closed' && project.closedAt ? ' le ' + fmtDateTime(project.closedAt) : ''} · Document généré le ${new Date().toLocaleDateString('fr-BE')}</div>
+  <h1>${esc(t('reportHeadingPrefix'))}${esc(project.name)}</h1>
+  <div class="meta">${esc(projectTypeLabel(project.type))} · ${project.status === 'active' ? esc(t('statusActiveClient')) : esc(t('statusClosed'))}${project.status === 'closed' && project.closedAt ? ' ' + fmtDateTime(project.closedAt) : ''} · ${esc(t('documentGeneratedOn')(new Date().toLocaleDateString(LOCALE_MAP[lang])))}</div>
 
-  <h2>Avancement (${doneCount} / ${totalCount} étapes)</h2>
-  ${checklistSnap.empty ? '<p>Aucune étape définie.</p>' : checklistSnap.docs.map(d => {
+  <h2>${esc(t('tabProgress'))} (${t('stepsCompleted')(doneCount, totalCount)})</h2>
+  ${checklistSnap.empty ? `<p>${esc(t('noStepsDefined'))}</p>` : checklistSnap.docs.map(d => {
     const s = d.data();
-    return `<div class="step"><span class="${s.done ? 'done' : 'pending'}">${s.done ? '✔' : '○'} ${esc(s.label)}</span>${s.done && s.doneAt ? ` — complété le ${fmtDateTime(s.doneAt)}` : ''}</div>`;
+    const label = s.stepIndex != null ? checklistStepLabel(project.type, s.stepIndex) : (s.label || '');
+    return `<div class="step"><span class="${s.done ? 'done' : 'pending'}">${s.done ? '✔' : '○'} ${esc(label)}</span>${s.done && s.doneAt ? esc(t('reportCompletedOn')(fmtDateTime(s.doneAt))) : ''}</div>`;
   }).join('')}
 
-  <h2>Journal de chantier</h2>
-  ${journalDocs.length === 0 ? '<p>Aucune entrée.</p>' : journalDocs.map(d => {
+  <h2>${esc(t('tabJournal'))}</h2>
+  ${journalDocs.length === 0 ? `<p>${esc(t('noEntriesYet'))}</p>` : journalDocs.map(d => {
     const e = d.data();
     return `<div class="entry"><div class="meta2">${esc(e.authorName)} · ${fmtDateTime(e.createdAt)}</div><div>${esc(e.text)}</div>${(e.photoUrls || []).map(u => `<img src="${esc(u)}">`).join('')}</div>`;
   }).join('')}
 
-  <h2>Problèmes signalés</h2>
-  ${problemDocs.length === 0 ? '<p>Aucun problème communiqué.</p>' : problemDocs.map(d => {
+  <h2>${esc(t('tabProblems'))}</h2>
+  ${problemDocs.length === 0 ? `<p>${esc(t('noProblemsReported'))}</p>` : problemDocs.map(d => {
     const p = d.data();
-    return `<div class="entry"><div class="meta2">${esc(p.reportedByName)} · ${fmtDateTime(p.createdAt)} — ${p.status === 'resolved' ? 'Résolu' : p.status === 'published' ? 'Communiqué' : 'Signalé'}${p.checklistStepLabel ? ' · Étape : ' + esc(p.checklistStepLabel) : ''}</div><div><b>${esc(p.title)}</b> — ${esc(p.description)}</div>${(p.photoUrls || []).map(u => `<img src="${esc(u)}">`).join('')}</div>`;
+    const statusLabel = p.status === 'resolved' ? t('problemStatusResolved') : p.status === 'published' ? t('problemStatusPublished') : t('problemStatusReported');
+    const stepLabel = p.checklistStepIndex != null ? checklistStepLabel(project.type, p.checklistStepIndex) : null;
+    return `<div class="entry"><div class="meta2">${esc(p.reportedByName)} · ${fmtDateTime(p.createdAt)} — ${esc(statusLabel)}${stepLabel ? esc(t('stepConcernedInline')(stepLabel)) : ''}</div><div><b>${esc(p.title)}</b> — ${esc(p.description)}</div>${(p.photoUrls || []).map(u => `<img src="${esc(u)}">`).join('')}</div>`;
   }).join('')}
 
-  ${feedback ? `<h2>Avis client</h2><p>${stars(feedback.rating)}${feedback.comment ? ' — ' + esc(feedback.comment) : ''}</p>` : ''}
+  ${feedback ? `<h2>${esc(t('feedbackHeading'))}</h2><p>${stars(feedback.rating)}${feedback.comment ? ' — ' + esc(feedback.comment) : ''}</p>` : ''}
 
   <div class="footer">BN CORE GROUP — Building from the Core — TVA BE1027.648.484</div>
 </body></html>`);
   win.document.close();
 }
 
-function renderChecklistTab(target, projectId, mode) {
+function renderChecklistTab(target, projectId, mode, projectType) {
   const unsub = db.collection('projects').doc(projectId).collection('checklist').orderBy('order').onSnapshot(snap => {
     const total = snap.size;
     const done = snap.docs.filter(d => d.data().done).length;
     const canEdit = mode !== 'client';
     target.innerHTML = `
       <div class="card">
-        <p style="font-weight:600;margin-bottom:12px">${done} / ${total} étapes complétées</p>
-        ${snap.empty ? '<p class="empty">Aucune étape définie.</p>' : snap.docs.map(d => {
+        <p style="font-weight:600;margin-bottom:12px">${esc(t('stepsCompleted')(done, total))}</p>
+        ${snap.empty ? `<p class="empty">${esc(t('noStepsDefined'))}</p>` : snap.docs.map(d => {
           const s = d.data();
+          const label = s.stepIndex != null ? checklistStepLabel(projectType, s.stepIndex) : (s.label || '');
           return `<div class="checklist-item">
             <input type="checkbox" data-step="${d.id}" ${s.done ? 'checked' : ''} ${canEdit ? '' : 'disabled'}>
             <div style="flex:1">
-              <div class="label ${s.done ? 'done' : ''}">${esc(s.label)}</div>
-              ${s.done ? `<div class="meta">Complété par ${esc(s.doneBy || '—')} le ${fmtDateTime(s.doneAt)}${s.note ? ' — ' + esc(s.note) : ''}</div>` : ''}
+              <div class="label ${s.done ? 'done' : ''}">${esc(label)}</div>
+              ${s.done ? `<div class="meta">${esc(t('completedByOn')(s.doneBy || '—', fmtDateTime(s.doneAt)))}${s.note ? ' — ' + esc(s.note) : ''}</div>` : ''}
             </div>
           </div>`;
         }).join('')}
@@ -1371,7 +1799,7 @@ function renderChecklistTab(target, projectId, mode) {
         cb.addEventListener('change', async () => {
           const stepRef = db.collection('projects').doc(projectId).collection('checklist').doc(cb.dataset.step);
           if (cb.checked) {
-            let note = prompt("Note pour cette étape (optionnel) :", "") || '';
+            let note = prompt(t('stepNotePrompt'), "") || '';
             await stepRef.update({ done: true, doneBy: currentPerson.name, doneAt: firebase.firestore.FieldValue.serverTimestamp(), note });
           } else {
             await stepRef.update({ done: false, doneBy: null, doneAt: null, note: '' });
@@ -1379,7 +1807,7 @@ function renderChecklistTab(target, projectId, mode) {
         });
       });
     }
-  }, err => showError(target, "Erreur : " + err.message));
+  }, err => showError(target, t('loadError') + err.message));
   unsubscribers.push(unsub);
 }
 
@@ -1392,19 +1820,19 @@ function renderJournalTab(target, projectId, mode) {
       ${canPost ? `
         <div class="card">
           <form id="journal-form">
-            <div class="field"><textarea id="journal-text" placeholder="Mise à jour du chantier…" required></textarea></div>
-            <div class="field"><label>Photos (optionnel)</label><input type="file" id="journal-photos" accept="image/*" capture="environment" multiple></div>
+            <div class="field"><textarea id="journal-text" placeholder="${esc(t('journalPlaceholder'))}" required></textarea></div>
+            <div class="field"><label>${esc(t('photosOptionalLabel'))}</label><input type="file" id="journal-photos" accept="image/*" capture="environment" multiple></div>
             <label style="display:flex;align-items:center;gap:8px;margin-bottom:10px;font-size:0.86rem;color:var(--text-dim)">
-              <input type="checkbox" id="journal-visible" checked style="width:auto"> Visible par le client
+              <input type="checkbox" id="journal-visible" checked style="width:auto"> ${esc(t('visibleToClientLabel'))}
             </label>
-            <button type="submit" class="btn btn-primary btn-sm">Publier</button>
+            <button type="submit" class="btn btn-primary btn-sm">${esc(t('publishBtn'))}</button>
           </form>
         </div>` : ''}
       <div class="card">
-        ${entries.length === 0 ? '<p class="empty">Aucune entrée pour le moment.</p>' : entries.map(d => {
+        ${entries.length === 0 ? `<p class="empty">${esc(t('noEntriesYet'))}</p>` : entries.map(d => {
           const e = d.data();
           return `<div class="journal-entry">
-            <div class="meta">${esc(e.authorName)} · ${fmtDateTime(e.createdAt)} ${e.visibleToClient ? '' : '<span class="badge badge-reported" style="margin-left:6px">Interne</span>'}</div>
+            <div class="meta">${esc(e.authorName)} · ${fmtDateTime(e.createdAt)} ${e.visibleToClient ? '' : `<span class="badge badge-reported" style="margin-left:6px">${esc(t('internalBadge'))}</span>`}</div>
             <div>${esc(e.text)}</div>
             ${photoGalleryHtml(e.photoUrls)}
           </div>`;
@@ -1422,24 +1850,24 @@ function renderJournalTab(target, projectId, mode) {
         btn.disabled = true;
         const docRef = db.collection('projects').doc(projectId).collection('journal').doc();
         try {
-          btn.textContent = files.length ? 'Envoi des photos…' : 'Publication…';
+          btn.textContent = files.length ? t('sendingPhotos') : t('publishing');
           const photoUrls = files.length ? await uploadPhotos(`projects/${projectId}/journal/${docRef.id}`, files) : [];
           await docRef.set({
             text, visibleToClient, photoUrls, authorName: currentPerson.name, authorRole: currentPerson.role,
             createdAt: firebase.firestore.FieldValue.serverTimestamp(),
           });
         } catch (err) {
-          showError(form, "Erreur d'envoi : " + err.message);
+          showError(form, t('sendErrorPrefix') + err.message);
           btn.disabled = false;
-          btn.textContent = 'Publier';
+          btn.textContent = t('publishBtn');
         }
       });
     }
-  }, err => showError(target, "Erreur : " + err.message));
+  }, err => showError(target, t('loadError') + err.message));
   unsubscribers.push(unsub);
 }
 
-function renderProblemsTab(target, projectId, mode) {
+function renderProblemsTab(target, projectId, mode, projectType) {
   const canReport = mode === 'staff';
   const unsub = db.collection('projects').doc(projectId).collection('problems').orderBy('createdAt', 'desc').onSnapshot(async (snap) => {
     const items = mode === 'client' ? snap.docs.filter(d => d.data().visibleToClient) : snap.docs;
@@ -1447,31 +1875,37 @@ function renderProblemsTab(target, projectId, mode) {
     let checklistOptions = '';
     if (canReport) {
       const checklistSnap = await db.collection('projects').doc(projectId).collection('checklist').orderBy('order').get();
-      checklistOptions = checklistSnap.docs.map(d => `<option value="${d.id}" data-label="${esc(d.data().label)}">${esc(d.data().label)}</option>`).join('');
+      checklistOptions = checklistSnap.docs.map(d => {
+        const stepIndex = d.data().stepIndex;
+        const label = stepIndex != null ? checklistStepLabel(projectType, stepIndex) : (d.data().label || '');
+        return `<option value="${stepIndex}" data-label="${esc(label)}">${esc(label)}</option>`;
+      }).join('');
     }
 
     target.innerHTML = `
       ${canReport ? `
         <div class="card">
           <form id="problem-form">
-            <div class="field"><label>Titre</label><input type="text" id="problem-title" required></div>
-            <div class="field"><label>Étape concernée (optionnel)</label>
-              <select id="problem-step"><option value="">Aucune étape spécifique</option>${checklistOptions}</select>
+            <div class="field"><label>${esc(t('problemTitleLabel'))}</label><input type="text" id="problem-title" required></div>
+            <div class="field"><label>${esc(t('stepConcernedLabel'))}</label>
+              <select id="problem-step"><option value="">${esc(t('noSpecificStep'))}</option>${checklistOptions}</select>
             </div>
-            <div class="field"><label>Description</label><textarea id="problem-desc" required></textarea></div>
-            <div class="field"><label>Photos (optionnel)</label><input type="file" id="problem-photos" accept="image/*" capture="environment" multiple></div>
-            <button type="submit" class="btn btn-primary btn-sm">Signaler</button>
+            <div class="field"><label>${esc(t('descriptionLabel'))}</label><textarea id="problem-desc" required></textarea></div>
+            <div class="field"><label>${esc(t('photosOptionalLabel'))}</label><input type="file" id="problem-photos" accept="image/*" capture="environment" multiple></div>
+            <button type="submit" class="btn btn-primary btn-sm">${esc(t('reportBtn'))}</button>
           </form>
         </div>` : ''}
       <div class="card">
-        ${items.length === 0 ? '<p class="empty">Aucun problème signalé.</p>' : items.map(d => {
+        ${items.length === 0 ? `<p class="empty">${esc(t('noProblemsReported'))}</p>` : items.map(d => {
           const p = d.data();
+          const statusLabel = p.status === 'reported' ? t('problemStatusReported') : p.status === 'published' ? t('problemStatusPublished') : t('problemStatusResolved');
+          const stepLabel = p.checklistStepIndex != null ? checklistStepLabel(projectType, p.checklistStepIndex) : null;
           return `<div style="padding:12px 0;border-bottom:1px solid var(--border)">
             <div style="display:flex;justify-content:space-between;align-items:flex-start">
               <h3 style="font-size:1rem">${esc(p.title)}</h3>
-              <span class="badge badge-${p.status}">${p.status === 'reported' ? 'Signalé' : p.status === 'published' ? 'Communiqué' : 'Résolu'}</span>
+              <span class="badge badge-${p.status}">${esc(statusLabel)}</span>
             </div>
-            <p class="empty" style="font-style:normal;margin:4px 0">${esc(p.reportedByName)} · ${fmtDateTime(p.createdAt)}${p.checklistStepLabel ? ` · Étape concernée : ${esc(p.checklistStepLabel)}` : ''}</p>
+            <p class="empty" style="font-style:normal;margin:4px 0">${esc(p.reportedByName)} · ${fmtDateTime(p.createdAt)}${stepLabel ? esc(t('stepConcernedInline')(stepLabel)) : ''}</p>
             <p>${esc(p.description)}</p>
             ${photoGalleryHtml(p.photoUrls)}
           </div>`;
@@ -1483,8 +1917,7 @@ function renderProblemsTab(target, projectId, mode) {
         const title = document.getElementById('problem-title').value.trim();
         const description = document.getElementById('problem-desc').value.trim();
         const stepSel = document.getElementById('problem-step');
-        const checklistStepId = stepSel.value || null;
-        const checklistStepLabel = checklistStepId ? stepSel.selectedOptions[0].dataset.label : null;
+        const checklistStepIndex = stepSel.value !== '' ? parseInt(stepSel.value, 10) : null;
         const files = Array.from(document.getElementById('problem-photos').files || []);
         if (!title || !description) return;
         const form = e.target;
@@ -1492,21 +1925,21 @@ function renderProblemsTab(target, projectId, mode) {
         btn.disabled = true;
         const docRef = db.collection('projects').doc(projectId).collection('problems').doc();
         try {
-          btn.textContent = files.length ? 'Envoi des photos…' : 'Signalement…';
+          btn.textContent = files.length ? t('sendingPhotos') : t('reporting');
           const photoUrls = files.length ? await uploadPhotos(`projects/${projectId}/problems/${docRef.id}`, files) : [];
           await docRef.set({
             title, description, photoUrls, status: 'reported', visibleToClient: false,
-            checklistStepId, checklistStepLabel,
+            checklistStepIndex,
             reportedByName: currentPerson.name, createdAt: firebase.firestore.FieldValue.serverTimestamp(),
           });
         } catch (err) {
-          showError(form, "Erreur d'envoi : " + err.message);
+          showError(form, t('sendErrorPrefix') + err.message);
           btn.disabled = false;
-          btn.textContent = 'Signaler';
+          btn.textContent = t('reportBtn');
         }
       });
     }
-  }, err => showError(target, "Erreur : " + err.message));
+  }, err => showError(target, t('loadError') + err.message));
   unsubscribers.push(unsub);
 }
 
@@ -1530,28 +1963,28 @@ function renderTimesheetTab(target, projectId, mode) {
       target.innerHTML = `
         <div class="card">
           <div class="timesheet-clock">
-            <button class="btn btn-primary" id="clock-btn">${isIn ? 'Pointer le départ' : "Pointer l'arrivée"}</button>
-            <span class="status">${last ? (isIn ? `En cours depuis ${fmtDateTime(last.in.timestamp)}` : `Dernier départ : ${fmtDateTime(last.out.timestamp)}`) : 'Aucun pointage encore'}</span>
+            <button class="btn btn-primary" id="clock-btn">${esc(isIn ? t('clockOutBtn') : t('clockInBtn'))}</button>
+            <span class="status">${last ? esc(isIn ? t('ongoingSince')(fmtDateTime(last.in.timestamp)) : t('lastClockOut')(fmtDateTime(last.out.timestamp))) : esc(t('noClockYet'))}</span>
           </div>
           <div class="row" style="margin-top:14px">
             <div class="card" style="background:var(--gold-100);border:none;text-align:center;padding:14px">
               <div style="font-size:1.4rem;font-weight:700;color:var(--brown-900)">${fmtDuration(todayMs)}</div>
-              <div class="empty" style="font-style:normal">Aujourd'hui</div>
+              <div class="empty" style="font-style:normal">${esc(t('today'))}</div>
             </div>
             <div class="card" style="background:var(--gold-100);border:none;text-align:center;padding:14px">
               <div style="font-size:1.4rem;font-weight:700;color:var(--brown-900)">${fmtDuration(weekMs)}</div>
-              <div class="empty" style="font-style:normal">7 derniers jours</div>
+              <div class="empty" style="font-style:normal">${esc(t('last7days'))}</div>
             </div>
           </div>
         </div>
         <div class="card">
           <table>
-            <thead><tr><th>Arrivée</th><th>Départ</th><th>Durée</th></tr></thead>
+            <thead><tr><th>${esc(t('colArrival'))}</th><th>${esc(t('colDeparture'))}</th><th>${esc(t('colDuration'))}</th></tr></thead>
             <tbody>${shifts.map(s => `<tr>
               <td>${s.in ? fmtDateTime(s.in.timestamp) : '—'}</td>
-              <td>${s.out ? fmtDateTime(s.out.timestamp) : (s.ongoing ? '<span class="badge badge-active">en cours</span>' : '—')}</td>
+              <td>${s.out ? fmtDateTime(s.out.timestamp) : (s.ongoing ? `<span class="badge badge-active">${esc(t('ongoingBadge'))}</span>` : '—')}</td>
               <td>${s.ongoing ? '—' : fmtDuration(s.ms)}</td>
-            </tr>`).join('') || '<tr><td colspan="3" class="empty">Aucun pointage.</td></tr>'}</tbody>
+            </tr>`).join('') || `<tr><td colspan="3" class="empty">${esc(t('noTimesheetRows'))}</td></tr>`}</tbody>
           </table>
         </div>`;
       document.getElementById('clock-btn').addEventListener('click', async () => {
@@ -1560,7 +1993,7 @@ function renderTimesheetTab(target, projectId, mode) {
           timestamp: firebase.firestore.FieldValue.serverTimestamp(),
         });
       });
-    }, err => showError(target, "Erreur : " + err.message));
+    }, err => showError(target, t('loadError') + err.message));
   unsubscribers.push(unsub);
 }
 
@@ -1605,20 +2038,20 @@ function renderRequestsTab(target, projectId, mode) {
       ${canSubmit ? `
         <div class="card">
           <form id="request-form">
-            <div class="field"><label>Votre demande</label><textarea id="request-text" required></textarea></div>
-            <button type="submit" class="btn btn-primary btn-sm">Envoyer</button>
+            <div class="field"><label>${esc(t('yourRequestLabel'))}</label><textarea id="request-text" required></textarea></div>
+            <button type="submit" class="btn btn-primary btn-sm">${esc(t('sendBtn'))}</button>
           </form>
         </div>` : ''}
       <div class="card">
-        ${snap.empty ? '<p class="empty">Aucune demande.</p>' : snap.docs.map(d => {
+        ${snap.empty ? `<p class="empty">${esc(t('noRequests'))}</p>` : snap.docs.map(d => {
           const r = d.data();
           return `<div style="padding:12px 0;border-bottom:1px solid var(--border)">
             <div style="display:flex;justify-content:space-between;align-items:flex-start">
               <p class="empty" style="font-style:normal">${esc(r.fromName)} · ${fmtDateTime(r.createdAt)}</p>
-              <span class="badge badge-${r.status}">${r.status === 'open' ? 'Ouverte' : 'Répondu'}</span>
+              <span class="badge badge-${r.status}">${r.status === 'open' ? esc(t('requestOpen')) : esc(t('requestAnswered'))}</span>
             </div>
             <p style="margin-top:6px">${esc(r.text)}</p>
-            ${r.response ? `<div class="note-box" style="margin-top:8px"><b>Réponse :</b> ${esc(r.response)}</div>` : ''}
+            ${r.response ? `<div class="note-box" style="margin-top:8px"><b>${esc(t('responseLabel'))}</b>${esc(r.response)}</div>` : ''}
           </div>`;
         }).join('')}
       </div>`;
@@ -1634,6 +2067,6 @@ function renderRequestsTab(target, projectId, mode) {
         e.target.reset();
       });
     }
-  }, err => showError(target, "Erreur : " + err.message));
+  }, err => showError(target, t('loadError') + err.message));
   unsubscribers.push(unsub);
 }

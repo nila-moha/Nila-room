@@ -44,6 +44,20 @@ client).
   chargées restent consultables sans réseau, et les actions faites hors
   connexion (pointage, coche d'étape, message) partent automatiquement
   dès que la connexion revient.
+- **Français / English / Română** : chaque personne choisit sa langue
+  avec les boutons FR/EN/RO en haut de l'écran — mémorisé sur son propre
+  appareil, sans rien changer pour les autres. Couvre tout ce qu'un
+  ouvrier ou un client voit : connexion, création de compte, projets,
+  avancement (étapes du Manuel de contrôle interne), journal, problèmes,
+  heures, demandes, et le rapport exporté en PDF. Votre interface de
+  gestion (équipes, clients, comptes, calendrier) reste en français
+  uniquement, puisque c'est votre outil à vous.
+  **À faire avant un premier chantier réel avec une équipe roumaine :**
+  la traduction roumaine des étapes techniques (sécurité électrique,
+  procédures) est une traduction standard, pas relue par un technicien
+  roumain natif du métier — faites-la vérifier une fois par quelqu'un
+  du terrain pour éviter une mauvaise compréhension sur un point de
+  sécurité.
 
 ## Ce que ce n'est PAS (pour l'instant)
 
