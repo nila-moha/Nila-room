@@ -148,6 +148,17 @@ service cloud.firestore {
         allow create: if isAdmin() || isMyTeamProject(projectId);
         allow update, delete: if isAdmin();
       }
+
+      // Avis de satisfaction client, laissé à la clôture du projet (doc
+      // fixe "avis"). Le client ne peut écrire que tant que le projet est
+      // clôturé — pas avant, pas pour se corriger indéfiniment après coup
+      // sans repasser par l'admin.
+      match /feedback/{feedbackId} {
+        allow read: if isAdmin() || isMyTeamProject(projectId) || isMyClientProject(projectId);
+        allow create, update: if isAdmin() ||
+          (isMyClientProject(projectId) && projectOf(projectId).status == 'closed');
+        allow delete: if isAdmin();
+      }
     }
   }
 }

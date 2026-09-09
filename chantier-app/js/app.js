@@ -1154,7 +1154,14 @@ function renderProjectDetailShared(container, projectId, mode) {
     const project = projSnap.data();
 
     container.innerHTML = `
-      <h2 class="section-title">${esc(project.name)}</h2>
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px">
+        <h2 class="section-title" style="margin-bottom:0">${esc(project.name)}</h2>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-outline btn-sm" id="export-report-btn">Exporter / Imprimer</button>
+          ${mode === 'admin' && project.status === 'active' ? '<button class="btn btn-outline btn-sm" id="close-project-btn">Clôturer le projet</button>' : ''}
+        </div>
+      </div>
+      <div id="project-status-bar" style="margin:14px 0"></div>
       <div class="tabs">
         <button class="tab active" data-ptab="checklist">Avancement</button>
         <button class="tab" data-ptab="journal">Journal</button>
@@ -1164,6 +1171,22 @@ function renderProjectDetailShared(container, projectId, mode) {
         ${mode === 'admin' ? '<button class="tab" data-ptab="requests">Demandes</button>' : ''}
       </div>
       <div id="ptab-content"><div class="loading">Chargement…</div></div>`;
+
+    document.getElementById('export-report-btn').addEventListener('click', () => exportProjectReport(projectId, mode));
+
+    if (mode === 'admin' && project.status === 'active') {
+      document.getElementById('close-project-btn').addEventListener('click', async () => {
+        if (!confirm("Clôturer ce projet ? Le client pourra alors laisser un avis de satisfaction.")) return;
+        await db.collection('projects').doc(projectId).update({
+          status: 'closed',
+          closedAt: firebase.firestore.FieldValue.serverTimestamp(),
+          closedByName: currentPerson.name,
+        });
+        renderProjectDetailShared(container, projectId, mode);
+      });
+    }
+
+    renderProjectStatusBar(document.getElementById('project-status-bar'), project, projectId, mode);
 
     let activeTab = 'checklist';
     const renderTab = () => {
@@ -1181,6 +1204,147 @@ function renderProjectDetailShared(container, projectId, mode) {
     });
     renderTab();
   });
+}
+
+// Bandeau de clôture / avis client — indépendant des onglets (get() ponctuel,
+// pas un onSnapshot, pour ne pas être coupé par le clearSubscriptions() qui
+// tourne à chaque changement d'onglet juste en dessous).
+function renderProjectStatusBar(target, project, projectId, mode) {
+  if (project.status !== 'closed') { target.innerHTML = ''; return; }
+  const stars = (n) => '★'.repeat(n) + '☆'.repeat(5 - n);
+  db.collection('projects').doc(projectId).collection('feedback').doc('avis').get().then(snap => {
+    const feedback = snap.exists ? snap.data() : null;
+    if (mode === 'client') {
+      if (feedback) {
+        target.innerHTML = `<div class="note-box">Projet clôturé le ${fmtDateTime(project.closedAt)}. Merci pour votre avis : <b>${stars(feedback.rating)}</b>${feedback.comment ? ' — ' + esc(feedback.comment) : ''}</div>`;
+      } else {
+        target.innerHTML = `
+          <div class="card">
+            <h3 style="font-size:1rem">Projet clôturé — votre avis nous intéresse</h3>
+            <form id="feedback-form" style="margin-top:10px">
+              <div class="field"><label>Note</label>
+                <select id="fb-rating">
+                  <option value="5">★★★★★ Excellent</option>
+                  <option value="4">★★★★☆ Très bien</option>
+                  <option value="3">★★★☆☆ Correct</option>
+                  <option value="2">★★☆☆☆ Insuffisant</option>
+                  <option value="1">★☆☆☆☆ Mauvais</option>
+                </select>
+              </div>
+              <div class="field"><label>Commentaire (optionnel)</label><textarea id="fb-comment"></textarea></div>
+              <button type="submit" class="btn btn-primary btn-sm">Envoyer mon avis</button>
+            </form>
+          </div>`;
+        document.getElementById('feedback-form').addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const rating = parseInt(document.getElementById('fb-rating').value, 10);
+          const comment = document.getElementById('fb-comment').value.trim();
+          const btn = e.target.querySelector('button[type=submit]');
+          btn.disabled = true;
+          try {
+            await db.collection('projects').doc(projectId).collection('feedback').doc('avis').set({
+              rating, comment, submittedByName: currentPerson.name,
+              submittedAt: firebase.firestore.FieldValue.serverTimestamp(),
+            });
+            renderProjectStatusBar(target, project, projectId, mode);
+          } catch (err) {
+            showError(e.target, "Erreur : " + err.message);
+            btn.disabled = false;
+          }
+        });
+      }
+    } else {
+      target.innerHTML = `<div class="note-box">Projet clôturé le ${fmtDateTime(project.closedAt)} par ${esc(project.closedByName || '—')}.${feedback ? ` Avis client : <b>${stars(feedback.rating)}</b>${feedback.comment ? ' — ' + esc(feedback.comment) : ''}` : " En attente de l'avis client."}</div>`;
+    }
+  });
+}
+
+// Rapport imprimable / exportable en PDF (via l'impression du navigateur) —
+// utilisable par l'admin, l'équipe ou le client depuis le détail d'un projet.
+async function exportProjectReport(projectId, mode) {
+  const projSnap = await db.collection('projects').doc(projectId).get();
+  if (!projSnap.exists) return;
+  const project = projSnap.data();
+
+  const [checklistSnap, journalSnap, problemsSnap, feedbackSnap] = await Promise.all([
+    db.collection('projects').doc(projectId).collection('checklist').orderBy('order').get(),
+    db.collection('projects').doc(projectId).collection('journal').orderBy('createdAt', 'desc').get(),
+    db.collection('projects').doc(projectId).collection('problems').orderBy('createdAt', 'desc').get(),
+    db.collection('projects').doc(projectId).collection('feedback').doc('avis').get(),
+  ]);
+
+  const isClient = mode === 'client';
+  const journalDocs = isClient ? journalSnap.docs.filter(d => d.data().visibleToClient) : journalSnap.docs;
+  const problemDocs = isClient ? problemsSnap.docs.filter(d => d.data().visibleToClient) : problemsSnap.docs;
+  const feedback = feedbackSnap.exists ? feedbackSnap.data() : null;
+  const stars = (n) => '★'.repeat(n) + '☆'.repeat(5 - n);
+  const doneCount = checklistSnap.docs.filter(d => d.data().done).length;
+  const totalCount = checklistSnap.size;
+
+  const win = window.open('', '_blank');
+  if (!win) { alert("Votre navigateur a bloqué l'ouverture du rapport. Autorisez les pop-ups pour ce site puis réessayez."); return; }
+
+  win.document.write(`<!DOCTYPE html>
+<html lang="fr"><head><meta charset="UTF-8">
+<title>Rapport — ${esc(project.name)}</title>
+<style>
+  body{font-family:Arial,Helvetica,sans-serif;color:#2a2016;max-width:800px;margin:0 auto;padding:30px 24px 60px}
+  .letterhead{display:flex;align-items:center;gap:16px;border-bottom:3px solid #a8763a;padding-bottom:14px;margin-bottom:22px}
+  .letterhead img{width:56px;height:56px;object-fit:contain}
+  .letterhead .name{font-size:1.3rem;font-weight:700;color:#2e2114}
+  .letterhead .tagline{font-size:0.82rem;color:#8a7154;font-style:italic}
+  .letterhead .coords{font-size:0.74rem;color:#8c7c65;margin-top:2px}
+  h1{font-size:1.3rem;color:#2e2114;margin:0 0 4px}
+  h2{font-size:1.02rem;color:#2e2114;border-bottom:1px solid #e8ddc9;padding-bottom:4px;margin-top:28px}
+  .meta{font-size:0.85rem;color:#5e5140;margin-bottom:18px}
+  .step{padding:6px 0;border-bottom:1px solid #efe4d0;font-size:0.9rem}
+  .step .done{color:#1f6b3a}
+  .step .pending{color:#8c7c65}
+  .entry{border-left:3px solid #c9974f;padding:8px 0 8px 12px;margin-bottom:10px;font-size:0.88rem}
+  .entry .meta2{font-size:0.74rem;color:#8c7c65;margin-bottom:3px}
+  .entry img{max-width:220px;margin:4px 6px 0 0;border-radius:6px}
+  .footer{margin-top:40px;padding-top:12px;border-top:1px solid #e8ddc9;font-size:0.72rem;color:#8c7c65;text-align:center}
+  .print-bar{text-align:right;margin-bottom:18px}
+  .print-bar button{background:#a8763a;color:#fff;border:none;padding:10px 20px;border-radius:8px;font-size:0.9rem;cursor:pointer}
+  @media print { .print-bar{display:none} body{padding:0} }
+</style></head>
+<body>
+  <div class="print-bar"><button onclick="window.print()">Imprimer / Enregistrer en PDF</button></div>
+  <div class="letterhead">
+    <img src="${BN_LOGO_DATA_URI}" alt="BN CORE GROUP">
+    <div>
+      <div class="name">BN CORE GROUP</div>
+      <div class="tagline">Building from the Core</div>
+      <div class="coords">Ll. Graffplein 15, 1780 Wemmel, Belgique — TVA BE1027.648.484 — +32 471 99 08 25 — info@bncoregroup.com</div>
+    </div>
+  </div>
+
+  <h1>Rapport de chantier — ${esc(project.name)}</h1>
+  <div class="meta">${esc(PROJECT_TYPE_LABELS[project.type] || project.type)} · Statut : ${project.status === 'active' ? 'En cours' : 'Clôturé'}${project.status === 'closed' && project.closedAt ? ' le ' + fmtDateTime(project.closedAt) : ''} · Document généré le ${new Date().toLocaleDateString('fr-BE')}</div>
+
+  <h2>Avancement (${doneCount} / ${totalCount} étapes)</h2>
+  ${checklistSnap.empty ? '<p>Aucune étape définie.</p>' : checklistSnap.docs.map(d => {
+    const s = d.data();
+    return `<div class="step"><span class="${s.done ? 'done' : 'pending'}">${s.done ? '✔' : '○'} ${esc(s.label)}</span>${s.done && s.doneAt ? ` — complété le ${fmtDateTime(s.doneAt)}` : ''}</div>`;
+  }).join('')}
+
+  <h2>Journal de chantier</h2>
+  ${journalDocs.length === 0 ? '<p>Aucune entrée.</p>' : journalDocs.map(d => {
+    const e = d.data();
+    return `<div class="entry"><div class="meta2">${esc(e.authorName)} · ${fmtDateTime(e.createdAt)}</div><div>${esc(e.text)}</div>${(e.photoUrls || []).map(u => `<img src="${esc(u)}">`).join('')}</div>`;
+  }).join('')}
+
+  <h2>Problèmes signalés</h2>
+  ${problemDocs.length === 0 ? '<p>Aucun problème communiqué.</p>' : problemDocs.map(d => {
+    const p = d.data();
+    return `<div class="entry"><div class="meta2">${esc(p.reportedByName)} · ${fmtDateTime(p.createdAt)} — ${p.status === 'resolved' ? 'Résolu' : p.status === 'published' ? 'Communiqué' : 'Signalé'}${p.checklistStepLabel ? ' · Étape : ' + esc(p.checklistStepLabel) : ''}</div><div><b>${esc(p.title)}</b> — ${esc(p.description)}</div>${(p.photoUrls || []).map(u => `<img src="${esc(u)}">`).join('')}</div>`;
+  }).join('')}
+
+  ${feedback ? `<h2>Avis client</h2><p>${stars(feedback.rating)}${feedback.comment ? ' — ' + esc(feedback.comment) : ''}</p>` : ''}
+
+  <div class="footer">BN CORE GROUP — Building from the Core — TVA BE1027.648.484</div>
+</body></html>`);
+  win.document.close();
 }
 
 function renderChecklistTab(target, projectId, mode) {
@@ -1277,13 +1441,23 @@ function renderJournalTab(target, projectId, mode) {
 
 function renderProblemsTab(target, projectId, mode) {
   const canReport = mode === 'staff';
-  const unsub = db.collection('projects').doc(projectId).collection('problems').orderBy('createdAt', 'desc').onSnapshot(snap => {
+  const unsub = db.collection('projects').doc(projectId).collection('problems').orderBy('createdAt', 'desc').onSnapshot(async (snap) => {
     const items = mode === 'client' ? snap.docs.filter(d => d.data().visibleToClient) : snap.docs;
+
+    let checklistOptions = '';
+    if (canReport) {
+      const checklistSnap = await db.collection('projects').doc(projectId).collection('checklist').orderBy('order').get();
+      checklistOptions = checklistSnap.docs.map(d => `<option value="${d.id}" data-label="${esc(d.data().label)}">${esc(d.data().label)}</option>`).join('');
+    }
+
     target.innerHTML = `
       ${canReport ? `
         <div class="card">
           <form id="problem-form">
             <div class="field"><label>Titre</label><input type="text" id="problem-title" required></div>
+            <div class="field"><label>Étape concernée (optionnel)</label>
+              <select id="problem-step"><option value="">Aucune étape spécifique</option>${checklistOptions}</select>
+            </div>
             <div class="field"><label>Description</label><textarea id="problem-desc" required></textarea></div>
             <div class="field"><label>Photos (optionnel)</label><input type="file" id="problem-photos" accept="image/*" capture="environment" multiple></div>
             <button type="submit" class="btn btn-primary btn-sm">Signaler</button>
@@ -1297,7 +1471,7 @@ function renderProblemsTab(target, projectId, mode) {
               <h3 style="font-size:1rem">${esc(p.title)}</h3>
               <span class="badge badge-${p.status}">${p.status === 'reported' ? 'Signalé' : p.status === 'published' ? 'Communiqué' : 'Résolu'}</span>
             </div>
-            <p class="empty" style="font-style:normal;margin:4px 0">${esc(p.reportedByName)} · ${fmtDateTime(p.createdAt)}</p>
+            <p class="empty" style="font-style:normal;margin:4px 0">${esc(p.reportedByName)} · ${fmtDateTime(p.createdAt)}${p.checklistStepLabel ? ` · Étape concernée : ${esc(p.checklistStepLabel)}` : ''}</p>
             <p>${esc(p.description)}</p>
             ${photoGalleryHtml(p.photoUrls)}
           </div>`;
@@ -1308,6 +1482,9 @@ function renderProblemsTab(target, projectId, mode) {
         e.preventDefault();
         const title = document.getElementById('problem-title').value.trim();
         const description = document.getElementById('problem-desc').value.trim();
+        const stepSel = document.getElementById('problem-step');
+        const checklistStepId = stepSel.value || null;
+        const checklistStepLabel = checklistStepId ? stepSel.selectedOptions[0].dataset.label : null;
         const files = Array.from(document.getElementById('problem-photos').files || []);
         if (!title || !description) return;
         const form = e.target;
@@ -1319,6 +1496,7 @@ function renderProblemsTab(target, projectId, mode) {
           const photoUrls = files.length ? await uploadPhotos(`projects/${projectId}/problems/${docRef.id}`, files) : [];
           await docRef.set({
             title, description, photoUrls, status: 'reported', visibleToClient: false,
+            checklistStepId, checklistStepLabel,
             reportedByName: currentPerson.name, createdAt: firebase.firestore.FieldValue.serverTimestamp(),
           });
         } catch (err) {

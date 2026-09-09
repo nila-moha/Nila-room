@@ -24,6 +24,20 @@ client).
 - **Photos** : datées et horodatées automatiquement (date de l'envoi),
   redimensionnées automatiquement avant l'envoi pour ne pas consommer
   trop de données mobiles.
+- **Problèmes liés à une étape** : en signalant un problème, le
+  personnel peut le rattacher à l'étape du Manuel de contrôle interne
+  concernée — utile pour retrouver rapidement quelle partie du chantier
+  a posé souci.
+- **Clôture de projet + avis client** : vous clôturez un projet en un
+  clic ; le client voit alors une petite fiche pour noter sa
+  satisfaction (1 à 5 étoiles + commentaire libre), visible ensuite
+  côté admin sur ce projet.
+- **Export / impression en PDF** : depuis n'importe quel projet
+  (admin, personnel ou client), un bouton "Exporter / Imprimer" ouvre
+  un rapport propre à l'en-tête BN CORE GROUP (avancement, journal,
+  problèmes communiqués, avis client) — le client peut l'enregistrer
+  en PDF via la fonction "Imprimer" de son navigateur, sans rien
+  installer.
 - **Installable et utilisable hors connexion** : ouverte depuis un
   téléphone, l'app propose de s'ajouter à l'écran d'accueil (comme une
   vraie application, sans passer par un App Store) ; les données déjà
