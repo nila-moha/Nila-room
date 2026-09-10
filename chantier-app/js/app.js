@@ -2201,9 +2201,10 @@ function renderMileageSection(target, projectId) {
 }
 
 function renderTimesheetTabAdmin(target, projectId) {
-  target.innerHTML = `<div id="admin-hours-section"><div class="loading">Chargement…</div></div><div id="admin-mileage-section" style="margin-top:16px"></div>`;
+  target.innerHTML = `<div id="admin-hours-section"><div class="loading">Chargement…</div></div><div id="admin-mileage-section" style="margin-top:16px"></div><div id="admin-expenses-section" style="margin-top:16px"></div>`;
   const hoursSection = document.getElementById('admin-hours-section');
   const mileageSection = document.getElementById('admin-mileage-section');
+  renderAdminExpensesSection(document.getElementById('admin-expenses-section'), projectId);
 
   const unsub = db.collection('projects').doc(projectId).collection('timesheets').onSnapshot(snap => {
     const byPerson = {};
@@ -2254,6 +2255,63 @@ function renderTimesheetTabAdmin(target, projectId) {
       </div>`;
   }, err => showError(mileageSection, "Erreur : " + err.message));
   unsubscribers.push(unsub2);
+}
+
+// Frais d'hébergement/repas facturés au client — usage strictement admin :
+// c'est ce que vous facturez, pas ce que vous payez à l'ouvrier, donc
+// jamais montré ni saisissable côté équipe ou client (voir firestore.rules,
+// /expenses n'autorise que isAdmin()).
+function renderAdminExpensesSection(target, projectId) {
+  target.innerHTML = '<div class="loading">Chargement…</div>';
+  Promise.all([
+    db.collection('projects').doc(projectId).get(),
+    db.collection('projects').doc(projectId).collection('expenses').get(),
+  ]).then(([projSnap, expSnap]) => {
+    const project = projSnap.data();
+    const expenses = {};
+    expSnap.docs.forEach(d => { expenses[d.id] = d.data(); });
+    return db.collection('people').where('teamId', '==', project.teamId || '__aucune__').get().then(peopleSnap => {
+      const people = peopleSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+      target.innerHTML = `
+        <div class="card">
+          <h3>Frais à facturer (hébergement / repas)</h3>
+          <p class="empty">Usage interne uniquement — jamais visible ni modifiable côté équipe ou client.</p>
+          <table style="margin-top:8px">
+            <thead><tr><th>Personne</th><th>Nuits d'hébergement</th><th>Jours de repas (sans hébergement)</th><th></th></tr></thead>
+            <tbody>
+              ${people.length === 0 ? '<tr><td colspan="4" class="empty">Aucune personne dans cette équipe.</td></tr>' : people.map(p => {
+                const e = expenses[p.id] || { nights: 0, mealDays: 0 };
+                return `<tr>
+                  <td>${esc(p.name)}</td>
+                  <td><input type="number" min="0" step="1" value="${e.nights || 0}" data-nights="${p.id}" style="width:80px"></td>
+                  <td><input type="number" min="0" step="1" value="${e.mealDays || 0}" data-meals="${p.id}" style="width:80px"></td>
+                  <td><button type="button" class="btn btn-outline btn-sm" data-save-expense="${p.id}" data-name="${esc(p.name)}">Enregistrer</button></td>
+                </tr>`;
+              }).join('')}
+            </tbody>
+          </table>
+        </div>`;
+      target.querySelectorAll('[data-save-expense]').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const uid = btn.dataset.saveExpense;
+          const nights = parseInt(target.querySelector(`[data-nights="${uid}"]`).value, 10) || 0;
+          const mealDays = parseInt(target.querySelector(`[data-meals="${uid}"]`).value, 10) || 0;
+          btn.disabled = true;
+          try {
+            await db.collection('projects').doc(projectId).collection('expenses').doc(uid).set({
+              personName: btn.dataset.name, nights, mealDays,
+              updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+            });
+            btn.textContent = 'Enregistré ✓';
+            setTimeout(() => { btn.textContent = 'Enregistrer'; btn.disabled = false; }, 1200);
+          } catch (err) {
+            showError(target, "Erreur : " + err.message);
+            btn.disabled = false;
+          }
+        });
+      });
+    });
+  }).catch(err => showError(target, "Erreur : " + err.message));
 }
 
 function renderRequestsTab(target, projectId, mode) {

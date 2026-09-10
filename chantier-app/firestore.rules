@@ -161,6 +161,14 @@ service cloud.firestore {
         allow update, delete: if isAdmin();
       }
 
+      // Frais d'hébergement/repas facturés au client — saisis par l'admin
+      // uniquement. Ce n'est pas ce qui est payé à l'ouvrier, donc jamais
+      // lisible ni modifiable par l'équipe ou le client, contrairement au
+      // kilométrage qui est saisi par chacun.
+      match /expenses/{personId} {
+        allow read, write: if isAdmin();
+      }
+
       // Avis de satisfaction client, laissé à la clôture du projet (doc
       // fixe "avis"). Le client ne peut écrire que tant que le projet est
       // clôturé — pas avant, pas pour se corriger indéfiniment après coup

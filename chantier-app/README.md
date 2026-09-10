@@ -11,7 +11,12 @@ client).
   projets ; génère un lien d'invitation par personne (rôle + équipe ou
   client déjà attaché au lien) ; valide les problèmes avant qu'ils ne
   soient visibles côté client ; répond aux demandes clients ; peut
-  retirer l'accès de n'importe qui à tout moment.
+  retirer l'accès de n'importe qui à tout moment. Onglet Heures de
+  chaque projet : saisit aussi, par personne, les nuits d'hébergement
+  et jours de repas à facturer au client (100€/nuit, 30€/jour dans
+  votre grille actuelle) — c'est ce que VOUS facturez, pas ce que vous
+  payez à l'ouvrier, donc une case volontairement invisible et non
+  modifiable côté équipe ou client.
 - **Personnel (ingénieur / électricien / aide technique)** : voit les
   projets de son équipe, coche les étapes d'avancement (reprises du
   Manuel de contrôle interne), publie des mises à jour avec photos,
