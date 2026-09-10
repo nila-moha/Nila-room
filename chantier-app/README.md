@@ -35,6 +35,13 @@ client).
   + photos, avec le numéro de série du conteneur concerné en option)
   sont le rapport quotidien de ce qui a été fait sur le chantier — un
   point séparé du pointage, qui ne sert qu'aux heures/déplacements.
+- **Achats de matériel** : chaque projet a un compte de facturation
+  associé (ex. BN CORE GROUP ou un compte client comme Sungrow Benelux
+  B.V. — gérés dans l'onglet admin "Facturation matériel" : nom,
+  adresse, TVA, contact). L'équipe consulte cet onglet "Achats" pour
+  avoir les informations exactes à donner à la caisse d'un magasin
+  (ex. Brico), et peut signaler l'achat (magasin, montant, photo du
+  reçu) pour que vous sachiez quelle facture attendre.
 - **Client** : voit l'avancement et les mises à jour marquées comme
   visibles (avec leurs photos), voit les problèmes qui lui ont été
   communiqués, envoie des demandes et voit vos réponses.

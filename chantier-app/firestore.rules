@@ -97,6 +97,14 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
+    // ---- Comptes de facturation matériel (ex. BN CORE, Sungrow Benelux) ----
+    // À donner en magasin lors d'un achat. Lisible par l'équipe (pas les
+    // clients, qui n'en ont pas besoin) ; modifiable par l'admin seul.
+    match /billingEntities/{entityId} {
+      allow get, list: if isAdmin() || (isActive() && myPerson().role != 'client');
+      allow write: if isAdmin();
+    }
+
     // ---- Assignments (planning) ----
     // Qui va sur quel chantier, quel jour. L'admin gère tout ; une personne
     // voit ses propres créneaux ET ceux de sa propre équipe (pour savoir
@@ -156,6 +164,15 @@ service cloud.firestore {
       // la facturation des frais de déplacement (même logique d'accès que
       // les pointages : son équipe peut écrire, seul l'admin corrige/efface).
       match /mileage/{entryId} {
+        allow read: if isAdmin() || isMyTeamProject(projectId);
+        allow create: if isAdmin() || isMyTeamProject(projectId);
+        allow update, delete: if isAdmin();
+      }
+
+      // Achats de matériel signalés par l'équipe (magasin, montant, photo du
+      // reçu) — pour que l'admin sache quelles factures attendre. Même
+      // logique d'accès que le kilométrage.
+      match /purchases/{purchaseId} {
         allow read: if isAdmin() || isMyTeamProject(projectId);
         allow create: if isAdmin() || isMyTeamProject(projectId);
         allow update, delete: if isAdmin();

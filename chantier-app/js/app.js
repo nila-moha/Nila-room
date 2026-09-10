@@ -332,6 +332,20 @@ const I18N = {
     mileageNoRows: 'Aucun trajet enregistré.',
     mileageMonthTotal: (km) => `Total ce mois-ci : ${km} km`,
     mileageColPerson: 'Personne', mileageColTotal: 'Total km',
+    tabPurchases: 'Achats',
+    purchaseInfoTitle: 'Infos à donner en magasin',
+    purchaseInfoNote: 'Donnez ces informations à la caisse pour que la facture du matériel soit adressée correctement.',
+    noBillingEntitySet: "Aucun compte de facturation choisi pour ce projet — demandez à l'administrateur de le régler dans l'onglet Achats.",
+    billingEntityLabel: 'Compte de facturation pour ce projet',
+    noBillingEntityOption: 'Aucun',
+    saveBillingEntityBtn: 'Enregistrer',
+    billingVatLabel: 'TVA', billingContactLabel: 'Contact',
+    reportPurchaseTitle: 'Signaler un achat',
+    storeNameLabel: 'Magasin', storeNamePlaceholder: 'Ex. : Brico Anderlecht',
+    amountOptionalLabel: 'Montant (optionnel, €)',
+    reportPurchaseBtn: 'Signaler', reportingPurchase: 'Envoi…',
+    noPurchasesYet: 'Aucun achat signalé pour le moment.',
+    purchaseAmountInline: (amount) => ` · ${amount} €`,
     backToCalendar: 'Retour au calendrier',
     withTeammate: (name) => `avec ${name}`,
     yourRequestLabel: 'Votre demande', sendBtn: 'Envoyer',
@@ -442,6 +456,20 @@ const I18N = {
     mileageNoRows: 'No trip logged.',
     mileageMonthTotal: (km) => `Total this month: ${km} km`,
     mileageColPerson: 'Person', mileageColTotal: 'Total km',
+    tabPurchases: 'Purchases',
+    purchaseInfoTitle: 'Info to give at the store',
+    purchaseInfoNote: 'Give these details at checkout so the material invoice is addressed correctly.',
+    noBillingEntitySet: 'No billing account set for this project yet — ask the administrator to set it in the Purchases tab.',
+    billingEntityLabel: 'Billing account for this project',
+    noBillingEntityOption: 'None',
+    saveBillingEntityBtn: 'Save',
+    billingVatLabel: 'VAT', billingContactLabel: 'Contact',
+    reportPurchaseTitle: 'Report a purchase',
+    storeNameLabel: 'Store', storeNamePlaceholder: 'E.g.: Brico Anderlecht',
+    amountOptionalLabel: 'Amount (optional, €)',
+    reportPurchaseBtn: 'Report', reportingPurchase: 'Sending…',
+    noPurchasesYet: 'No purchase reported yet.',
+    purchaseAmountInline: (amount) => ` · €${amount}`,
     backToCalendar: 'Back to calendar',
     withTeammate: (name) => `with ${name}`,
     yourRequestLabel: 'Your request', sendBtn: 'Send',
@@ -552,6 +580,20 @@ const I18N = {
     mileageNoRows: 'Nicio deplasare înregistrată.',
     mileageMonthTotal: (km) => `Total luna aceasta: ${km} km`,
     mileageColPerson: 'Persoană', mileageColTotal: 'Total km',
+    tabPurchases: 'Achiziții',
+    purchaseInfoTitle: 'Informații de dat la magazin',
+    purchaseInfoNote: 'Dați aceste informații la casă pentru ca factura materialelor să fie emisă corect.',
+    noBillingEntitySet: 'Niciun cont de facturare stabilit pentru acest proiect — cereți administratorului să îl seteze în fila Achiziții.',
+    billingEntityLabel: 'Cont de facturare pentru acest proiect',
+    noBillingEntityOption: 'Niciunul',
+    saveBillingEntityBtn: 'Salvează',
+    billingVatLabel: 'TVA', billingContactLabel: 'Contact',
+    reportPurchaseTitle: 'Semnalează o achiziție',
+    storeNameLabel: 'Magazin', storeNamePlaceholder: 'Ex: Brico Anderlecht',
+    amountOptionalLabel: 'Sumă (opțional, €)',
+    reportPurchaseBtn: 'Semnalează', reportingPurchase: 'Se trimite…',
+    noPurchasesYet: 'Nicio achiziție semnalată momentan.',
+    purchaseAmountInline: (amount) => ` · ${amount} €`,
     backToCalendar: 'Înapoi la calendar',
     withTeammate: (name) => `cu ${name}`,
     yourRequestLabel: 'Cererea dvs.', sendBtn: 'Trimite',
@@ -1016,6 +1058,7 @@ function renderAdminTabs() {
     ['requests', 'Demandes clients'],
     ['teams', 'Équipes'],
     ['clients', 'Clients'],
+    ['billing', 'Facturation matériel'],
     ['people', 'Comptes'],
   ];
   wrap.innerHTML = `
@@ -1038,6 +1081,7 @@ function renderAdminTabs() {
   else if (adminTab === 'requests') renderAdminRequests(content);
   else if (adminTab === 'teams') renderAdminTeams(content);
   else if (adminTab === 'clients') renderAdminClients(content);
+  else if (adminTab === 'billing') renderAdminBillingEntities(content);
   else if (adminTab === 'people') renderAdminPeople(content);
 }
 
@@ -1290,6 +1334,60 @@ function renderAdminClients(content) {
     content.querySelectorAll('[data-del-client]').forEach(btn => {
       btn.addEventListener('click', async () => {
         if (confirm("Supprimer ce client ?")) await db.collection('clients').doc(btn.dataset.delClient).delete();
+      });
+    });
+  }, err => showError(content, "Erreur : " + err.message));
+  unsubscribers.push(unsub);
+}
+
+// ---- Admin: Facturation matériel ----
+// Comptes fournisseurs (ex. BN CORE, Sungrow Benelux) que l'équipe donne en
+// magasin pour qu'un achat de matériel soit facturé au bon endroit — voir
+// l'onglet "Achats" de chaque projet.
+function renderAdminBillingEntities(content) {
+  const unsub = db.collection('billingEntities').orderBy('name').onSnapshot(snap => {
+    content.innerHTML = `
+      <div class="card">
+        <h3>Ajouter un compte de facturation</h3>
+        <form id="new-billing-form" style="margin-top:10px">
+          <div class="field"><label>Nom (à donner en magasin)</label><input type="text" id="nb-name" required placeholder="Ex. : BN CORE GROUP"></div>
+          <div class="field"><label>Adresse complète</label><textarea id="nb-address" placeholder="Rue, code postal, ville, pays"></textarea></div>
+          <div class="row">
+            <div class="field"><label>N° TVA</label><input type="text" id="nb-vat" placeholder="Ex. : BE1027.648.484"></div>
+            <div class="field"><label>Personne de contact</label><input type="text" id="nb-contact-name"></div>
+            <div class="field"><label>Téléphone du contact</label><input type="text" id="nb-contact-phone"></div>
+          </div>
+          <button type="submit" class="btn btn-primary">Ajouter</button>
+        </form>
+      </div>
+      <div class="card">
+        ${snap.empty ? '<p class="empty">Aucun compte de facturation créé.</p>' : snap.docs.map(d => {
+          const b = d.data();
+          return `<div class="list-row">
+            <div class="main">
+              <div class="name">${esc(b.name)}</div>
+              <div class="sub">${esc(b.address || '')}${b.vat ? ' · TVA ' + esc(b.vat) : ''}${b.contactName ? ' · ' + esc(b.contactName) : ''}${b.contactPhone ? ' ' + esc(b.contactPhone) : ''}</div>
+            </div>
+            <div class="actions"><button class="btn btn-danger btn-sm" data-del-billing="${d.id}">Supprimer</button></div>
+          </div>`;
+        }).join('')}
+      </div>`;
+    document.getElementById('new-billing-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const name = document.getElementById('nb-name').value.trim();
+      const address = document.getElementById('nb-address').value.trim();
+      const vat = document.getElementById('nb-vat').value.trim();
+      const contactName = document.getElementById('nb-contact-name').value.trim();
+      const contactPhone = document.getElementById('nb-contact-phone').value.trim();
+      if (!name) return;
+      await db.collection('billingEntities').add({ name, address, vat, contactName, contactPhone });
+      e.target.reset();
+    });
+    content.querySelectorAll('[data-del-billing]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        if (confirm("Supprimer ce compte de facturation ? Les projets qui l'utilisent garderont juste la référence.")) {
+          await db.collection('billingEntities').doc(btn.dataset.delBilling).delete();
+        }
       });
     });
   }, err => showError(content, "Erreur : " + err.message));
@@ -1694,6 +1792,7 @@ function renderProjectDetailShared(container, projectId, mode) {
         <button class="tab" data-ptab="journal">${esc(t('tabJournal'))}</button>
         <button class="tab" data-ptab="problems">${esc(t('tabProblems'))}</button>
         ${mode !== 'client' ? `<button class="tab" data-ptab="timesheet">${esc(t('tabHours'))}</button>` : ''}
+        ${mode !== 'client' ? `<button class="tab" data-ptab="purchases">${esc(t('tabPurchases'))}</button>` : ''}
         ${mode === 'client' ? `<button class="tab" data-ptab="requests">${esc(t('tabMyRequests'))}</button>` : ''}
         ${mode === 'admin' ? `<button class="tab" data-ptab="requests">${esc(t('tabRequests'))}</button>` : ''}
       </div>
@@ -1724,6 +1823,7 @@ function renderProjectDetailShared(container, projectId, mode) {
       else if (activeTab === 'journal') renderJournalTab(target, projectId, mode);
       else if (activeTab === 'problems') renderProblemsTab(target, projectId, mode, project.type);
       else if (activeTab === 'timesheet') renderTimesheetTab(target, projectId, mode);
+      else if (activeTab === 'purchases') renderPurchasesTab(target, projectId, mode);
       else if (activeTab === 'requests') renderRequestsTab(target, projectId, mode);
     };
     container.querySelectorAll('[data-ptab]').forEach(btn => {
@@ -2312,6 +2412,111 @@ function renderAdminExpensesSection(target, projectId) {
       });
     });
   }).catch(err => showError(target, "Erreur : " + err.message));
+}
+
+// Achats de matériel : quel compte donner en magasin (Sungrow, BN CORE...)
+// pour que la facture arrive au bon endroit, + un journal des achats
+// signalés pour que l'admin sache quelles factures attendre.
+function renderPurchasesTab(target, projectId, mode) {
+  target.innerHTML = `
+    <div id="purchases-top"><div class="loading">${esc(t('loadingGeneric'))}</div></div>
+    <div class="card">
+      <h3 style="font-size:1rem">${esc(t('reportPurchaseTitle'))}</h3>
+      <form id="purchase-form" style="margin-top:10px">
+        <div class="field"><label>${esc(t('storeNameLabel'))}</label><input type="text" id="purchase-store" required placeholder="${esc(t('storeNamePlaceholder'))}"></div>
+        <div class="field"><label>${esc(t('amountOptionalLabel'))}</label><input type="number" id="purchase-amount" min="0" step="0.01"></div>
+        <div class="field"><label>${esc(t('photosOptionalLabel'))}</label><input type="file" id="purchase-photo" accept="image/*" capture="environment"></div>
+        <button type="submit" class="btn btn-primary btn-sm">${esc(t('reportPurchaseBtn'))}</button>
+      </form>
+    </div>
+    <div id="purchases-list"><div class="loading">${esc(t('loadingGeneric'))}</div></div>`;
+
+  const topSection = document.getElementById('purchases-top');
+  function loadAndRenderTop() {
+    Promise.all([
+      db.collection('projects').doc(projectId).get(),
+      db.collection('billingEntities').orderBy('name').get(),
+    ]).then(([projSnap, entitiesSnap]) => {
+      const project = projSnap.data();
+      const entities = entitiesSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+      const currentEntity = entities.find(e => e.id === project.billingEntityId);
+
+      const entityInfoHtml = currentEntity ? `
+        <h3 style="font-size:1rem;margin-bottom:6px">${esc(t('purchaseInfoTitle'))}</h3>
+        <div><b>${esc(currentEntity.name)}</b></div>
+        ${currentEntity.address ? `<div>${esc(currentEntity.address).replace(/\n/g, '<br>')}</div>` : ''}
+        ${currentEntity.vat ? `<div>${esc(t('billingVatLabel'))} : ${esc(currentEntity.vat)}</div>` : ''}
+        ${(currentEntity.contactName || currentEntity.contactPhone) ? `<div>${esc(t('billingContactLabel'))} : ${esc(currentEntity.contactName || '')} ${esc(currentEntity.contactPhone || '')}</div>` : ''}
+        <p style="margin-top:8px;font-size:0.8rem">${esc(t('purchaseInfoNote'))}</p>
+      ` : `<p class="empty" style="font-style:normal">${esc(t('noBillingEntitySet'))}</p>`;
+
+      topSection.innerHTML = `
+        ${mode === 'admin' ? `
+          <div class="card">
+            <div class="field"><label>${esc(t('billingEntityLabel'))}</label>
+              <select id="billing-entity-select">
+                <option value="">${esc(t('noBillingEntityOption'))}</option>
+                ${entities.map(e => `<option value="${e.id}" ${e.id === project.billingEntityId ? 'selected' : ''}>${esc(e.name)}</option>`).join('')}
+              </select>
+            </div>
+            <button type="button" class="btn btn-primary btn-sm" id="save-billing-entity-btn">${esc(t('saveBillingEntityBtn'))}</button>
+          </div>` : ''}
+        <div class="note-box">${entityInfoHtml}</div>`;
+
+      if (mode === 'admin') {
+        document.getElementById('save-billing-entity-btn').addEventListener('click', async () => {
+          const val = document.getElementById('billing-entity-select').value;
+          await db.collection('projects').doc(projectId).update({ billingEntityId: val || null });
+          loadAndRenderTop();
+        });
+      }
+    }).catch(err => showError(topSection, t('loadError') + err.message));
+  }
+  loadAndRenderTop();
+
+  document.getElementById('purchase-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const storeName = document.getElementById('purchase-store').value.trim();
+    const amountRaw = document.getElementById('purchase-amount').value;
+    const amount = amountRaw ? parseFloat(amountRaw) : null;
+    const files = Array.from(document.getElementById('purchase-photo').files || []);
+    if (!storeName) return;
+    const form = e.target;
+    const btn = form.querySelector('button[type=submit]');
+    btn.disabled = true;
+    const docRef = db.collection('projects').doc(projectId).collection('purchases').doc();
+    try {
+      btn.textContent = files.length ? t('sendingPhotos') : t('reportingPurchase');
+      const photoUrls = files.length ? await uploadPhotos(`projects/${projectId}/purchases/${docRef.id}`, files) : [];
+      await docRef.set({
+        storeName, amount, photoUrls, reportedByName: currentPerson.name,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      });
+      form.reset();
+    } catch (err) {
+      showError(form, t('sendErrorPrefix') + err.message);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = t('reportPurchaseBtn');
+    }
+  });
+
+  const listTarget = document.getElementById('purchases-list');
+  const unsub = db.collection('projects').doc(projectId).collection('purchases').orderBy('createdAt', 'desc').onSnapshot(snap => {
+    listTarget.innerHTML = `
+      <div class="card">
+        ${snap.empty ? `<p class="empty">${esc(t('noPurchasesYet'))}</p>` : snap.docs.map(d => {
+          const p = d.data();
+          return `<div style="padding:10px 0;border-bottom:1px solid var(--border)">
+            <p class="empty" style="font-style:normal;margin:0">
+              <b>${esc(p.storeName)}</b>${p.amount != null ? esc(t('purchaseAmountInline')(p.amount)) : ''} · ${esc(p.reportedByName)} · ${fmtDateTime(p.createdAt)}
+            </p>
+            ${photoGalleryHtml(p.photoUrls)}
+          </div>`;
+        }).join('')}
+      </div>`;
+  }, err => showError(listTarget, t('loadError') + err.message));
+  unsubscribers.push(unsub);
 }
 
 function renderRequestsTab(target, projectId, mode) {
