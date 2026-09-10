@@ -16,12 +16,20 @@ client).
   projets de son équipe, coche les étapes d'avancement (reprises du
   Manuel de contrôle interne), publie des mises à jour avec photos,
   signale des problèmes avec photos, pointe ses heures (arrivée/départ)
-  — avec une photo et une remarque optionnelles à chaque pointage (ex. :
-  retard, matériel manquant) — les heures travaillées se calculent
+  — avec une photo, une remarque et la position GPS optionnelles à
+  chaque pointage (ex. : retard, matériel manquant — la position sert de
+  preuve de présence) — les heures travaillées se calculent
   automatiquement (aujourd'hui, 7 derniers jours, détail par créneau).
   Le calendrier de planning montre aussi les créneaux du reste de son
   équipe (pas seulement les siens) : en cliquant sur un jour, on voit
-  qui d'autre est sur quel chantier ce jour-là.
+  qui d'autre est sur quel chantier ce jour-là. Chaque jour, la personne
+  peut aussi enregistrer le kilométrage effectué depuis son domicile
+  (avec le type de véhicule), pour la facturation des frais de
+  déplacement — visible en cumul par personne côté admin.
+- **Journal = rapport journalier** : les mises à jour du journal (texte
+  + photos, avec le numéro de série du conteneur concerné en option)
+  sont le rapport quotidien de ce qui a été fait sur le chantier — un
+  point séparé du pointage, qui ne sert qu'aux heures/déplacements.
 - **Client** : voit l'avancement et les mises à jour marquées comme
   visibles (avec leurs photos), voit les problèmes qui lui ont été
   communiqués, envoie des demandes et voit vos réponses.

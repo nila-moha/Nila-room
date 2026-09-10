@@ -152,6 +152,15 @@ service cloud.firestore {
         allow update, delete: if isAdmin();
       }
 
+      // Kilométrage domicile-chantier saisi par chaque personne, utile pour
+      // la facturation des frais de déplacement (même logique d'accès que
+      // les pointages : son équipe peut écrire, seul l'admin corrige/efface).
+      match /mileage/{entryId} {
+        allow read: if isAdmin() || isMyTeamProject(projectId);
+        allow create: if isAdmin() || isMyTeamProject(projectId);
+        allow update, delete: if isAdmin();
+      }
+
       // Avis de satisfaction client, laissé à la clôture du projet (doc
       // fixe "avis"). Le client ne peut écrire que tant que le projet est
       // clôturé — pas avant, pas pour se corriger indéfiniment après coup

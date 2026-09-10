@@ -320,6 +320,18 @@ const I18N = {
     confirmBtn: 'Confirmer', cancelBtn: 'Annuler',
     noOneAssignedDay: "Personne d'assigné ce jour-là.",
     youMarker: '(vous)',
+    containerSerialLabel: 'N° de série du conteneur (optionnel)',
+    containerSerialPlaceholder: 'Ex : MSKU1234567',
+    containerBadge: (serial) => `Conteneur ${serial}`,
+    mileageTitle: 'Kilométrage',
+    mileageKmLabel: 'Distance aujourd\'hui, aller-retour depuis le domicile (km)',
+    mileageVehicleLabel: 'Véhicule',
+    mileageVehicleCar: 'Voiture', mileageVehicleTruck: 'Camion',
+    mileageSaveBtn: 'Enregistrer', mileageSaving: 'Enregistrement…',
+    mileageColDate: 'Date', mileageColKm: 'Km', mileageColVehicle: 'Véhicule',
+    mileageNoRows: 'Aucun trajet enregistré.',
+    mileageMonthTotal: (km) => `Total ce mois-ci : ${km} km`,
+    mileageColPerson: 'Personne', mileageColTotal: 'Total km',
     backToCalendar: 'Retour au calendrier',
     withTeammate: (name) => `avec ${name}`,
     yourRequestLabel: 'Votre demande', sendBtn: 'Envoyer',
@@ -418,6 +430,18 @@ const I18N = {
     confirmBtn: 'Confirm', cancelBtn: 'Cancel',
     noOneAssignedDay: 'No one assigned that day.',
     youMarker: '(you)',
+    containerSerialLabel: 'Container serial number (optional)',
+    containerSerialPlaceholder: 'E.g.: MSKU1234567',
+    containerBadge: (serial) => `Container ${serial}`,
+    mileageTitle: 'Mileage',
+    mileageKmLabel: "Today's distance, round trip from home (km)",
+    mileageVehicleLabel: 'Vehicle',
+    mileageVehicleCar: 'Car', mileageVehicleTruck: 'Truck',
+    mileageSaveBtn: 'Save', mileageSaving: 'Saving…',
+    mileageColDate: 'Date', mileageColKm: 'Km', mileageColVehicle: 'Vehicle',
+    mileageNoRows: 'No trip logged.',
+    mileageMonthTotal: (km) => `Total this month: ${km} km`,
+    mileageColPerson: 'Person', mileageColTotal: 'Total km',
     backToCalendar: 'Back to calendar',
     withTeammate: (name) => `with ${name}`,
     yourRequestLabel: 'Your request', sendBtn: 'Send',
@@ -516,6 +540,18 @@ const I18N = {
     confirmBtn: 'Confirmă', cancelBtn: 'Anulează',
     noOneAssignedDay: 'Nimeni alocat în această zi.',
     youMarker: '(dvs.)',
+    containerSerialLabel: 'Număr de serie container (opțional)',
+    containerSerialPlaceholder: 'Ex: MSKU1234567',
+    containerBadge: (serial) => `Container ${serial}`,
+    mileageTitle: 'Kilometraj',
+    mileageKmLabel: 'Distanța de azi, dus-întors de acasă (km)',
+    mileageVehicleLabel: 'Vehicul',
+    mileageVehicleCar: 'Mașină', mileageVehicleTruck: 'Camion',
+    mileageSaveBtn: 'Salvează', mileageSaving: 'Se salvează…',
+    mileageColDate: 'Data', mileageColKm: 'Km', mileageColVehicle: 'Vehicul',
+    mileageNoRows: 'Nicio deplasare înregistrată.',
+    mileageMonthTotal: (km) => `Total luna aceasta: ${km} km`,
+    mileageColPerson: 'Persoană', mileageColTotal: 'Total km',
     backToCalendar: 'Înapoi la calendar',
     withTeammate: (name) => `cu ${name}`,
     yourRequestLabel: 'Cererea dvs.', sendBtn: 'Trimite',
@@ -620,6 +656,22 @@ function resizeImageFile(file, maxDim = 1600, quality = 0.82) {
     img.src = url;
   });
 }
+// Position GPS au pointage — best-effort : ne bloque jamais l'enregistrement
+// si le navigateur refuse ou n'a pas de position (retourne simplement null).
+function getGeoLocation() {
+  return new Promise((resolve) => {
+    if (!navigator.geolocation) { resolve(null); return; }
+    navigator.geolocation.getCurrentPosition(
+      (pos) => resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+      () => resolve(null),
+      { timeout: 5000, maximumAge: 60000 }
+    );
+  });
+}
+function geoLinkHtml(geo) {
+  if (!geo) return '';
+  return ` <a href="https://www.google.com/maps?q=${geo.lat},${geo.lng}" target="_blank" rel="noopener" title="Position au pointage">📍</a>`;
+}
 async function uploadPhotos(basePath, files) {
   const urls = [];
   for (const file of files) {
@@ -643,6 +695,11 @@ function firstName(fullName) {
 }
 function dateStrOf(year, month, day) {
   return `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+}
+function fmtDateStr(dateStr) {
+  if (!dateStr) return '—';
+  const [y, m, d] = dateStr.split('-');
+  return `${d}/${m}/${y}`;
 }
 function fmtDateLabel(dateStr) {
   const [y, m, d] = dateStr.split('-').map(Number);
@@ -1803,7 +1860,7 @@ async function exportProjectReport(projectId, mode) {
   <h2>${esc(t('tabJournal'))}</h2>
   ${journalDocs.length === 0 ? `<p>${esc(t('noEntriesYet'))}</p>` : journalDocs.map(d => {
     const e = d.data();
-    return `<div class="entry"><div class="meta2">${esc(e.authorName)} · ${fmtDateTime(e.createdAt)}</div><div>${esc(e.text)}</div>${(e.photoUrls || []).map(u => `<img src="${esc(u)}">`).join('')}</div>`;
+    return `<div class="entry"><div class="meta2">${esc(e.authorName)} · ${fmtDateTime(e.createdAt)}${e.containerSerial ? ' · ' + esc(t('containerBadge')(e.containerSerial)) : ''}</div><div>${esc(e.text)}</div>${(e.photoUrls || []).map(u => `<img src="${esc(u)}">`).join('')}</div>`;
   }).join('')}
 
   <h2>${esc(t('tabProblems'))}</h2>
@@ -1868,6 +1925,7 @@ function renderJournalTab(target, projectId, mode) {
         <div class="card">
           <form id="journal-form">
             <div class="field"><textarea id="journal-text" placeholder="${esc(t('journalPlaceholder'))}" required></textarea></div>
+            <div class="field"><label>${esc(t('containerSerialLabel'))}</label><input type="text" id="journal-container" placeholder="${esc(t('containerSerialPlaceholder'))}"></div>
             <div class="field"><label>${esc(t('photosOptionalLabel'))}</label><input type="file" id="journal-photos" accept="image/*" capture="environment" multiple></div>
             <label style="display:flex;align-items:center;gap:8px;margin-bottom:10px;font-size:0.86rem;color:var(--text-dim)">
               <input type="checkbox" id="journal-visible" checked style="width:auto"> ${esc(t('visibleToClientLabel'))}
@@ -1880,6 +1938,7 @@ function renderJournalTab(target, projectId, mode) {
           const e = d.data();
           return `<div class="journal-entry">
             <div class="meta">${esc(e.authorName)} · ${fmtDateTime(e.createdAt)} ${e.visibleToClient ? '' : `<span class="badge badge-reported" style="margin-left:6px">${esc(t('internalBadge'))}</span>`}</div>
+            ${e.containerSerial ? `<div class="badge badge-published" style="margin-bottom:6px">${esc(t('containerBadge')(e.containerSerial))}</div>` : ''}
             <div>${esc(e.text)}</div>
             ${photoGalleryHtml(e.photoUrls)}
           </div>`;
@@ -1889,6 +1948,7 @@ function renderJournalTab(target, projectId, mode) {
       document.getElementById('journal-form').addEventListener('submit', async (e) => {
         e.preventDefault();
         const text = document.getElementById('journal-text').value.trim();
+        const containerSerial = document.getElementById('journal-container').value.trim();
         const visibleToClient = document.getElementById('journal-visible').checked;
         const files = Array.from(document.getElementById('journal-photos').files || []);
         if (!text) return;
@@ -1900,7 +1960,7 @@ function renderJournalTab(target, projectId, mode) {
           btn.textContent = files.length ? t('sendingPhotos') : t('publishing');
           const photoUrls = files.length ? await uploadPhotos(`projects/${projectId}/journal/${docRef.id}`, files) : [];
           await docRef.set({
-            text, visibleToClient, photoUrls, authorName: currentPerson.name, authorRole: currentPerson.role,
+            text, containerSerial, visibleToClient, photoUrls, authorName: currentPerson.name, authorRole: currentPerson.role,
             createdAt: firebase.firestore.FieldValue.serverTimestamp(),
           });
         } catch (err) {
@@ -1993,6 +2053,10 @@ function renderProblemsTab(target, projectId, mode, projectType) {
 function renderTimesheetTab(target, projectId, mode) {
   if (mode === 'admin') return renderTimesheetTabAdmin(target, projectId);
 
+  target.innerHTML = `<div id="clock-wrap"><div class="loading">${esc(t('loadingGeneric'))}</div></div><div id="mileage-wrap" style="margin-top:16px"></div>`;
+  const clockWrap = document.getElementById('clock-wrap');
+  renderMileageSection(document.getElementById('mileage-wrap'), projectId);
+
   // Filtered by personUid only (no orderBy on a different field) so this never needs
   // a manually-created Firestore composite index — sorted client-side instead.
   const unsub = db.collection('projects').doc(projectId).collection('timesheets')
@@ -2007,7 +2071,7 @@ function renderTimesheetTab(target, projectId, mode) {
       const todayMs = sumShiftMs(shifts, startOfDay.getTime());
       const weekMs = sumShiftMs(shifts, now - 7 * 24 * 3600 * 1000);
 
-      target.innerHTML = `
+      clockWrap.innerHTML = `
         <div class="card">
           <div class="timesheet-clock">
             <button class="btn btn-primary" id="clock-btn">${esc(isIn ? t('clockOutBtn') : t('clockInBtn'))}</button>
@@ -2037,8 +2101,8 @@ function renderTimesheetTab(target, projectId, mode) {
               const note = [s.in && s.in.note, s.out && s.out.note].filter(Boolean).map(esc).join(' · ');
               const photos = [...((s.in && s.in.photoUrls) || []), ...((s.out && s.out.photoUrls) || [])];
               return `<tr>
-              <td>${s.in ? fmtDateTime(s.in.timestamp) : '—'}</td>
-              <td>${s.out ? fmtDateTime(s.out.timestamp) : (s.ongoing ? `<span class="badge badge-active">${esc(t('ongoingBadge'))}</span>` : '—')}</td>
+              <td>${s.in ? fmtDateTime(s.in.timestamp) : '—'}${s.in ? geoLinkHtml(s.in.geo) : ''}</td>
+              <td>${s.out ? fmtDateTime(s.out.timestamp) : (s.ongoing ? `<span class="badge badge-active">${esc(t('ongoingBadge'))}</span>` : '—')}${s.out ? geoLinkHtml(s.out.geo) : ''}</td>
               <td>${s.ongoing ? '—' : fmtDuration(s.ms)}</td>
               <td>${note}${photoGalleryHtml(photos)}</td>
             </tr>`;
@@ -2060,16 +2124,76 @@ function renderTimesheetTab(target, projectId, mode) {
         confirmBtn.disabled = true;
         const docRef = db.collection('projects').doc(projectId).collection('timesheets').doc();
         try {
+          const geo = await getGeoLocation();
           confirmBtn.textContent = files.length ? t('sendingPhotos') : t('confirmBtn');
           const photoUrls = files.length ? await uploadPhotos(`projects/${projectId}/timesheets/${docRef.id}`, files) : [];
           await docRef.set({
             personUid: currentUser.uid, personName: currentPerson.name, type: isIn ? 'out' : 'in',
-            note, photoUrls, timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+            note, photoUrls, geo, timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+          });
+        } catch (err) {
+          showError(clockWrap, t('sendErrorPrefix') + err.message);
+          confirmBtn.disabled = false;
+          confirmBtn.textContent = t('confirmBtn');
+        }
+      });
+    }, err => showError(clockWrap, t('loadError') + err.message));
+  unsubscribers.push(unsub);
+}
+
+// Saisie + historique du kilométrage personnel sur ce projet (domicile ↔
+// chantier). Indépendant du pointage : sa propre carte, son propre listener.
+function renderMileageSection(target, projectId) {
+  const unsub = db.collection('projects').doc(projectId).collection('mileage')
+    .where('personUid', '==', currentUser.uid)
+    .onSnapshot(snap => {
+      const entries = snap.docs.map(d => d.data()).sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+      const now = new Date();
+      const monthPrefix = dateStrOf(now.getFullYear(), now.getMonth(), 1).slice(0, 7);
+      const monthTotal = entries.filter(e => (e.date || '').startsWith(monthPrefix)).reduce((sum, e) => sum + (e.km || 0), 0);
+
+      target.innerHTML = `
+        <div class="card">
+          <h3>${esc(t('mileageTitle'))}</h3>
+          <form id="mileage-form" class="row" style="align-items:flex-end;margin-top:10px">
+            <div class="field"><label>${esc(t('mileageKmLabel'))}</label><input type="number" id="mileage-km" min="0" step="1" required></div>
+            <div class="field"><label>${esc(t('mileageVehicleLabel'))}</label>
+              <select id="mileage-vehicle">
+                <option value="car">${esc(t('mileageVehicleCar'))}</option>
+                <option value="truck">${esc(t('mileageVehicleTruck'))}</option>
+              </select>
+            </div>
+            <button type="submit" class="btn btn-primary btn-sm">${esc(t('mileageSaveBtn'))}</button>
+          </form>
+          <p style="margin-top:10px;font-weight:600;color:var(--brown-900)">${esc(t('mileageMonthTotal')(monthTotal))}</p>
+          <table style="margin-top:8px">
+            <thead><tr><th>${esc(t('mileageColDate'))}</th><th>${esc(t('mileageColKm'))}</th><th>${esc(t('mileageColVehicle'))}</th></tr></thead>
+            <tbody>${entries.map(e => `<tr>
+              <td>${fmtDateStr(e.date)}</td>
+              <td>${e.km}</td>
+              <td>${e.vehicleType === 'truck' ? esc(t('mileageVehicleTruck')) : esc(t('mileageVehicleCar'))}</td>
+            </tr>`).join('') || `<tr><td colspan="3" class="empty">${esc(t('mileageNoRows'))}</td></tr>`}</tbody>
+          </table>
+        </div>`;
+
+      document.getElementById('mileage-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const km = parseFloat(document.getElementById('mileage-km').value);
+        const vehicleType = document.getElementById('mileage-vehicle').value;
+        if (!km || km <= 0) return;
+        const btn = e.target.querySelector('button[type=submit]');
+        btn.disabled = true;
+        btn.textContent = t('mileageSaving');
+        try {
+          await db.collection('projects').doc(projectId).collection('mileage').add({
+            personUid: currentUser.uid, personName: currentPerson.name, km, vehicleType,
+            date: dateStrOf(now.getFullYear(), now.getMonth(), now.getDate()),
+            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
           });
         } catch (err) {
           showError(target, t('sendErrorPrefix') + err.message);
-          confirmBtn.disabled = false;
-          confirmBtn.textContent = t('confirmBtn');
+          btn.disabled = false;
+          btn.textContent = t('mileageSaveBtn');
         }
       });
     }, err => showError(target, t('loadError') + err.message));
@@ -2077,6 +2201,10 @@ function renderTimesheetTab(target, projectId, mode) {
 }
 
 function renderTimesheetTabAdmin(target, projectId) {
+  target.innerHTML = `<div id="admin-hours-section"><div class="loading">Chargement…</div></div><div id="admin-mileage-section" style="margin-top:16px"></div>`;
+  const hoursSection = document.getElementById('admin-hours-section');
+  const mileageSection = document.getElementById('admin-mileage-section');
+
   const unsub = db.collection('projects').doc(projectId).collection('timesheets').onSnapshot(snap => {
     const byPerson = {};
     snap.docs.forEach(d => {
@@ -2086,7 +2214,7 @@ function renderTimesheetTabAdmin(target, projectId) {
     const now = Date.now();
     const startOfDay = new Date(); startOfDay.setHours(0, 0, 0, 0);
 
-    target.innerHTML = `
+    hoursSection.innerHTML = `
       <div class="card">
         <table>
           <thead><tr><th>Personne</th><th>Aujourd'hui</th><th>7 derniers jours</th><th>Statut</th></tr></thead>
@@ -2106,8 +2234,26 @@ function renderTimesheetTabAdmin(target, projectId) {
           </tbody>
         </table>
       </div>`;
-  }, err => showError(target, "Erreur : " + err.message));
+  }, err => showError(hoursSection, "Erreur : " + err.message));
   unsubscribers.push(unsub);
+
+  const unsub2 = db.collection('projects').doc(projectId).collection('mileage').onSnapshot(snap => {
+    const byPerson = {};
+    snap.docs.forEach(d => {
+      const e = d.data();
+      const entry = (byPerson[e.personUid] ||= { name: e.personName, total: 0 });
+      entry.total += (e.km || 0);
+    });
+    mileageSection.innerHTML = `
+      <div class="card">
+        <h3>Kilométrage</h3>
+        <table style="margin-top:8px">
+          <thead><tr><th>Personne</th><th>Total km</th></tr></thead>
+          <tbody>${Object.values(byPerson).map(p => `<tr><td>${esc(p.name)}</td><td>${p.total}</td></tr>`).join('') || '<tr><td colspan="2" class="empty">Aucun trajet enregistré.</td></tr>'}</tbody>
+        </table>
+      </div>`;
+  }, err => showError(mileageSection, "Erreur : " + err.message));
+  unsubscribers.push(unsub2);
 }
 
 function renderRequestsTab(target, projectId, mode) {
