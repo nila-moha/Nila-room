@@ -98,11 +98,14 @@ service cloud.firestore {
     }
 
     // ---- Assignments (planning) ----
-    // Qui va sur quel chantier, quel jour. L'admin gère tout ; chacun ne
-    // lit que ses propres créneaux (jamais ceux d'un collègue, ni les
-    // clients).
+    // Qui va sur quel chantier, quel jour. L'admin gère tout ; une personne
+    // voit ses propres créneaux ET ceux de sa propre équipe (pour savoir
+    // avec qui elle travaille tel jour) — jamais ceux d'une autre équipe,
+    // ni les clients.
     match /assignments/{assignmentId} {
-      allow get, list: if isAdmin() || (isActive() && resource.data.personUid == request.auth.uid);
+      allow get, list: if isAdmin() ||
+        (isActive() && (resource.data.personUid == request.auth.uid ||
+          (myTeamId() != null && resource.data.teamId == myTeamId())));
       allow write: if isAdmin();
     }
 

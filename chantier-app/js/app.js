@@ -315,6 +315,13 @@ const I18N = {
     today: "Aujourd'hui", last7days: '7 derniers jours',
     colArrival: 'Arrivée', colDeparture: 'Départ', colDuration: 'Durée',
     noTimesheetRows: 'Aucun pointage.',
+    clockNoteLabel: 'Remarque (optionnel)',
+    clockNotePlaceholder: 'Ex : retard dû à la circulation, matériel manquant…',
+    confirmBtn: 'Confirmer', cancelBtn: 'Annuler',
+    noOneAssignedDay: "Personne d'assigné ce jour-là.",
+    youMarker: '(vous)',
+    backToCalendar: 'Retour au calendrier',
+    withTeammate: (name) => `avec ${name}`,
     yourRequestLabel: 'Votre demande', sendBtn: 'Envoyer',
     noRequests: 'Aucune demande.',
     requestOpen: 'Ouverte', requestAnswered: 'Répondu',
@@ -406,6 +413,13 @@ const I18N = {
     today: 'Today', last7days: 'Last 7 days',
     colArrival: 'Arrival', colDeparture: 'Departure', colDuration: 'Duration',
     noTimesheetRows: 'No clock entry.',
+    clockNoteLabel: 'Note (optional)',
+    clockNotePlaceholder: 'E.g.: late due to traffic, missing equipment…',
+    confirmBtn: 'Confirm', cancelBtn: 'Cancel',
+    noOneAssignedDay: 'No one assigned that day.',
+    youMarker: '(you)',
+    backToCalendar: 'Back to calendar',
+    withTeammate: (name) => `with ${name}`,
     yourRequestLabel: 'Your request', sendBtn: 'Send',
     noRequests: 'No request.',
     requestOpen: 'Open', requestAnswered: 'Answered',
@@ -497,6 +511,13 @@ const I18N = {
     today: 'Astăzi', last7days: 'Ultimele 7 zile',
     colArrival: 'Sosire', colDeparture: 'Plecare', colDuration: 'Durată',
     noTimesheetRows: 'Niciun pontaj.',
+    clockNoteLabel: 'Observație (opțional)',
+    clockNotePlaceholder: 'Ex: întârziere din cauza traficului, echipament lipsă…',
+    confirmBtn: 'Confirmă', cancelBtn: 'Anulează',
+    noOneAssignedDay: 'Nimeni alocat în această zi.',
+    youMarker: '(dvs.)',
+    backToCalendar: 'Înapoi la calendar',
+    withTeammate: (name) => `cu ${name}`,
     yourRequestLabel: 'Cererea dvs.', sendBtn: 'Trimite',
     noRequests: 'Nicio cerere.',
     requestOpen: 'Deschisă', requestAnswered: 'Răspuns',
@@ -1090,7 +1111,7 @@ function renderAdminCalendar(content) {
 
 function renderCalDayDetail(dateStr, items, people, projects, parentContent) {
   const detail = document.getElementById('cal-day-detail');
-  const peopleOptions = people.map(p => `<option value="${p.id}" data-name="${esc(p.name)}">${esc(p.name)}</option>`).join('');
+  const peopleOptions = people.map(p => `<option value="${p.id}" data-name="${esc(p.name)}" data-team="${esc(p.teamId || '')}">${esc(p.name)}</option>`).join('');
   const projectOptions = projects.map(p => `<option value="${p.id}" data-name="${esc(p.name)}" data-color="${esc(p.color || DEFAULT_PROJECT_COLOR)}">${esc(p.name)}</option>`).join('');
   detail.innerHTML = `
     <div class="card">
@@ -1127,6 +1148,7 @@ function renderCalDayDetail(dateStr, items, people, projects, parentContent) {
     await db.collection('assignments').add({
       personUid: personSel.value,
       personName: personSel.selectedOptions[0].dataset.name,
+      teamId: personSel.selectedOptions[0].dataset.team || null,
       projectId: projectSel.value,
       projectName: projectSel.selectedOptions[0].dataset.name,
       projectColor: projectSel.selectedOptions[0].dataset.color,
@@ -1499,14 +1521,19 @@ function renderStaffProjectsList(wrap) {
 
 function renderStaffCalendar(wrap) {
   wrap.innerHTML = `<div class="loading">${esc(t('loadingGeneric'))}</div>`;
-  db.collection('assignments').where('personUid', '==', currentUser.uid).get().then(snap => {
+  // Toute l'équipe si on en a une (pour voir qui d'autre est sur quel
+  // chantier ce jour-là), sinon repli sur ses propres créneaux seulement.
+  const query = currentPerson.teamId
+    ? db.collection('assignments').where('teamId', '==', currentPerson.teamId)
+    : db.collection('assignments').where('personUid', '==', currentUser.uid);
+  query.get().then(snap => {
     const all = snap.docs.map(d => d.data());
     const year = staffCalRefDate.getFullYear(), month = staffCalRefDate.getMonth();
     const startStr = dateStrOf(year, month, 1);
     const endStr = dateStrOf(year, month, new Date(year, month + 1, 0).getDate());
     const byDate = {};
     all.filter(a => a.date >= startStr && a.date <= endStr).forEach(a => { (byDate[a.date] ||= []).push(a); });
-    wrap.innerHTML = `<div class="card">${monthGridHtml(year, month, byDate)}</div>`;
+    wrap.innerHTML = `<div class="card">${monthGridHtml(year, month, byDate)}</div><div id="staff-cal-day-detail"></div>`;
     document.getElementById('cal-prev').addEventListener('click', () => {
       staffCalRefDate = new Date(year, month - 1, 1);
       renderStaffCalendar(wrap);
@@ -1515,7 +1542,27 @@ function renderStaffCalendar(wrap) {
       staffCalRefDate = new Date(year, month + 1, 1);
       renderStaffCalendar(wrap);
     });
+    wrap.querySelectorAll('.cal-cell[data-date]').forEach(cell => {
+      cell.addEventListener('click', () => renderStaffCalDayDetail(cell.dataset.date, byDate[cell.dataset.date] || []));
+    });
   }).catch(err => showError(wrap, t('loadError') + err.message));
+}
+
+// Détail d'un jour pour l'équipe — lecture seule (site + collègues présents),
+// contrairement à la version admin qui permet d'assigner/retirer.
+function renderStaffCalDayDetail(dateStr, items) {
+  const detail = document.getElementById('staff-cal-day-detail');
+  if (!detail) return;
+  detail.innerHTML = `
+    <div class="card">
+      <h3>${fmtDateLabel(dateStr)}</h3>
+      <div style="margin-top:10px">
+        ${items.length === 0 ? `<p class="empty">${esc(t('noOneAssignedDay'))}</p>` : items.map(a => `
+          <div class="list-row">
+            <div class="main"><span class="badge" style="background:${esc(a.projectColor || DEFAULT_PROJECT_COLOR)};color:#fff">${esc(a.projectName)}</span> ${esc(a.personName)}${a.personUid === currentUser.uid ? ` <span class="empty" style="font-style:normal;display:inline">${esc(t('youMarker'))}</span>` : ''}</div>
+          </div>`).join('')}
+      </div>
+    </div>`;
 }
 
 function renderStaffProjectDetail(projectId) {
@@ -1966,6 +2013,12 @@ function renderTimesheetTab(target, projectId, mode) {
             <button class="btn btn-primary" id="clock-btn">${esc(isIn ? t('clockOutBtn') : t('clockInBtn'))}</button>
             <span class="status">${last ? esc(isIn ? t('ongoingSince')(fmtDateTime(last.in.timestamp)) : t('lastClockOut')(fmtDateTime(last.out.timestamp))) : esc(t('noClockYet'))}</span>
           </div>
+          <div id="clock-extra" style="display:none;margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">
+            <div class="field"><label>${esc(t('photosOptionalLabel'))}</label><input type="file" id="clock-photo" accept="image/*" capture="environment"></div>
+            <div class="field"><label>${esc(t('clockNoteLabel'))}</label><textarea id="clock-note" placeholder="${esc(t('clockNotePlaceholder'))}"></textarea></div>
+            <button type="button" class="btn btn-primary btn-sm" id="clock-confirm">${esc(t('confirmBtn'))}</button>
+            <button type="button" class="btn btn-outline btn-sm" id="clock-cancel">${esc(t('cancelBtn'))}</button>
+          </div>
           <div class="row" style="margin-top:14px">
             <div class="card" style="background:var(--gold-100);border:none;text-align:center;padding:14px">
               <div style="font-size:1.4rem;font-weight:700;color:var(--brown-900)">${fmtDuration(todayMs)}</div>
@@ -1979,19 +2032,45 @@ function renderTimesheetTab(target, projectId, mode) {
         </div>
         <div class="card">
           <table>
-            <thead><tr><th>${esc(t('colArrival'))}</th><th>${esc(t('colDeparture'))}</th><th>${esc(t('colDuration'))}</th></tr></thead>
-            <tbody>${shifts.map(s => `<tr>
+            <thead><tr><th>${esc(t('colArrival'))}</th><th>${esc(t('colDeparture'))}</th><th>${esc(t('colDuration'))}</th><th></th></tr></thead>
+            <tbody>${shifts.map(s => {
+              const note = [s.in && s.in.note, s.out && s.out.note].filter(Boolean).map(esc).join(' · ');
+              const photos = [...((s.in && s.in.photoUrls) || []), ...((s.out && s.out.photoUrls) || [])];
+              return `<tr>
               <td>${s.in ? fmtDateTime(s.in.timestamp) : '—'}</td>
               <td>${s.out ? fmtDateTime(s.out.timestamp) : (s.ongoing ? `<span class="badge badge-active">${esc(t('ongoingBadge'))}</span>` : '—')}</td>
               <td>${s.ongoing ? '—' : fmtDuration(s.ms)}</td>
-            </tr>`).join('') || `<tr><td colspan="3" class="empty">${esc(t('noTimesheetRows'))}</td></tr>`}</tbody>
+              <td>${note}${photoGalleryHtml(photos)}</td>
+            </tr>`;
+            }).join('') || `<tr><td colspan="4" class="empty">${esc(t('noTimesheetRows'))}</td></tr>`}</tbody>
           </table>
         </div>`;
-      document.getElementById('clock-btn').addEventListener('click', async () => {
-        await db.collection('projects').doc(projectId).collection('timesheets').add({
-          personUid: currentUser.uid, personName: currentPerson.name, type: isIn ? 'out' : 'in',
-          timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-        });
+
+      const clockExtra = document.getElementById('clock-extra');
+      document.getElementById('clock-btn').addEventListener('click', () => {
+        clockExtra.style.display = clockExtra.style.display === 'none' ? 'block' : 'none';
+      });
+      document.getElementById('clock-cancel').addEventListener('click', () => {
+        clockExtra.style.display = 'none';
+      });
+      document.getElementById('clock-confirm').addEventListener('click', async () => {
+        const note = document.getElementById('clock-note').value.trim();
+        const files = Array.from(document.getElementById('clock-photo').files || []);
+        const confirmBtn = document.getElementById('clock-confirm');
+        confirmBtn.disabled = true;
+        const docRef = db.collection('projects').doc(projectId).collection('timesheets').doc();
+        try {
+          confirmBtn.textContent = files.length ? t('sendingPhotos') : t('confirmBtn');
+          const photoUrls = files.length ? await uploadPhotos(`projects/${projectId}/timesheets/${docRef.id}`, files) : [];
+          await docRef.set({
+            personUid: currentUser.uid, personName: currentPerson.name, type: isIn ? 'out' : 'in',
+            note, photoUrls, timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+          });
+        } catch (err) {
+          showError(target, t('sendErrorPrefix') + err.message);
+          confirmBtn.disabled = false;
+          confirmBtn.textContent = t('confirmBtn');
+        }
       });
     }, err => showError(target, t('loadError') + err.message));
   unsubscribers.push(unsub);
