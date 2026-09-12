@@ -3,7 +3,7 @@
 // mises en cache séparément par Firestore (voir js/app.js,
 // enablePersistence) — ce fichier ne s'occupe que de l'app elle-même.
 
-const CACHE_NAME = 'bn-core-chantier-v2';
+const CACHE_NAME = 'bn-core-chantier-v3';
 const APP_SHELL = [
   './',
   './index.html',
@@ -37,16 +37,18 @@ self.addEventListener('fetch', (event) => {
   // Firestore already manages its own offline cache internally.
   if (url.origin !== location.origin) return;
 
+  // Network first: whenever online, always fetch the latest app-shell
+  // files so a new deploy is visible on the very next load, instead of
+  // showing the cached (possibly outdated) version first and only
+  // refreshing it in the background for the load after that. The cache
+  // is only used as a fallback when there is no network at all.
   event.respondWith(
-    caches.match(event.request).then((cached) => {
-      const network = fetch(event.request).then((response) => {
-        if (response.ok) {
-          const copy = response.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
-        }
-        return response;
-      }).catch(() => cached);
-      return cached || network;
-    })
+    fetch(event.request).then((response) => {
+      if (response.ok) {
+        const copy = response.clone();
+        caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
+      }
+      return response;
+    }).catch(() => caches.match(event.request))
   );
 });
