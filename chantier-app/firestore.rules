@@ -119,14 +119,16 @@ service cloud.firestore {
 
     // ---- Projects ----
     match /projects/{projectId} {
-      allow get: if isAdmin() || isMyTeamProject(projectId) || isMyClientProject(projectId);
-      // "list" queries must filter by teamId or clientId client-side (see app.js) —
-      // Firestore evaluates this rule against each document the query would return.
-      allow list: if isAdmin() ||
-        (isActive() && (
-          (myTeamId() != null && resource.data.teamId == myTeamId()) ||
-          (myClientId() != null && resource.data.clientId == myClientId())
-        ));
+      // Split into separate "allow" statements (rather than one big ||)
+      // and checked directly against resource.data instead of re-fetching
+      // this same document via isMyTeamProject/isMyClientProject: mixing a
+      // data-independent admin check with data-dependent ones in a single
+      // expression made Firestore reject the admin's unfiltered list query
+      // outright (a real, observed bug, not just a style preference) —
+      // each admin/team/client case now stands as its own simple rule.
+      allow get, list: if isAdmin();
+      allow get, list: if isActive() && myTeamId() != null && resource.data.teamId == myTeamId();
+      allow get, list: if isActive() && myClientId() != null && resource.data.clientId == myClientId();
       allow write: if isAdmin();
 
       match /checklist/{stepId} {
