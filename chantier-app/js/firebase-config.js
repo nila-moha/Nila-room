@@ -10,10 +10,10 @@
 // ============================================================
 
 const firebaseConfig = {
-  apiKey: "REMPLACER_apiKey",
-  authDomain: "REMPLACER_authDomain",
-  projectId: "REMPLACER_projectId",
-  storageBucket: "REMPLACER_storageBucket",
-  messagingSenderId: "REMPLACER_messagingSenderId",
-  appId: "REMPLACER_appId"
+  apiKey: "AIzaSyBzIqBkrRMvWZyMB9ZCRjLSUcI9PO0e_7o",
+  authDomain: "bn-core-chantier.firebaseapp.com",
+  projectId: "bn-core-chantier",
+  storageBucket: "bn-core-chantier.firebasestorage.app",
+  messagingSenderId: "259816087249",
+  appId: "1:259816087249:web:15a375d3ce952e92bb2ff0"
 };
