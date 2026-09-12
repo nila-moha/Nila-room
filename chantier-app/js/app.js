@@ -269,6 +269,9 @@ const I18N = {
     forgotPasswordPrompt: 'Entrez votre email ci-dessus, puis cliquez à nouveau sur ce lien pour recevoir un email de réinitialisation.',
     resetEmailSent: 'Email envoyé. Vérifiez votre boîte de réception (et vos spams), et suivez le lien pour choisir un nouveau mot de passe.',
     resetEmailError: "Impossible d'envoyer l'email. Vérifiez que l'adresse est correcte.",
+    requestAccessLink: "Demander un accès",
+    requestAccessSubject: "Demande d'accès — application BN CORE",
+    requestAccessBody: "Bonjour,\n\nJe souhaite obtenir un accès à l'application de suivi de chantier BN CORE GROUP.\n\nMon nom :\nMon rôle (ouvrier / client) :\n\nMerci !",
     installTitle: 'Dernière étape : installez l\'application sur votre téléphone',
     installIntro: "Pour l'ouvrir ensuite comme une vraie application, sans repasser par un lien, faites ceci une seule fois :",
     installIosTitle: 'Sur iPhone (Safari)',
@@ -404,6 +407,9 @@ const I18N = {
     forgotPasswordPrompt: 'Enter your email above, then click this link again to receive a reset email.',
     resetEmailSent: 'Email sent. Check your inbox (and spam folder), and follow the link to choose a new password.',
     resetEmailError: 'Could not send the email. Check that the address is correct.',
+    requestAccessLink: 'Request access',
+    requestAccessSubject: 'Access request — BN CORE application',
+    requestAccessBody: 'Hello,\n\nI would like to request access to the BN CORE GROUP site-tracking application.\n\nMy name:\nMy role (worker / client):\n\nThank you!',
     installTitle: 'Last step: install the app on your phone',
     installIntro: 'To open it afterwards like a real app, without going through a link again, do this once:',
     installIosTitle: 'On iPhone (Safari)',
@@ -539,6 +545,9 @@ const I18N = {
     forgotPasswordPrompt: 'Introduceți emailul mai sus, apoi apăsați din nou pe acest link pentru a primi un email de resetare.',
     resetEmailSent: 'Email trimis. Verificați căsuța de primire (și spam-ul) și urmați linkul pentru a alege o parolă nouă.',
     resetEmailError: 'Emailul nu a putut fi trimis. Verificați dacă adresa este corectă.',
+    requestAccessLink: 'Solicitați acces',
+    requestAccessSubject: 'Cerere de acces — aplicația BN CORE',
+    requestAccessBody: 'Bună ziua,\n\nAș dori să solicit acces la aplicația de urmărire a șantierelor BN CORE GROUP.\n\nNumele meu:\nRolul meu (muncitor / client):\n\nMulțumesc!',
     installTitle: 'Ultimul pas: instalați aplicația pe telefon',
     installIntro: 'Pentru a o deschide apoi ca o aplicație reală, fără a trece din nou printr-un link, faceți asta o singură dată:',
     installIosTitle: 'Pe iPhone (Safari)',
@@ -900,7 +909,7 @@ function renderLogin(errorMsg) {
         </p>
         <div id="forgot-password-msg"></div>
         <p style="margin-top:16px;font-size:0.82rem;color:var(--text-mute);text-align:center">
-          ${esc(t('noAccount'))}
+          <a href="mailto:info@bncoregroup.com?subject=${encodeURIComponent(t('requestAccessSubject'))}&body=${encodeURIComponent(t('requestAccessBody'))}" style="color:var(--text-mute);text-decoration:underline">${esc(t('requestAccessLink'))}</a>
         </p>
       </div>
     </div>`;
