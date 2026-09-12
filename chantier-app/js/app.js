@@ -1302,6 +1302,7 @@ function openNewProjectForm(teams, clients) {
 
 // ---- Admin: Calendrier (planning) ----
 let calRefDate = new Date();
+let calProjectFilter = '';
 
 function renderAdminCalendar(content) {
   const year = calRefDate.getFullYear(), month = calRefDate.getMonth();
@@ -1317,13 +1318,27 @@ function renderAdminCalendar(content) {
     const byDate = {};
     assignSnap.docs.forEach(d => {
       const a = d.data();
+      if (calProjectFilter && a.projectId !== calProjectFilter) return;
       (byDate[a.date] ||= []).push({ id: d.id, ...a });
     });
     const people = peopleSnap.docs.map(d => ({ id: d.id, ...d.data() }));
     const projects = projectsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+    const projectFilterOptions = projects.map(p => `<option value="${p.id}" ${p.id === calProjectFilter ? 'selected' : ''}>${esc(p.name)}</option>`).join('');
 
-    content.innerHTML = `<div class="card">${monthGridHtml(year, month, byDate)}</div><div id="cal-day-detail"></div>`;
+    content.innerHTML = `
+      <div class="card" style="margin-bottom:14px">
+        <label>Filtrer par chantier</label>
+        <select id="cal-project-filter">
+          <option value="">Tous les chantiers</option>
+          ${projectFilterOptions}
+        </select>
+      </div>
+      <div class="card">${monthGridHtml(year, month, byDate)}</div><div id="cal-day-detail"></div>`;
 
+    document.getElementById('cal-project-filter').addEventListener('change', (e) => {
+      calProjectFilter = e.target.value;
+      renderAdminCalendar(content);
+    });
     document.getElementById('cal-prev').addEventListener('click', () => {
       calRefDate = new Date(year, month - 1, 1);
       renderAdminCalendar(content);
@@ -1397,6 +1412,8 @@ async function renderAdminProjectDetail(projectId) {
 }
 
 // ---- Admin: Équipes ----
+let expandedTeamId = null;
+
 function renderAdminTeams(content) {
   const unsub = db.collection('teams').orderBy('name').onSnapshot(snap => {
     content.innerHTML = `
@@ -1409,10 +1426,11 @@ function renderAdminTeams(content) {
       </div>
       <div class="card">
         ${snap.empty ? '<p class="empty">Aucune équipe créée.</p>' : snap.docs.map(d => `
-          <div class="list-row">
+          <div class="list-row" data-team-row="${d.id}" style="cursor:pointer">
             <div class="main"><div class="name">${esc(d.data().name)}</div></div>
             <div class="actions"><button class="btn btn-danger btn-sm" data-del-team="${d.id}">Supprimer</button></div>
-          </div>`).join('')}
+          </div>
+          <div id="team-detail-${d.id}"></div>`).join('')}
       </div>`;
     document.getElementById('new-team-form').addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -1422,14 +1440,81 @@ function renderAdminTeams(content) {
       e.target.reset();
     });
     content.querySelectorAll('[data-del-team]').forEach(btn => {
-      btn.addEventListener('click', async () => {
+      btn.addEventListener('click', async (e) => {
+        e.stopPropagation();
         if (confirm("Supprimer cette équipe ? Les projets déjà liés garderont la référence.")) {
           await db.collection('teams').doc(btn.dataset.delTeam).delete();
         }
       });
     });
+    content.querySelectorAll('[data-team-row]').forEach(row => {
+      row.addEventListener('click', () => {
+        const teamId = row.dataset.teamRow;
+        expandedTeamId = expandedTeamId === teamId ? null : teamId;
+        renderTeamDetail(content);
+      });
+    });
+    renderTeamDetail(content);
   }, err => showError(content, "Erreur : " + err.message));
   unsubscribers.push(unsub);
+}
+
+function renderTeamDetail(content) {
+  content.querySelectorAll('[id^="team-detail-"]').forEach(el => { el.innerHTML = ''; });
+  if (!expandedTeamId) return;
+  const detail = document.getElementById('team-detail-' + expandedTeamId);
+  if (!detail) return;
+  detail.innerHTML = '<p class="empty">Chargement…</p>';
+  Promise.all([
+    db.collection('projects').where('teamId', '==', expandedTeamId).where('status', '==', 'active').get(),
+    db.collection('people').where('teamId', '==', expandedTeamId).get(),
+    db.collection('projects').where('status', '==', 'active').get(),
+  ]).then(([teamProjectsSnap, membersSnap, allActiveProjectsSnap]) => {
+    const teamProjects = teamProjectsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+    const members = membersSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+    const allActiveProjects = allActiveProjectsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+    const memberOptions = members.map(m => `<option value="${m.id}">${esc(m.name)}</option>`).join('');
+    const projectOptions = allActiveProjects.map(p => `<option value="${p.id}" data-color="${esc(p.color || DEFAULT_PROJECT_COLOR)}">${esc(p.name)}</option>`).join('');
+    const today = dateStrOf(new Date().getFullYear(), new Date().getMonth(), new Date().getDate());
+
+    detail.innerHTML = `
+      <div class="card" style="margin:6px 0 14px">
+        <h4>Chantiers actifs de cette équipe</h4>
+        ${teamProjects.length === 0 ? '<p class="empty">Aucun chantier actif pour cette équipe.</p>' : teamProjects.map(p => `
+          <div class="list-row"><div class="main"><span class="color-swatch" style="width:12px;height:12px;border-radius:3px;display:inline-block;vertical-align:middle;margin-right:6px;background:${esc(p.color || DEFAULT_PROJECT_COLOR)}"></span>${esc(p.name)}</div></div>
+        `).join('')}
+        <h4 style="margin-top:16px">Membres</h4>
+        ${members.length === 0 ? '<p class="empty">Aucun membre dans cette équipe.</p>' : members.map(m => `<div class="list-row"><div class="main">${esc(m.name)}</div></div>`).join('')}
+        <h4 style="margin-top:16px">Assigner un membre à un chantier</h4>
+        <form id="team-assign-form" class="row" style="align-items:flex-end">
+          <div class="field"><label>Membre</label><select id="ta-person" required>${memberOptions || '<option value="">Aucun membre</option>'}</select></div>
+          <div class="field"><label>Chantier</label><select id="ta-project" required>${projectOptions || '<option value="">Aucun chantier actif</option>'}</select></div>
+          <div class="field"><label>Date</label><input type="date" id="ta-date" value="${today}" required></div>
+          <button type="submit" class="btn btn-primary btn-sm">Assigner</button>
+        </form>
+        <div id="ta-msg"></div>
+      </div>`;
+
+    document.getElementById('team-assign-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const personSel = document.getElementById('ta-person');
+      const projectSel = document.getElementById('ta-project');
+      const dateVal = document.getElementById('ta-date').value;
+      if (!personSel.value || !projectSel.value || !dateVal) return;
+      const member = members.find(m => m.id === personSel.value);
+      await db.collection('assignments').add({
+        personUid: personSel.value,
+        personName: member.name,
+        teamId: expandedTeamId,
+        projectId: projectSel.value,
+        projectName: projectSel.selectedOptions[0].textContent,
+        projectColor: projectSel.selectedOptions[0].dataset.color,
+        date: dateVal,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      });
+      document.getElementById('ta-msg').innerHTML = '<p style="color:var(--accent,#2a7);margin-top:8px">Assigné.</p>';
+    });
+  }).catch(err => showError(detail, "Erreur : " + err.message));
 }
 
 // ---- Admin: Clients ----
