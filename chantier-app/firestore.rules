@@ -27,10 +27,24 @@ service cloud.firestore {
 
     function isSignedIn() { return request.auth != null; }
 
-    function personRef() { return get(/databases/$(database)/documents/people/$(request.auth.uid)); }
-    function hasPerson() { return isSignedIn() && personRef().exists; }
-    function myPerson() { return personRef().data; }
-    function isActive() { return hasPerson() && myPerson().revoked != true; }
+    // Firestore's rule engine reliably resolves get()/exists() only a
+    // shallow number of custom-function hops deep — the previous version
+    // of this file chained personRef() -> hasPerson()/myPerson() ->
+    // isActive() -> isAdmin() (get() four functions removed from the
+    // rule that used it), and every rule built on isAdmin() silently
+    // failed with "Missing or insufficient permissions" in production,
+    // even for a real admin account, while the identical get() written
+    // directly (or one function hop away) worked fine. Flattened so
+    // get()/exists() are called directly by isActive()/myPerson(),
+    // confirmed working end-to-end before this was adopted everywhere.
+    function myPerson() {
+      return get(/databases/$(database)/documents/people/$(request.auth.uid)).data;
+    }
+    function isActive() {
+      return isSignedIn() &&
+        exists(/databases/$(database)/documents/people/$(request.auth.uid)) &&
+        myPerson().revoked != true;
+    }
 
     function isAdmin() { return isActive() && myPerson().role == 'admin'; }
     function myTeamId() { return myPerson().teamId; }
