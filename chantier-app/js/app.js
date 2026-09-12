@@ -118,6 +118,14 @@ const CHECKLIST_TEMPLATES = {
       "Intervention sur site sous supervision du client",
       "Reporting et clôture de mission",
     ],
+    delivery: [
+      "Vérification des documents de transport (bon de livraison, packing list)",
+      "Inspection visuelle de l'état extérieur (chocs, déformations, traces d'humidité)",
+      "Photos de l'état à réception, avant déchargement",
+      "Vérification du numéro de série et conformité avec la commande",
+      "Signalement des réserves éventuelles au transporteur",
+      "Validation et clôture de la réception",
+    ],
   },
   en: {
     commissioning: [
@@ -155,6 +163,14 @@ const CHECKLIST_TEMPLATES = {
       "Selection and mobilisation of personnel",
       "On-site intervention under client supervision",
       "Reporting and mission closeout",
+    ],
+    delivery: [
+      "Check transport documents (delivery note, packing list)",
+      "Visual inspection of external condition (impacts, deformation, moisture traces)",
+      "Photos of condition on arrival, before unloading",
+      "Serial number check and conformity with the order",
+      "Report any reservations to the carrier",
+      "Validate and close out the receipt",
     ],
   },
   ro: {
@@ -194,6 +210,14 @@ const CHECKLIST_TEMPLATES = {
       "Intervenție la fața locului sub supervizarea clientului",
       "Raportare și închiderea misiunii",
     ],
+    delivery: [
+      "Verificarea documentelor de transport (aviz de expediție, packing list)",
+      "Inspecție vizuală a stării exterioare (lovituri, deformări, urme de umezeală)",
+      "Fotografii ale stării la recepție, înainte de descărcare",
+      "Verificarea numărului de serie și conformitatea cu comanda",
+      "Semnalarea eventualelor rezerve către transportator",
+      "Validarea și închiderea recepției",
+    ],
   },
 };
 // NOTE traduction : les étapes ci-dessus touchent à la sécurité électrique.
@@ -207,9 +231,9 @@ function checklistStepLabel(type, index) {
 }
 
 const PROJECT_TYPE_LABELS_I18N = {
-  fr: { commissioning: 'Commissioning', om: 'O&M', container: 'Réparation de conteneur', audit: 'Audit technique', workforce: 'Workforce Deployment' },
-  en: { commissioning: 'Commissioning', om: 'O&M', container: 'Container repair', audit: 'Technical audit', workforce: 'Workforce Deployment' },
-  ro: { commissioning: 'Punere în funcțiune', om: 'Mentenanță (O&M)', container: 'Reparație container', audit: 'Audit tehnic', workforce: 'Furnizare personal tehnic' },
+  fr: { commissioning: 'Commissioning', om: 'O&M', container: 'Réparation de conteneur', audit: 'Audit technique', workforce: 'Workforce Deployment', delivery: 'Inspection de livraison' },
+  en: { commissioning: 'Commissioning', om: 'O&M', container: 'Container repair', audit: 'Technical audit', workforce: 'Workforce Deployment', delivery: 'Delivery inspection' },
+  ro: { commissioning: 'Punere în funcțiune', om: 'Mentenanță (O&M)', container: 'Reparație container', audit: 'Audit tehnic', workforce: 'Furnizare personal tehnic', delivery: 'Inspecție la livrare' },
 };
 function projectTypeLabel(type) {
   const lang = getLang();
@@ -1209,8 +1233,14 @@ function openNewProjectForm(teams, clients) {
             ${Object.entries(PROJECT_TYPE_LABELS).map(([k, v]) => `<option value="${k}">${v}</option>`).join('')}
           </select>
         </div>
-        <div class="field"><label>Équipe</label><select id="np-team" required>${teamOptions || '<option value="">Aucune équipe créée</option>'}</select></div>
-        <div class="field"><label>Client</label><select id="np-client" required>${clientOptions || '<option value="">Aucun client créé</option>'}</select></div>
+        <div class="field"><label>Équipe</label><select id="np-team" required>
+          <option value="__new__">+ Créer une nouvelle équipe…</option>
+          ${teamOptions}
+        </select></div>
+        <div class="field"><label>Client</label><select id="np-client" required>
+          <option value="__new__">+ Créer un nouveau client…</option>
+          ${clientOptions}
+        </select></div>
       </div>
       <div class="field"><label>Couleur (pour le calendrier)</label>${colorSwatchesHtml('np-color')}</div>
       <button type="submit" class="btn btn-primary">Créer le projet</button>
@@ -1220,6 +1250,28 @@ function openNewProjectForm(teams, clients) {
   wireColorSwatches('np-color');
 
   document.getElementById('np-cancel').addEventListener('click', () => overlay.remove());
+
+  document.getElementById('np-team').addEventListener('change', async (e) => {
+    if (e.target.value !== '__new__') return;
+    const name = prompt('Nom de la nouvelle équipe :');
+    if (!name || !name.trim()) { e.target.value = ''; return; }
+    const ref = await db.collection('teams').add({ name: name.trim() });
+    const opt = document.createElement('option');
+    opt.value = ref.id; opt.textContent = name.trim();
+    e.target.appendChild(opt);
+    e.target.value = ref.id;
+  });
+  document.getElementById('np-client').addEventListener('change', async (e) => {
+    if (e.target.value !== '__new__') return;
+    const name = prompt('Nom du nouveau client (contact) :');
+    if (!name || !name.trim()) { e.target.value = ''; return; }
+    const ref = await db.collection('clients').add({ name: name.trim(), company: '' });
+    const opt = document.createElement('option');
+    opt.value = ref.id; opt.textContent = name.trim();
+    e.target.appendChild(opt);
+    e.target.value = ref.id;
+  });
+
   document.getElementById('new-project-form').addEventListener('submit', async (e) => {
     e.preventDefault();
     const name = document.getElementById('np-name').value.trim();
@@ -1227,7 +1279,7 @@ function openNewProjectForm(teams, clients) {
     const teamId = document.getElementById('np-team').value;
     const clientId = document.getElementById('np-client').value;
     const color = document.getElementById('np-color').value;
-    if (!teamId || !clientId) { showError(overlay, "Créez d'abord au moins une équipe et un client."); return; }
+    if (!teamId || teamId === '__new__' || !clientId || clientId === '__new__') { showError(overlay, "Choisissez ou créez d'abord une équipe et un client."); return; }
     try {
       const projectRef = await db.collection('projects').add({
         name, type, teamId, clientId, color, status: 'active', createdAt: firebase.firestore.FieldValue.serverTimestamp(),
