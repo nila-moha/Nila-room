@@ -40,10 +40,10 @@ service cloud.firestore {
       return get(/databases/$(database)/documents/projects/$(projectId)).data;
     }
     function isMyTeamProject(projectId) {
-      return isActive() && projectOf(projectId).teamId == myTeamId();
+      return isActive() && myTeamId() != null && projectOf(projectId).teamId == myTeamId();
     }
     function isMyClientProject(projectId) {
-      return isActive() && projectOf(projectId).clientId == myClientId();
+      return isActive() && myClientId() != null && projectOf(projectId).clientId == myClientId();
     }
 
     // An invite matching exactly the role/team/client a self-signing-up
@@ -123,7 +123,10 @@ service cloud.firestore {
       // "list" queries must filter by teamId or clientId client-side (see app.js) —
       // Firestore evaluates this rule against each document the query would return.
       allow list: if isAdmin() ||
-        (isActive() && (resource.data.teamId == myTeamId() || resource.data.clientId == myClientId()));
+        (isActive() && (
+          (myTeamId() != null && resource.data.teamId == myTeamId()) ||
+          (myClientId() != null && resource.data.clientId == myClientId())
+        ));
       allow write: if isAdmin();
 
       match /checklist/{stepId} {
