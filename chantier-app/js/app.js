@@ -241,6 +241,10 @@ const I18N = {
     emailLabel: 'Email', passwordLabel: 'Mot de passe',
     loginBtn: 'Se connecter', loggingIn: 'Connexion…',
     noAccount: 'Pas encore de compte ? Contactez votre administrateur.',
+    forgotPasswordLink: 'Mot de passe oublié ?',
+    forgotPasswordPrompt: 'Entrez votre email ci-dessus, puis cliquez à nouveau sur ce lien pour recevoir un email de réinitialisation.',
+    resetEmailSent: 'Email envoyé. Vérifiez votre boîte de réception (et vos spams), et suivez le lien pour choisir un nouveau mot de passe.',
+    resetEmailError: "Impossible d'envoyer l'email. Vérifiez que l'adresse est correcte.",
     verifyingInvite: "Vérification de l'invitation…",
     loadingProfile: 'Chargement de votre profil…',
     loadingGeneric: 'Chargement…',
@@ -365,6 +369,10 @@ const I18N = {
     emailLabel: 'Email', passwordLabel: 'Password',
     loginBtn: 'Log in', loggingIn: 'Signing in…',
     noAccount: 'No account yet? Contact your administrator.',
+    forgotPasswordLink: 'Forgot password?',
+    forgotPasswordPrompt: 'Enter your email above, then click this link again to receive a reset email.',
+    resetEmailSent: 'Email sent. Check your inbox (and spam folder), and follow the link to choose a new password.',
+    resetEmailError: 'Could not send the email. Check that the address is correct.',
     verifyingInvite: 'Checking your invitation…',
     loadingProfile: 'Loading your profile…',
     loadingGeneric: 'Loading…',
@@ -489,6 +497,10 @@ const I18N = {
     emailLabel: 'Email', passwordLabel: 'Parolă',
     loginBtn: 'Conectare', loggingIn: 'Se conectează…',
     noAccount: 'Nu aveți încă un cont? Contactați administratorul.',
+    forgotPasswordLink: 'Ați uitat parola?',
+    forgotPasswordPrompt: 'Introduceți emailul mai sus, apoi apăsați din nou pe acest link pentru a primi un email de resetare.',
+    resetEmailSent: 'Email trimis. Verificați căsuța de primire (și spam-ul) și urmați linkul pentru a alege o parolă nouă.',
+    resetEmailError: 'Emailul nu a putut fi trimis. Verificați dacă adresa este corectă.',
     verifyingInvite: 'Se verifică invitația…',
     loadingProfile: 'Se încarcă profilul dvs.…',
     loadingGeneric: 'Se încarcă…',
@@ -838,6 +850,10 @@ function renderLogin(errorMsg) {
           </div>
           <button type="submit" class="btn btn-primary btn-block">${esc(t('loginBtn'))}</button>
         </form>
+        <p style="margin-top:14px;text-align:center">
+          <button type="button" id="forgot-password-link" class="link-btn" style="background:none;border:none;color:var(--text-dim);font-size:0.82rem;text-decoration:underline;cursor:pointer;padding:0">${esc(t('forgotPasswordLink'))}</button>
+        </p>
+        <div id="forgot-password-msg"></div>
         <p style="margin-top:16px;font-size:0.82rem;color:var(--text-mute);text-align:center">
           ${esc(t('noAccount'))}
         </p>
@@ -857,6 +873,22 @@ function renderLogin(errorMsg) {
       // onAuthStateChanged takes over from here
     } catch (err) {
       renderLogin(translateAuthError(err));
+    }
+  });
+
+  document.getElementById('forgot-password-link').addEventListener('click', async () => {
+    const email = document.getElementById('login-email').value.trim();
+    const msgBox = document.getElementById('forgot-password-msg');
+    if (!email) {
+      msgBox.innerHTML = `<p style="margin-top:10px;font-size:0.82rem;color:var(--text-mute);text-align:center">${esc(t('forgotPasswordPrompt'))}</p>`;
+      document.getElementById('login-email').focus();
+      return;
+    }
+    try {
+      await auth.sendPasswordResetEmail(email, { url: location.origin + location.pathname });
+      msgBox.innerHTML = `<p style="margin-top:10px;font-size:0.82rem;color:var(--accent, #2a7)" role="status">${esc(t('resetEmailSent'))}</p>`;
+    } catch (err) {
+      msgBox.innerHTML = `<p style="margin-top:10px;font-size:0.82rem;color:var(--error, #c33)" role="alert">${esc(t('resetEmailError'))}</p>`;
     }
   });
 }
