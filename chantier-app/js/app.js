@@ -245,6 +245,13 @@ const I18N = {
     forgotPasswordPrompt: 'Entrez votre email ci-dessus, puis cliquez à nouveau sur ce lien pour recevoir un email de réinitialisation.',
     resetEmailSent: 'Email envoyé. Vérifiez votre boîte de réception (et vos spams), et suivez le lien pour choisir un nouveau mot de passe.',
     resetEmailError: "Impossible d'envoyer l'email. Vérifiez que l'adresse est correcte.",
+    installTitle: 'Dernière étape : installez l\'application sur votre téléphone',
+    installIntro: "Pour l'ouvrir ensuite comme une vraie application, sans repasser par un lien, faites ceci une seule fois :",
+    installIosTitle: 'Sur iPhone (Safari)',
+    installIosSteps: 'Appuyez sur le bouton Partager (le carré avec la flèche vers le haut), puis sur « Sur l\'écran d\'accueil », puis sur « Ajouter ».',
+    installAndroidTitle: 'Sur Android (Chrome)',
+    installAndroidSteps: 'Appuyez sur les trois points ⋮ en haut à droite, puis sur « Ajouter à l\'écran d\'accueil » ou « Installer l\'application », puis confirmez.',
+    continueBtn: 'Continuer',
     verifyingInvite: "Vérification de l'invitation…",
     loadingProfile: 'Chargement de votre profil…',
     loadingGeneric: 'Chargement…',
@@ -373,6 +380,13 @@ const I18N = {
     forgotPasswordPrompt: 'Enter your email above, then click this link again to receive a reset email.',
     resetEmailSent: 'Email sent. Check your inbox (and spam folder), and follow the link to choose a new password.',
     resetEmailError: 'Could not send the email. Check that the address is correct.',
+    installTitle: 'Last step: install the app on your phone',
+    installIntro: 'To open it afterwards like a real app, without going through a link again, do this once:',
+    installIosTitle: 'On iPhone (Safari)',
+    installIosSteps: 'Tap the Share button (the square with an upward arrow), then "Add to Home Screen", then "Add".',
+    installAndroidTitle: 'On Android (Chrome)',
+    installAndroidSteps: 'Tap the three dots ⋮ in the top right, then "Add to Home screen" or "Install app", then confirm.',
+    continueBtn: 'Continue',
     verifyingInvite: 'Checking your invitation…',
     loadingProfile: 'Loading your profile…',
     loadingGeneric: 'Loading…',
@@ -501,6 +515,13 @@ const I18N = {
     forgotPasswordPrompt: 'Introduceți emailul mai sus, apoi apăsați din nou pe acest link pentru a primi un email de resetare.',
     resetEmailSent: 'Email trimis. Verificați căsuța de primire (și spam-ul) și urmați linkul pentru a alege o parolă nouă.',
     resetEmailError: 'Emailul nu a putut fi trimis. Verificați dacă adresa este corectă.',
+    installTitle: 'Ultimul pas: instalați aplicația pe telefon',
+    installIntro: 'Pentru a o deschide apoi ca o aplicație reală, fără a trece din nou printr-un link, faceți asta o singură dată:',
+    installIosTitle: 'Pe iPhone (Safari)',
+    installIosSteps: 'Apăsați pe butonul Distribuire (pătratul cu săgeata în sus), apoi pe „Pe ecranul principal”, apoi pe „Adaugă”.',
+    installAndroidTitle: 'Pe Android (Chrome)',
+    installAndroidSteps: 'Apăsați pe cele trei puncte ⋮ din dreapta sus, apoi pe „Adăugare pe ecranul de pornire” sau „Instalare aplicație”, apoi confirmați.',
+    continueBtn: 'Continuă',
     verifyingInvite: 'Se verifică invitația…',
     loadingProfile: 'Se încarcă profilul dvs.…',
     loadingGeneric: 'Se încarcă…',
@@ -941,7 +962,7 @@ function renderSignup(code) {
           used: true, usedBy: cred.user.uid, usedAt: firebase.firestore.FieldValue.serverTimestamp(),
         });
         history.replaceState(null, '', location.pathname + location.search);
-        await loadPersonAndRoute(cred.user);
+        renderInstallPrompt(cred.user);
       } catch (err) {
         btn.disabled = false;
         btn.textContent = t('createAccountBtn');
@@ -950,6 +971,29 @@ function renderSignup(code) {
     });
   }).catch(err => {
     app.innerHTML = `<div class="center-wrap"><div class="card error-box">${esc(t('errorPrefix'))}${esc(err.message)}</div></div>`;
+  });
+}
+
+function renderInstallPrompt(user) {
+  clearSubscriptions();
+  app.innerHTML = `
+    <div class="center-wrap">
+      <div class="card">
+        <h2 style="font-size:1.15rem">${esc(t('installTitle'))}</h2>
+        <p style="color:var(--text-dim);margin-top:8px">${esc(t('installIntro'))}</p>
+        <div style="margin-top:18px">
+          <h4>${esc(t('installIosTitle'))}</h4>
+          <p style="color:var(--text-dim)">${esc(t('installIosSteps'))}</p>
+        </div>
+        <div style="margin-top:16px">
+          <h4>${esc(t('installAndroidTitle'))}</h4>
+          <p style="color:var(--text-dim)">${esc(t('installAndroidSteps'))}</p>
+        </div>
+        <button type="button" id="install-continue-btn" class="btn btn-primary btn-block" style="margin-top:22px">${esc(t('continueBtn'))}</button>
+      </div>
+    </div>`;
+  document.getElementById('install-continue-btn').addEventListener('click', () => {
+    loadPersonAndRoute(user);
   });
 }
 
