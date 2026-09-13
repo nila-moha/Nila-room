@@ -123,7 +123,8 @@
         </div>
       </div>
 
-      <form class="contact-form" action="mailto:info@bncoregroup.com" method="post" enctype="text/plain">
+      <form class="contact-form" action="https://formspree.io/f/mjyvqyjg" method="POST">
+        <input type="hidden" name="_subject" value="New contact request — BN CORE GROUP site">
         <h3 class="mt-8" style="margin-bottom:22px">Send a request</h3>
 
         <div class="form-row">
@@ -221,8 +222,6 @@
         </label>
 
         <button type="submit" class="btn btn-primary" style="width:100%">Send request →</button>
-
-<!-- INTERNAL NOTE (not for public display): this form currently uses a fallback mailto: link. For reliable, silent submission in production, connect it to a processing service (e.g. Formspree, Netlify Forms) or a dedicated backend. -->
       </form>
 
     </div>
