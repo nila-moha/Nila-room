@@ -1,0 +1,59 @@
+rules_version = '2';
+
+// ============================================================
+// Règles de sécurité Firebase Storage — BN CORE GROUP, App Chantier
+// ============================================================
+// À copier-coller dans Console Firebase > Storage > Règles.
+//
+// Isolation par équipe/client, en miroir des règles Firestore : sans ça,
+// n'importe quel compte connecté et actif — même un ouvrier d'une autre
+// équipe ou le client d'un autre chantier — pourrait lire ou écrire les
+// photos de N'IMPORTE QUEL projet en appelant directement le SDK Storage
+// avec l'ID d'un projet qui n'est pas le sien (les clés Firebase côté
+// navigateur ne sont pas secrètes ; seules ces règles empêchent ça).
+//
+// Chaque fonction ci-dessous appelle firestore.get()/exists()
+// DIRECTEMENT, sans passer par une autre fonction intermédiaire : une
+// version précédente chaînait plusieurs fonctions avant d'atteindre le
+// firestore.get() réel (isAdmin -> isActive -> person() -> get()), et
+// cette indirection faisait échouer silencieusement TOUTES les
+// vérifications en production (un vrai ouvrier de la bonne équipe se
+// voyait refuser l'accès à ses propres photos), sans lien avec la
+// logique elle-même — vérifié empiriquement avec de vrais comptes
+// signés, pas seulement le simulateur de règles. Rester au plus près de
+// cette forme plate si ce fichier est modifié à nouveau.
+// ============================================================
+
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    function isSignedIn() { return request.auth != null; }
+
+    function isAdmin() {
+      return isSignedIn() &&
+        firestore.exists(/databases/(default)/documents/people/$(request.auth.uid)) &&
+        firestore.get(/databases/(default)/documents/people/$(request.auth.uid)).data.revoked != true &&
+        firestore.get(/databases/(default)/documents/people/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    match /projects/{projectId}/{allPaths=**} {
+      function isMyTeamProject() {
+        return isSignedIn() &&
+          firestore.exists(/databases/(default)/documents/people/$(request.auth.uid)) &&
+          firestore.get(/databases/(default)/documents/people/$(request.auth.uid)).data.revoked != true &&
+          firestore.get(/databases/(default)/documents/people/$(request.auth.uid)).data.teamId != null &&
+          firestore.get(/databases/(default)/documents/projects/$(projectId)).data.teamId ==
+            firestore.get(/databases/(default)/documents/people/$(request.auth.uid)).data.teamId;
+      }
+      function isMyClientProject() {
+        return isSignedIn() &&
+          firestore.exists(/databases/(default)/documents/people/$(request.auth.uid)) &&
+          firestore.get(/databases/(default)/documents/people/$(request.auth.uid)).data.revoked != true &&
+          firestore.get(/databases/(default)/documents/people/$(request.auth.uid)).data.clientId != null &&
+          firestore.get(/databases/(default)/documents/projects/$(projectId)).data.clientId ==
+            firestore.get(/databases/(default)/documents/people/$(request.auth.uid)).data.clientId;
+      }
+      allow read, write: if isAdmin() || isMyTeamProject() || isMyClientProject();
+    }
+  }
+}
