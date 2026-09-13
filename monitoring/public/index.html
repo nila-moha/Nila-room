@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Surveillance — BN CORE GROUP</title>
+<meta name="robots" content="noindex">
+<style>
+  :root {
+    --bg: #faf3e7; --card: #ffffff; --text: #1f1710; --text-dim: #6b5f4d;
+    --green: #2f9e44; --orange: #e8890c; --red: #d9363e; --border: #e4d6bd;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif; padding: 24px 16px 60px; }
+  .wrap { max-width: 720px; margin: 0 auto; }
+  header { text-align: center; margin-bottom: 24px; }
+  header h1 { font-size: 1.4rem; margin: 0 0 4px; }
+  header p { color: var(--text-dim); font-size: 0.85rem; margin: 0; }
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 18px 20px; margin-bottom: 16px; }
+  .card h2 { font-size: 1rem; margin: 0 0 14px; }
+  .row { display: flex; align-items: center; justify-content: space-between; padding: 9px 0; border-bottom: 1px solid #f1e8d8; font-size: 0.92rem; }
+  .row:last-child { border-bottom: none; }
+  .dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; margin-right: 8px; vertical-align: middle; }
+  .dot.green { background: var(--green); }
+  .dot.orange { background: var(--orange); }
+  .dot.red { background: var(--red); }
+  .label { display: flex; align-items: center; }
+  .status-text { font-size: 0.8rem; font-weight: 600; }
+  .status-text.green { color: var(--green); }
+  .status-text.orange { color: var(--orange); }
+  .status-text.red { color: var(--red); }
+  .meta { color: var(--text-dim); font-size: 0.8rem; margin-top: 4px; }
+  .history-row { display: flex; align-items: center; justify-content: space-between; padding: 8px 0; font-size: 0.88rem; border-bottom: 1px solid #f1e8d8; }
+  .history-row:last-child { border-bottom: none; }
+  .history-dots { display: flex; gap: 4px; }
+  .history-dots .dot { width: 9px; height: 9px; margin: 0; }
+  .empty { color: var(--text-dim); font-size: 0.88rem; text-align: center; padding: 12px 0; }
+  .footnote { color: var(--text-dim); font-size: 0.75rem; margin-top: 20px; text-align: center; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>Surveillance — bncoregroup.com</h1>
+      <p id="last-check">Chargement…</p>
+    </header>
+
+    <div class="card">
+      <h2>Statut du jour</h2>
+      <div id="today-list"></div>
+    </div>
+
+    <div class="card">
+      <h2>7 derniers jours</h2>
+      <div id="history-list"></div>
+    </div>
+
+    <p class="footnote">Mise à jour automatique une fois par jour. Cette page ne nécessite pas de connexion.</p>
+  </div>
+
+<script>
+const LABELS = {
+  http_en: 'Site en ligne — EN',
+  http_fr: 'Site en ligne — FR',
+  http_zh: 'Site en ligne — 中文',
+  http_ar: 'Site en ligne — العربية',
+  google_index: 'Indexé par Google (approximatif)',
+  contact_form: 'Formulaire de contact',
+  broken_links: 'Liens internes (5 pages)',
+  load_time: 'Temps de chargement (< 3s)',
+};
+const ORDER = ['http_en', 'http_fr', 'http_zh', 'http_ar', 'google_index', 'contact_form', 'broken_links', 'load_time'];
+const STATUS_TEXT = { green: 'OK', orange: 'À surveiller', red: 'Problème' };
+
+function dot(status) { return `<span class="dot ${status}"></span>`; }
+
+function renderToday(entry) {
+  const list = document.getElementById('today-list');
+  if (!entry) { list.innerHTML = '<p class="empty">Aucune vérification enregistrée pour le moment.</p>'; return; }
+  list.innerHTML = ORDER.map((key) => {
+    const status = entry.checks[key] || 'orange';
+    return `<div class="row">
+      <span class="label">${dot(status)}${LABELS[key]}</span>
+      <span class="status-text ${status}">${STATUS_TEXT[status]}</span>
+    </div>`;
+  }).join('');
+}
+
+function renderMeta(entry) {
+  const el = document.getElementById('last-check');
+  if (!entry) { el.textContent = 'Aucune donnée pour le moment.'; return; }
+  const d = new Date(entry.time);
+  el.textContent = `Dernière vérification : ${d.toLocaleString('fr-BE', { dateStyle: 'long', timeStyle: 'short' })}`;
+}
+
+function renderHistory(history) {
+  const list = document.getElementById('history-list');
+  if (!history || history.length === 0) { list.innerHTML = '<p class="empty">Pas encore d\'historique.</p>'; return; }
+  list.innerHTML = history.slice().reverse().map((entry) => {
+    const d = new Date(entry.date + 'T00:00:00Z');
+    const dateLabel = d.toLocaleDateString('fr-BE', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    const dots = ORDER.map((key) => `<span class="dot ${entry.checks[key] || 'orange'}"></span>`).join('');
+    return `<div class="history-row"><span>${dateLabel}</span><span class="history-dots">${dots}</span></div>`;
+  }).join('');
+}
+
+async function load() {
+  try {
+    const [latestRes, historyRes] = await Promise.all([
+      fetch('data/latest.json', { cache: 'no-store' }),
+      fetch('data/history.json', { cache: 'no-store' }),
+    ]);
+    const latest = latestRes.ok ? await latestRes.json() : null;
+    const history = historyRes.ok ? await historyRes.json() : [];
+    renderMeta(latest);
+    renderToday(latest);
+    renderHistory(history);
+  } catch (err) {
+    document.getElementById('last-check').textContent = 'Erreur de chargement des données.';
+  }
+}
+load();
+</script>
+</body>
+</html>
