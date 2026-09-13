@@ -1,0 +1,34 @@
+name: BN CORE site monitor
+
+on:
+  schedule:
+    # 06:00 UTC chaque jour = 07:00/08:00 heure de Bruxelles selon la saison.
+    - cron: '0 6 * * *'
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run daily checks
+        env:
+          FORMSPREE_ENDPOINT: ${{ secrets.FORMSPREE_ENDPOINT }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+        run: node monitoring/check.mjs
+
+      - name: Commit updated results
+        run: |
+          git config user.name "bn-core-monitor"
+          git config user.email "info@bncoregroup.com"
+          git add monitoring/public/data/latest.json monitoring/public/data/history.json
+          git diff --cached --quiet || git commit -m "Monitoring: résultat du $(date -u +%Y-%m-%d)"
+          git push
