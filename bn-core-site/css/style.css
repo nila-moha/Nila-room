@@ -296,7 +296,7 @@ form.contact-form{background:var(--surface);border:1px solid var(--border);borde
 
 /* ---------- Footer ---------- */
 footer.site-footer{background:var(--brown-950);color:var(--sand-300);padding:64px 0 0}
-.footer-grid{display:grid;grid-template-columns:1.4fr 1fr 1fr 1.2fr;gap:40px;padding-bottom:48px;border-bottom:1px solid rgba(255,255,255,.1)}
+.footer-grid{display:grid;grid-template-columns:1.3fr 1fr 1fr 1fr 1.1fr;gap:40px;padding-bottom:48px;border-bottom:1px solid rgba(255,255,255,.1)}
 .footer-brand .logo-text .name{color:#fff}
 .footer-brand p{margin-top:14px;font-size:.9rem;max-width:34ch;color:var(--sand-300)}
 .footer-col h5{font-family:'Inter',sans-serif;color:#fff;font-size:.85rem;text-transform:uppercase;letter-spacing:.08em;margin-bottom:16px}
