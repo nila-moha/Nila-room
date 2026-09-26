@@ -1172,13 +1172,17 @@ function renderSignup(code) {
       btn.textContent = t('creatingAccount');
       try {
         const cred = await auth.createUserWithEmailAndPassword(email, password);
-        await db.collection('people').doc(cred.user.uid).set({
+        // Un seul lot atomique : les règles Firestore refusent la création du
+        // profil si l'invitation n'est pas marquée utilisée dans le même lot.
+        const batch = db.batch();
+        batch.set(db.collection('people').doc(cred.user.uid), {
           name, role: invite.role, teamId: invite.teamId || null, clientId: invite.clientId || null,
           revoked: false, inviteCode: code,
         });
-        await db.collection('invites').doc(code).update({
+        batch.update(db.collection('invites').doc(code), {
           used: true, usedBy: cred.user.uid, usedAt: firebase.firestore.FieldValue.serverTimestamp(),
         });
+        await batch.commit();
         history.replaceState(null, '', location.pathname + location.search);
         renderInstallPrompt(cred.user);
       } catch (err) {
@@ -1226,9 +1230,10 @@ function translateSignupError(err) {
 
 function generateInviteCode() {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // sans caractères ambigus (0/O, 1/I)
-  let code = '';
-  for (let i = 0; i < 8; i++) code += chars[Math.floor(Math.random() * chars.length)];
-  return code;
+  // Générateur cryptographique (le code est le seul secret du lien) ; 32
+  // caractères divisent 256 exactement, donc le modulo reste uniforme.
+  const bytes = crypto.getRandomValues(new Uint8Array(12));
+  return Array.from(bytes, b => chars[b % chars.length]).join('');
 }
 
 function inviteLinkFor(code) {

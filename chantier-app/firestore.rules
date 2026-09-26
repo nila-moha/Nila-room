@@ -70,6 +70,15 @@ service cloud.firestore {
         invite.clientId == data.clientId;
     }
 
+    // The same invite, as it will stand once the signup batch commits:
+    // marked used by this very person. Forces the profile creation and the
+    // invite consumption into one atomic batch, so one link can no longer
+    // create several accounts by skipping the "mark as used" write.
+    function inviteConsumedBy(code, uid) {
+      let after = getAfter(/databases/$(database)/documents/invites/$(code)).data;
+      return after.used == true && after.usedBy == uid;
+    }
+
     // ---- People (accounts) ----
     match /people/{personId} {
       allow read: if isAdmin() || (isSignedIn() && request.auth.uid == personId);
@@ -77,7 +86,8 @@ service cloud.firestore {
         (isSignedIn() && request.auth.uid == personId &&
          request.resource.data.role != 'admin' &&
          request.resource.data.revoked == false &&
-         validInviteFor(request.resource.data));
+         validInviteFor(request.resource.data) &&
+         inviteConsumedBy(request.resource.data.inviteCode, personId));
       allow update, delete: if isAdmin();
     }
 
@@ -96,7 +106,10 @@ service cloud.firestore {
         request.resource.data.usedBy == request.auth.uid &&
         request.resource.data.role == resource.data.role &&
         request.resource.data.teamId == resource.data.teamId &&
-        request.resource.data.clientId == resource.data.clientId;
+        request.resource.data.clientId == resource.data.clientId &&
+        // Only consumable by the signup that creates the matching profile
+        // in the same batch (stops anyone who learns a code from burning it).
+        getAfter(/databases/$(database)/documents/people/$(request.auth.uid)).data.inviteCode == code;
     }
 
     // ---- Teams ----
@@ -173,18 +186,23 @@ service cloud.firestore {
         allow delete: if isAdmin();
       }
 
+      // Pointages : une personne ne pointe qu'en son propre nom (personUid),
+      // jamais pour un collègue — ces heures servent à la facturation client.
       match /timesheets/{entryId} {
         allow read: if isAdmin() || isMyTeamProject(projectId);
-        allow create: if isAdmin() || isMyTeamProject(projectId);
+        allow create: if isAdmin() ||
+          (isMyTeamProject(projectId) && request.resource.data.personUid == request.auth.uid);
         allow update, delete: if isAdmin();
       }
 
       // Kilométrage domicile-chantier saisi par chaque personne, utile pour
       // la facturation des frais de déplacement (même logique d'accès que
-      // les pointages : son équipe peut écrire, seul l'admin corrige/efface).
+      // les pointages : chacun n'écrit qu'en son propre nom, seul l'admin
+      // corrige/efface).
       match /mileage/{entryId} {
         allow read: if isAdmin() || isMyTeamProject(projectId);
-        allow create: if isAdmin() || isMyTeamProject(projectId);
+        allow create: if isAdmin() ||
+          (isMyTeamProject(projectId) && request.resource.data.personUid == request.auth.uid);
         allow update, delete: if isAdmin();
       }
 
