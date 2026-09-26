@@ -56,9 +56,9 @@
     <tr><td>Responsable du traitement</td><td>BN CORE GROUP — Ll.Graffplein 15, 1780 Wemmel, Belgique — TVA BE1027.648.484</td></tr>
     <tr><td>Contact</td><td>info@bncoregroup.com — +32 471 99 08 25</td></tr>
     <tr><td>Référence</td><td>BNC-RGPD-2026-01</td></tr>
-    <tr><td>Version</td><td>1.0 — projet du 26 septembre 2026</td></tr>
-    <tr><td>Statut</td><td><span class="tag t-val">À VALIDER</span> — les durées de conservation et le statut contractuel des intervenants doivent être confirmés par la direction avant diffusion (voir section 6).</td></tr>
-    <tr><td>Destinataires</td><td>Direction BN CORE GROUP ; après validation, la section 2 est remise à chaque intervenant avant son premier pointage.</td></tr>
+    <tr><td>Version</td><td>1.1 — 26 septembre 2026 (v1.0 du même jour + mesures techniques implémentées dans l'application)</td></tr>
+    <tr><td>Statut</td><td><span class="tag t-val">À VALIDER</span> — les durées de conservation (déjà appliquées par l'application) et le statut contractuel des intervenants doivent être confirmés par la direction ; le déploiement de l'application vaut adoption des durées affichées (voir section 6).</td></tr>
+    <tr><td>Destinataires</td><td>Direction BN CORE GROUP. La section 2 est affichée dans l'application à chaque intervenant, qui doit la confirmer avant tout accès.</td></tr>
   </table>
 </section>
 
@@ -106,7 +106,10 @@
     <li><strong>Consultation</strong> : la position n'est visible que par l'administrateur, sous forme d'un lien vers Google Maps affiché à côté du pointage.</li>
     <li><strong>Cloisonnement</strong> : les règles de sécurité Firestore limitent la lecture des pointages et du kilométrage à l'administrateur et à l'équipe affectée au projet ; les clients n'y ont pas accès. Depuis la correction du 26/09/2026, une personne ne peut plus pointer au nom d'un collègue (vérifié par 9 tests automatisés sur l'émulateur Firebase).</li>
     <li><strong>Photos</strong> : datées automatiquement et redimensionnées avant envoi ; stockées dans Firebase Storage.</li>
-    <li><strong>Retrait d'accès</strong> : un compte révoqué ne voit plus aucune donnée, mais <em>son historique est conservé sans limite de durée</em> — c'est l'écart principal traité en section 3.</li>
+    <li><strong>Retrait d'accès</strong> : un compte révoqué ne voit plus aucune donnée ; la date de révocation est enregistrée et le profil est supprimé automatiquement 12 mois après (depuis la v1.1).</li>
+    <li><strong>Information préalable intégrée</strong> (v1.1) : la notice de la section 2 s'affiche en FR / EN / RO / ZH à chaque membre du personnel avant tout accès ; sa confirmation (version, langue, heure serveur non falsifiable) est enregistrée sur son profil et visible par l'administrateur (onglet Comptes).</li>
+    <li><strong>Purge automatique</strong> (v1.1) : à l'ouverture de l'espace administrateur, au plus une fois par 24 h, l'application efface la position GPS et les photos de pointage de plus de 12 mois, supprime pointages et kilométrage de plus de 5 ans, supprime journal et problèmes 5 ans après la clôture du projet et les profils révoqués depuis 12 mois (testé sur émulateur : 11/11).</li>
+    <li><strong>Photos cloisonnées</strong> (v1.1) : le client n'a plus aucun accès direct au stockage des photos (il pouvait auparavant lister et télécharger les photos de pointage et les reçus d'achat) ; l'équipe peut ajouter des photos mais ni les écraser ni les supprimer (testé sur émulateur : 11/11).</li>
     <li><strong>Frais d'hébergement et de repas</strong> : saisis uniquement par l'administrateur et invisibles pour l'équipe et le client.</li>
   </ul>
 
@@ -206,8 +209,9 @@
   <h3>3.2 Écarts à corriger</h3>
   <table>
     <tr><th style="width:8mm">#</th><th>Écart</th><th>Référence</th><th style="width:22mm">Gravité</th><th>Correction</th></tr>
-    <tr><td>E1</td><td>Aucune information préalable remise aux intervenants <span class="tag t-fait">FAIT ÉTABLI</span> (rien dans l'application ni dans le dépôt)</td><td>Art. 12, 13 RGPD</td><td>Élevée</td><td>Remettre la notice (section 2) contre accusé de réception (annexe A) et l'afficher dans l'application au premier pointage.</td></tr>
-    <tr><td>E2</td><td>Aucune durée de conservation ni suppression automatique : l'historique des personnes révoquées est gardé indéfiniment <span class="tag t-fait">FAIT ÉTABLI</span></td><td>Art. 5.1.e RGPD</td><td>Élevée</td><td>Arrêter les durées (section 2) puis programmer une suppression automatique (tâche planifiée qui efface les positions et photos de plus de 12 mois).</td></tr>
+    <tr><td>E1</td><td>Aucune information préalable remise aux intervenants — <strong>corrigé en v1.1</strong> : notice obligatoire dans l'application, avec preuve horodatée <span class="tag t-fait">FAIT ÉTABLI</span></td><td>Art. 12, 13 RGPD</td><td>Résolu après déploiement</td><td>Déployer l'application ; vérifier dans l'onglet Comptes que chaque intervenant a confirmé avant son premier pointage. L'accusé papier (annexe A) reste utile pour le personnel qui n'utilise pas l'application.</td></tr>
+    <tr><td>E2</td><td>Aucune durée de conservation ni suppression automatique — <strong>corrigé en v1.1</strong> : purge automatique implémentée <span class="tag t-fait">FAIT ÉTABLI</span>. Limite : sans serveur, la purge ne tourne que lorsque l'administrateur ouvre l'application ; l'identifiant de connexion (e-mail) d'un compte supprimé doit être effacé à la main dans la console Firebase → Authentication (liste fournie par l'application).</td><td>Art. 5.1.e RGPD</td><td>Faible après déploiement</td><td>Valider les durées ; ouvrir l'espace admin au moins une fois par mois ; traiter la liste « À faire dans Authentication ».</td></tr>
+    <tr><td>E9</td><td>Le client pouvait lister, télécharger, écraser et supprimer toutes les photos de son projet, y compris les photos de pointage et les reçus d'achat des intervenants — <strong>corrigé en v1.1</strong> <span class="tag t-fait">FAIT ÉTABLI</span></td><td>Art. 5.1.f, 32 RGPD</td><td>Élevée avant correction</td><td>Déployer les nouvelles règles Storage.</td></tr>
     <tr><td>E3</td><td>Pas d'analyse d'impact documentée <span class="tag t-prob">PROBABLE</span> : l'AIPD est en principe requise dès que deux critères des lignes directrices WP248 sont réunis — ici « surveillance systématique » (critère 3) et « personnes vulnérables / employés » (critère 7)</td><td>Art. 35 RGPD ; WP248 rév.01</td><td>Moyenne à élevée</td><td>Compléter et signer la pré-analyse de l'annexe C.</td></tr>
     <tr><td>E4</td><td>Pas de registre des activités de traitement connu <span class="tag t-hyp">HYPOTHÈSE</span></td><td>Art. 30 RGPD (l'exemption des structures de moins de 250 personnes ne s'applique pas à un traitement régulier comme celui-ci)</td><td>Moyenne</td><td>Reprendre la fiche de l'annexe B dans votre registre.</td></tr>
     <tr><td>E5</td><td>Personnel de sous-traitants (ex. équipes roumaines) : aucune clause de protection des données connue dans les contrats de sous-traitance <span class="tag t-hyp">HYPOTHÈSE</span></td><td>Art. 13, 26 ou 28 RGPD selon le montage</td><td>Moyenne</td><td>Ajouter une clause : le sous-traitant informe son personnel et BN CORE GROUP lui fournit la notice.</td></tr>
@@ -269,8 +273,8 @@
     <tr><td>1</td><td>Valider les durées de conservation et le statut des intervenants (sections 1.4 et 2)</td><td>Direction</td><td>Avant le premier chantier</td></tr>
     <tr><td>2</td><td>Vérifier dans la console Firebase la région Firestore et l'acceptation des conditions de traitement des données</td><td>Direction</td><td>Avant le premier chantier</td></tr>
     <tr><td>3</td><td>Traduire la notice (EN / RO / ZH), la faire relire en roumain, la remettre contre signature (annexe A)</td><td>Direction / chef d'équipe</td><td>Avant le premier pointage de chaque personne</td></tr>
-    <tr><td>4</td><td>Afficher la notice dans l'application (écran d'acceptation à l'inscription + lien permanent)</td><td>Développement</td><td>Avant le premier chantier</td></tr>
-    <tr><td>5</td><td>Programmer la suppression automatique (positions et photos de plus de 12 mois ; comptes révoqués)</td><td>Développement</td><td>Dans les 3 mois</td></tr>
+    <tr><td>4</td><td>Afficher la notice dans l'application (écran d'acceptation + lien permanent « Mes données ») — <strong>fait (v1.1), à déployer</strong></td><td>Développement / direction (déploiement)</td><td>Avant le premier chantier</td></tr>
+    <tr><td>5</td><td>Suppression automatique (positions et photos &gt; 12 mois ; pointages &gt; 5 ans ; rapports ; comptes révoqués) — <strong>fait (v1.1), à déployer</strong></td><td>Développement / direction (déploiement)</td><td>Avant le premier chantier</td></tr>
     <tr><td>6</td><td>Compléter et signer la pré-AIPD (annexe C) ; reprendre la fiche de registre (annexe B)</td><td>Direction</td><td>Dans le mois</td></tr>
     <tr><td>7</td><td>Ajouter une clause de protection des données aux contrats avec les sous-traitants de main-d'œuvre</td><td>Direction / conseil</td><td>Au prochain contrat</td></tr>
     <tr><td>8</td><td>Relecture juridique de l'ensemble par un conseil RGPD belge</td><td>Direction</td><td>Recommandé avant diffusion</td></tr>
@@ -309,7 +313,7 @@
     <tr><td>Sous-traitant</td><td>Google — Firebase (Authentication, Firestore, Storage, Hosting)</td></tr>
     <tr><td>Transferts hors UE</td><td>États-Unis (Firebase Authentication, possiblement d'autres services) — décision d'adéquation EU-US Data Privacy Framework (10/07/2023)</td></tr>
     <tr><td>Durées de conservation</td><td>Voir section 2 <span class="tag t-val">À VALIDER</span></td></tr>
-    <tr><td>Mesures de sécurité</td><td>Authentification Firebase ; règles d'accès côté serveur par rôle, équipe et client ; révocation d'accès ; invitations à usage unique ; HTTPS ; redimensionnement des photos ; pointage limité à son propre nom</td></tr>
+    <tr><td>Mesures de sécurité</td><td>Authentification Firebase ; règles d'accès côté serveur par rôle, équipe et client ; révocation d'accès ; invitations à usage unique ; HTTPS ; redimensionnement des photos ; pointage limité à son propre nom ; aucun accès client au stockage des photos ; photos non modifiables ni supprimables par l'équipe ; purge automatique des durées de conservation ; surveillance quotidienne (application en ligne, données inaccessibles sans connexion)</td></tr>
   </table>
 </section>
 
@@ -355,7 +359,7 @@
     <li>Code de droit économique, art. III.88 — conservation des pièces comptables (10 ans).</li>
     <li>Autorité de protection des données — www.autoriteprotectiondonnees.be (liste des traitements soumis à AIPD, décisions de la Chambre contentieuse).</li>
     <li>Firebase — « Firebase Data Processing and Security Terms » et « Privacy and Security in Firebase » — firebase.google.com/terms/data-processing-terms.</li>
-    <li>Code source de l'application « Suivi chantier » (chantier-app : js/app.js, firestore.rules, storage.rules), état au 26/09/2026, et tests de règles sur l'émulateur Firebase (9/9 réussis).</li>
+    <li>Code source de l'application « Suivi chantier » (chantier-app : js/app.js, firestore.rules, storage.rules), état au 26/09/2026, et tests sur l'émulateur Firebase : règles Firestore 14/14, règles Storage 11/11, purge de conservation 11/11, parcours navigateur de la notice 6/6.</li>
   </ol>
   <p class="small">Ce document est une analyse de conformité préparatoire. Il ne remplace pas un avis juridique personnalisé. Les éléments marqués PROBABLE, HYPOTHÈSE ou À VALIDER doivent être confirmés avant diffusion.</p>
 </section>

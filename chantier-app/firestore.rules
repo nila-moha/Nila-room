@@ -119,6 +119,11 @@ service cloud.firestore {
         getAfter(/databases/$(database)/documents/people/$(request.auth.uid)).data.inviteCode == code;
     }
 
+    // ---- Paramètres internes (ex. suivi de la purge de conservation) ----
+    match /settings/{docId} {
+      allow read, write: if isAdmin();
+    }
+
     // ---- Teams ----
     match /teams/{teamId} {
       allow read: if isAdmin() || (isActive() && myTeamId() == teamId);

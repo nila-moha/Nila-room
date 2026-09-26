@@ -45,15 +45,22 @@ service firebase.storage {
           firestore.get(/databases/(default)/documents/projects/$(projectId)).data.teamId ==
             firestore.get(/databases/(default)/documents/people/$(request.auth.uid)).data.teamId;
       }
-      function isMyClientProject() {
-        return isSignedIn() &&
-          firestore.exists(/databases/(default)/documents/people/$(request.auth.uid)) &&
-          firestore.get(/databases/(default)/documents/people/$(request.auth.uid)).data.revoked != true &&
-          firestore.get(/databases/(default)/documents/people/$(request.auth.uid)).data.clientId != null &&
-          firestore.get(/databases/(default)/documents/projects/$(projectId)).data.clientId ==
-            firestore.get(/databases/(default)/documents/people/$(request.auth.uid)).data.clientId;
-      }
-      allow read, write: if isAdmin() || isMyTeamProject() || isMyClientProject();
+      // Admin : tout, y compris la suppression (purge des durées de
+      // conservation, voir js/retention.js).
+      allow read, write: if isAdmin();
+      // Équipe du projet : lire et AJOUTER des photos (JPEG redimensionnés
+      // par l'app), jamais écraser ni supprimer celles d'un collègue.
+      allow read: if isMyTeamProject();
+      allow create: if isMyTeamProject() &&
+        resource == null &&
+        request.resource.contentType.matches('image/.*') &&
+        request.resource.size < 15 * 1024 * 1024;
+      // Client : AUCUN accès direct au stockage. Il voit les photos des
+      // rapports qui lui sont montrés via leur lien de téléchargement signé
+      // (enregistré dans Firestore), sans passer par ces règles. Avant, un
+      // client pouvait lister et télécharger les photos de pointage et les
+      // reçus d'achat des ouvriers — contraire à la notice RGPD — et même
+      // écraser ou supprimer n'importe quelle photo de son projet.
     }
   }
 }

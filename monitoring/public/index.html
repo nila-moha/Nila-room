@@ -68,8 +68,10 @@ const LABELS = {
   contact_form: 'Formulaire de contact',
   broken_links: 'Liens internes (5 pages)',
   load_time: 'Temps de chargement (< 3s)',
+  app_up: 'App chantier en ligne',
+  app_security: 'App chantier — données fermées sans connexion',
 };
-const ORDER = ['http_en', 'http_fr', 'http_zh', 'http_ar', 'google_index', 'contact_form', 'broken_links', 'load_time'];
+const ORDER = ['http_en', 'http_fr', 'http_zh', 'http_ar', 'google_index', 'contact_form', 'broken_links', 'load_time', 'app_up', 'app_security'];
 const STATUS_TEXT = { green: 'OK', orange: 'À surveiller', red: 'Problème' };
 
 function dot(status) { return `<span class="dot ${status}"></span>`; }
@@ -99,7 +101,9 @@ function renderHistory(history) {
   list.innerHTML = history.slice().reverse().map((entry) => {
     const d = new Date(entry.date + 'T00:00:00Z');
     const dateLabel = d.toLocaleDateString('fr-BE', { day: '2-digit', month: '2-digit', year: 'numeric' });
-    const dots = ORDER.map((key) => `<span class="dot ${entry.checks[key] || 'orange'}"></span>`).join('');
+    // Les vérifications de l'app n'existaient pas avant le 26/09/2026 :
+    // pas de pastille pour ces jours-là plutôt qu'un faux « à surveiller ».
+    const dots = ORDER.filter((key) => key in entry.checks).map((key) => `<span class="dot ${entry.checks[key]}"></span>`).join('');
     return `<div class="history-row"><span>${dateLabel}</span><span class="history-dots">${dots}</span></div>`;
   }).join('');
 }

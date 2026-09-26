@@ -141,3 +141,32 @@ révoquée d'accéder à quoi que ce soit — ce n'est pas juste caché à
 l'écran. Le seul maillon qui dépend de vous : ne partagez un lien
 d'invitation qu'avec la bonne personne, puisque quiconque l'ouvre en
 premier obtient l'accès qui lui est attaché.
+
+## Protection des données (RGPD) — ajouté le 26/09/2026
+
+- **Notice obligatoire** (`js/notice.js`) : chaque membre du personnel la lit
+  et la confirme avant tout accès (FR / EN / RO / ZH). La confirmation
+  (version, langue, heure serveur) est enregistrée sur son profil et
+  visible dans l'onglet Comptes. Modifier le texte de façon importante =>
+  augmenter `NOTICE_VERSION` : tout le monde reconfirme. Dossier complet :
+  `bn-core-docs/BNC-RGPD-2026-01_Notice-pointage-GPS.pdf`.
+- **Durées de conservation** (`js/retention.js`) : purge automatique à
+  l'ouverture de l'espace admin (au plus une fois par jour) — GPS et
+  photos de pointage 12 mois, pointages et kilométrage 5 ans, journal et
+  problèmes 5 ans après clôture, profil révoqué 12 mois. Ouvrez l'app en
+  admin au moins une fois par mois. Les identifiants de connexion des
+  profils supprimés sont listés dans Comptes → « Conservation des
+  données » : à effacer à la main dans Console Firebase → Authentication.
+- **Photos** : le client n'a aucun accès direct au stockage ; l'équipe
+  ajoute des photos mais ne peut ni les écraser ni les supprimer.
+
+## Mettre à jour l'app en ligne
+
+Depuis ce dossier `chantier-app/`, dans cet ordre (l'app d'abord, les
+règles ensuite — sinon les téléphones encore sur l'ancienne version ne
+peuvent plus s'inscrire) :
+
+```
+firebase deploy --only hosting
+firebase deploy --only firestore:rules,storage
+```

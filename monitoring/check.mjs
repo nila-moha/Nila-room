@@ -11,6 +11,11 @@ const LANG_PAGES = { en: '/', fr: '/fr/', zh: '/zh/', ar: '/ar/' };
 // liste si une page Industries est créée un jour.
 const MAIN_PAGES = ['/index.html', '/a-propos.html', '/services.html', '/realisations.html', '/contact.html'];
 const HISTORY_DAYS = 7;
+
+// App de suivi chantier (chantier-app/) — Firebase Hosting + Firestore/Storage.
+const APP_URL = 'https://app.bncoregroup.com/';
+const FIREBASE_PROJECT = 'bn-core-chantier';
+const FIREBASE_BUCKET = 'bn-core-chantier.firebasestorage.app';
 const LOAD_TIME_LIMIT_MS = 3000;
 
 const FORMSPREE_ENDPOINT = process.env.FORMSPREE_ENDPOINT || '';
@@ -105,6 +110,37 @@ async function checkGoogleIndex() {
   }
 }
 
+async function checkApp() {
+  const r = await timedFetch(APP_URL);
+  if (!r.ok) return { status: 'red', httpStatus: r.status, error: r.error || null };
+  const html = await r.body.text();
+  const looksRight = html.includes('Suivi chantier');
+  return { status: looksRight ? 'green' : 'red', httpStatus: r.status, ms: r.ms, note: looksRight ? null : 'Page servie mais ce n\'est pas l\'app chantier.' };
+}
+
+// Sans connexion, les données de l'app doivent être INACCESSIBLES : chaque
+// sonde doit répondre 401/403. Un 200 = les règles de sécurité ont sauté
+// (ex. règles de test « allow read: if true » déployées par erreur) → rouge.
+async function checkAppSecurity() {
+  const fsBase = `https://firestore.googleapis.com/v1/projects/${FIREBASE_PROJECT}/databases/(default)/documents`;
+  const probes = {
+    projects: `${fsBase}/projects?pageSize=1`,
+    people: `${fsBase}/people?pageSize=1`,
+    invites: `${fsBase}/invites?pageSize=1`,
+    storage: `https://firebasestorage.googleapis.com/v0/b/${FIREBASE_BUCKET}/o?prefix=projects/&maxResults=1`,
+  };
+  const results = {};
+  let status = 'green';
+  for (const [name, url] of Object.entries(probes)) {
+    const r = await timedFetch(url);
+    const denied = r.status === 401 || r.status === 403;
+    results[name] = r.status;
+    if (r.ok) status = 'red';
+    else if (!denied && status === 'green') status = 'orange'; // réponse inattendue (réseau, 5xx) : à regarder, pas une fuite avérée
+  }
+  return { status, httpStatus: results };
+}
+
 async function sendAlertEmail(reasons) {
   if (!RESEND_API_KEY) {
     console.log('RESEND_API_KEY manquant — alerte non envoyée. Raisons:', reasons);
@@ -113,7 +149,7 @@ async function sendAlertEmail(reasons) {
   const body = {
     from: 'BN CORE Monitoring <onboarding@resend.dev>',
     to: [ALERT_TO],
-    subject: '🔴 Alerte — bncoregroup.com',
+    subject: '🔴 Alerte — bncoregroup.com / app chantier',
     text: `Le tableau de bord de surveillance a détecté un problème :\n\n${reasons.join('\n')}\n\nVoir le détail : https://dashboard.bncoregroup.com/`,
   };
   const res = await fetch('https://api.resend.com/emails', {
@@ -130,6 +166,8 @@ async function main() {
   const brokenLinks = await checkBrokenLinks();
   const contactForm = await checkContactForm();
   const googleIndex = await checkGoogleIndex();
+  const app = await checkApp();
+  const appSecurity = await checkAppSecurity();
 
   const entry = {
     date: nowIso().slice(0, 10),
@@ -143,8 +181,10 @@ async function main() {
       contact_form: contactForm.status,
       broken_links: brokenLinks.status,
       load_time: loadTime.status,
+      app_up: app.status,
+      app_security: appSecurity.status,
     },
-    details: { langPages, loadTime, brokenLinks, contactForm, googleIndex },
+    details: { langPages, loadTime, brokenLinks, contactForm, googleIndex, app, appSecurity },
   };
 
   const fs = await import('node:fs/promises');

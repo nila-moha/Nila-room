@@ -1348,6 +1348,7 @@ async function renderAdmin() {
   app.innerHTML = topbarHtml() + `<div class="wrap" id="admin-wrap"></div>`;
   wireLangSwitcher();
   renderAdminTabs();
+  maybeRunRetentionPurge(); // js/retention.js — au plus une fois par 24 h
 }
 
 function renderAdminTabs() {
@@ -1847,6 +1848,10 @@ function renderAdminPeople(content) {
         <div id="pending-invites"><p class="empty">Chargement…</p></div>
       </div>
       <div class="card">
+        <h3>Conservation des données (RGPD)</h3>
+        <div id="retention-card"><p class="empty">Chargement…</p></div>
+      </div>
+      <div class="card">
         <h3>Comptes actifs</h3>
         <div id="people-list"><p class="empty">Chargement…</p></div>
       </div>`;
@@ -1891,6 +1896,7 @@ function renderAdminPeople(content) {
     });
 
     renderPendingInvites(document.getElementById('pending-invites'), teams, clients);
+    renderRetentionCard(document.getElementById('retention-card'));
     renderPeopleList(document.getElementById('people-list'), teams, clients);
   }).catch(err => showError(content, "Erreur : " + err.message));
 }
@@ -1939,13 +1945,13 @@ function renderPeopleList(target, teams, clients) {
     target.querySelectorAll('[data-revoke]').forEach(btn => {
       btn.addEventListener('click', async () => {
         if (confirm("Retirer l'accès de cette personne ? Elle ne pourra plus se connecter ni voir aucune donnée, mais son historique est conservé.")) {
-          await db.collection('people').doc(btn.dataset.revoke).update({ revoked: true });
+          await db.collection('people').doc(btn.dataset.revoke).update({ revoked: true, revokedAt: firebase.firestore.FieldValue.serverTimestamp() });
         }
       });
     });
     target.querySelectorAll('[data-reactivate]').forEach(btn => {
       btn.addEventListener('click', async () => {
-        await db.collection('people').doc(btn.dataset.reactivate).update({ revoked: false });
+        await db.collection('people').doc(btn.dataset.reactivate).update({ revoked: false, revokedAt: firebase.firestore.FieldValue.delete() });
       });
     });
   }, err => showError(target, "Erreur : " + err.message));
