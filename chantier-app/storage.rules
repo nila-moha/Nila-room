@@ -36,6 +36,12 @@ service firebase.storage {
         firestore.get(/databases/(default)/documents/people/$(request.auth.uid)).data.role == 'admin';
     }
 
+    // Certificats d'étalonnage des outils : admin uniquement (le personnel
+    // voit la date de validité dans Firestore, pas besoin du fichier).
+    match /tools/{allPaths=**} {
+      allow read, write: if isAdmin();
+    }
+
     match /projects/{projectId}/{allPaths=**} {
       function isMyTeamProject() {
         return isSignedIn() &&

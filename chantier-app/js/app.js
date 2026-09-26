@@ -1288,6 +1288,7 @@ async function loadPersonAndRoute(user) {
     }
     currentPerson = person;
     routeByRole();
+    flushPhotoQueue(); // js/offline-photos.js — photos restées en attente
   } catch (err) {
     app.innerHTML = `<div class="center-wrap"><div class="card error-box">${esc(t('loadError'))}${esc(err.message)}</div></div>`;
   }
@@ -1365,6 +1366,7 @@ function renderAdminTabs() {
     ['teams', 'Équipes'],
     ['clients', 'Clients'],
     ['billing', 'Facturation matériel'],
+    ['tools', 'Outillage'],
     ['people', 'Comptes'],
   ];
   wrap.innerHTML = `
@@ -1389,6 +1391,7 @@ function renderAdminTabs() {
   else if (adminTab === 'teams') renderAdminTeams(content);
   else if (adminTab === 'clients') renderAdminClients(content);
   else if (adminTab === 'billing') renderAdminBillingEntities(content);
+  else if (adminTab === 'tools') renderAdminTools(content); // js/evidence.js
   else if (adminTab === 'people') renderAdminPeople(content);
 }
 
@@ -2229,6 +2232,7 @@ function renderProjectDetailShared(container, projectId, mode) {
         </div>
       </div>
       <div id="project-status-bar" style="margin:14px 0"></div>
+      <div id="project-handover" style="margin:0 0 14px"></div>
       <div class="tabs">
         <button class="tab active" data-ptab="checklist">${esc(t('tabProgress'))}</button>
         <button class="tab" data-ptab="journal">${esc(t('tabJournal'))}</button>
@@ -2255,12 +2259,16 @@ function renderProjectDetailShared(container, projectId, mode) {
     }
 
     renderProjectStatusBar(document.getElementById('project-status-bar'), project, projectId, mode);
+    renderHandoverCard(document.getElementById('project-handover'), projectId, mode); // PV signé (js/evidence.js)
 
     let activeTab = 'checklist';
     const renderTab = () => {
       clearSubscriptions();
       container.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.ptab === activeTab));
       const target = document.getElementById('ptab-content');
+      // Numéro d'affichage : un onglet quitté dont le chargement se termine
+      // en retard ne doit pas écraser l'onglet ouvert entre-temps.
+      target.dataset.gen = String((parseInt(target.dataset.gen || '0', 10)) + 1);
       if (activeTab === 'checklist') renderChecklistTab(target, projectId, mode, project.type);
       else if (activeTab === 'journal') renderJournalTab(target, projectId, mode);
       else if (activeTab === 'problems') renderProblemsTab(target, projectId, mode, project.type);
@@ -2328,6 +2336,18 @@ function renderProjectStatusBar(target, project, projectId, mode) {
   });
 }
 
+// Les règles Firestore ne sont pas des filtres : un client doit demander
+// UNIQUEMENT les éléments marqués visibles, sinon toute la requête est
+// refusée (bug corrigé : le client ne voyait ni journal ni problèmes).
+// Pas d'orderBy sur un autre champ (éviterait un index composite) : tri local.
+function clientSafeQuery(projectId, sub, mode) {
+  const col = db.collection('projects').doc(projectId).collection(sub);
+  return mode === 'client' ? col.where('visibleToClient', '==', true) : col.orderBy('createdAt', 'desc');
+}
+function sortedDocs(snap) {
+  return snap.docs.slice().sort((a, b) => tsMillis(b.data().createdAt) - tsMillis(a.data().createdAt));
+}
+
 // Rapport imprimable / exportable en PDF (via l'impression du navigateur) —
 // utilisable par l'admin, l'équipe ou le client depuis le détail d'un projet.
 async function exportProjectReport(projectId, mode) {
@@ -2335,16 +2355,18 @@ async function exportProjectReport(projectId, mode) {
   if (!projSnap.exists) return;
   const project = projSnap.data();
 
-  const [checklistSnap, journalSnap, problemsSnap, feedbackSnap] = await Promise.all([
+  const [checklistSnap, journalSnap, problemsSnap, feedbackSnap, pvSnap] = await Promise.all([
     db.collection('projects').doc(projectId).collection('checklist').orderBy('order').get(),
-    db.collection('projects').doc(projectId).collection('journal').orderBy('createdAt', 'desc').get(),
-    db.collection('projects').doc(projectId).collection('problems').orderBy('createdAt', 'desc').get(),
+    clientSafeQuery(projectId, 'journal', mode).get(),
+    clientSafeQuery(projectId, 'problems', mode).get(),
     db.collection('projects').doc(projectId).collection('feedback').doc('avis').get(),
+    db.collection('projects').doc(projectId).collection('handover').doc('pv').get(),
   ]);
+  const pv = pvSnap.exists ? pvSnap.data() : null;
 
   const isClient = mode === 'client';
-  const journalDocs = isClient ? journalSnap.docs.filter(d => d.data().visibleToClient) : journalSnap.docs;
-  const problemDocs = isClient ? problemsSnap.docs.filter(d => d.data().visibleToClient) : problemsSnap.docs;
+  const journalDocs = sortedDocs(journalSnap).filter(d => !isClient || d.data().visibleToClient);
+  const problemDocs = sortedDocs(problemsSnap).filter(d => !isClient || d.data().visibleToClient);
   const feedback = feedbackSnap.exists ? feedbackSnap.data() : null;
   const stars = (n) => '★'.repeat(n) + '☆'.repeat(5 - n);
   const doneCount = checklistSnap.docs.filter(d => d.data().done).length;
@@ -2370,6 +2392,10 @@ async function exportProjectReport(projectId, mode) {
   .step{padding:6px 0;border-bottom:1px solid #efe4d0;font-size:0.9rem}
   .step .done{color:#1f6b3a}
   .step .pending{color:#8c7c65}
+  .step .meta{font-size:0.8rem;color:#5e5140;margin:3px 0 0 18px}
+  .step img{max-width:200px;margin:4px 6px 0 18px;border-radius:6px}
+  .sig{border:1px solid #e8ddc9;border-radius:8px;padding:12px;margin-top:10px}
+  .sig img{max-width:320px;display:block;margin-top:6px}
   .entry{border-left:3px solid #c9974f;padding:8px 0 8px 12px;margin-bottom:10px;font-size:0.88rem}
   .entry .meta2{font-size:0.74rem;color:#8c7c65;margin-bottom:3px}
   .entry img{max-width:220px;margin:4px 6px 0 0;border-radius:6px}
@@ -2396,7 +2422,8 @@ async function exportProjectReport(projectId, mode) {
   ${checklistSnap.empty ? `<p>${esc(t('noStepsDefined'))}</p>` : checklistSnap.docs.map(d => {
     const s = d.data();
     const label = s.stepIndex != null ? checklistStepLabel(project.type, s.stepIndex) : (s.label || '');
-    return `<div class="step"><span class="${s.done ? 'done' : 'pending'}">${s.done ? '✔' : '○'} ${esc(label)}</span>${s.done && s.doneAt ? esc(t('reportCompletedOn')(fmtDateTime(s.doneAt))) : ''}</div>`;
+    // Preuves (photos, n° de série, mesures + outil étalonné) : js/evidence.js
+    return `<div class="step"><span class="${s.done ? 'done' : 'pending'}">${s.done ? '✔' : '○'} ${esc(label)}</span>${s.done && s.doneAt ? esc(t('reportCompletedOn')(fmtDateTime(s.doneAt))) : ''}${s.done ? ` — ${esc(s.doneBy || '')}${s.note ? ' — ' + esc(s.note) : ''}${evidenceSummaryHtml(s, true)}` : ''}</div>`;
   }).join('')}
 
   <h2>${esc(t('tabJournal'))}</h2>
@@ -2410,8 +2437,11 @@ async function exportProjectReport(projectId, mode) {
     const p = d.data();
     const statusLabel = p.status === 'resolved' ? t('problemStatusResolved') : p.status === 'published' ? t('problemStatusPublished') : t('problemStatusReported');
     const stepLabel = p.checklistStepIndex != null ? checklistStepLabel(project.type, p.checklistStepIndex) : null;
-    return `<div class="entry"><div class="meta2">${esc(p.reportedByName)} · ${fmtDateTime(p.createdAt)} — ${esc(statusLabel)}${stepLabel ? esc(t('stepConcernedInline')(stepLabel)) : ''}</div><div><b>${esc(p.title)}</b> — ${esc(p.description)}</div>${(p.photoUrls || []).map(u => `<img src="${esc(u)}">`).join('')}</div>`;
+    return `<div class="entry"><div class="meta2">${p.severity ? esc(ev('sevShort' + p.severity)) + ' · ' : ''}${esc(p.reportedByName)} · ${fmtDateTime(p.createdAt)} — ${esc(p.status === 'accepted' ? ev('accepted') : statusLabel)}${stepLabel ? esc(t('stepConcernedInline')(stepLabel)) : ''}</div><div><b>${esc(p.title)}</b> — ${esc(p.description)}</div>${p.resolvedNote ? `<div class="meta2">${esc(ev('fixLabel'))} : ${esc(p.resolvedNote)}</div>` : ''}${p.status === 'accepted' ? `<div class="meta2">✔ ${esc(p.acceptedByName || '')} · ${fmtDateTime(p.acceptedAt)}</div>` : ''}${(p.photoUrls || []).map(u => `<img src="${esc(u)}">`).join('')}</div>`;
   }).join('')}
+
+  <h2>${esc(ev('pvTitle'))}</h2>
+  ${pv ? `<div class="sig">${esc(ev('pvSigned', pv.signedByName, fmtDateTime(pv.signedAt)))}<br>${esc(ev('pvOpenReserves', (pv.openReserves || []).length))}${(pv.openReserves || []).map(r => `<br>• ${esc(r.severity || '')} ${esc(r.title)}`).join('')}${pv.signaturePng && pv.signaturePng.startsWith('data:image/png') ? `<img src="${pv.signaturePng}" alt="signature">` : ''}</div>` : `<p>${esc(ev('pvNotReady', doneCount, totalCount))}</p>`}
 
   ${feedback ? `<h2>${esc(t('feedbackHeading'))}</h2><p>${stars(feedback.rating)}${feedback.comment ? ' — ' + esc(feedback.comment) : ''}</p>` : ''}
 
@@ -2421,47 +2451,77 @@ async function exportProjectReport(projectId, mode) {
 }
 
 function renderChecklistTab(target, projectId, mode, projectType) {
+  const canEdit = mode !== 'client';
+  target.innerHTML = `<div class="card"><p id="cl-count" style="font-weight:600;margin-bottom:12px"></p><div id="cl-list"></div></div>`;
+  const countEl = target.querySelector('#cl-count'), list = target.querySelector('#cl-list');
+  // Rendu étape par étape : seule une étape qui change est redessinée, pour
+  // qu'un collègue qui valide une autre étape n'efface pas le formulaire de
+  // preuve (photos choisies comprises) en cours de remplissage.
+  const items = new Map(); // id -> { sig, el }
+  const itemHtml = (id, s) => {
+    const label = s.stepIndex != null ? checklistStepLabel(projectType, s.stepIndex) : (s.label || '');
+    // Une étape validée est verrouillée pour l'équipe (preuve figée) ;
+    // seul l'admin peut la rouvrir. Preuves : js/evidence.js.
+    const locked = s.done && mode !== 'admin';
+    return `<div class="checklist-item" style="flex-wrap:wrap">
+      <input type="checkbox" data-step="${id}" data-index="${s.stepIndex ?? ''}" ${s.done ? 'checked' : ''} ${canEdit && !locked ? '' : 'disabled'}>
+      <div style="flex:1;min-width:0">
+        <div class="label ${s.done ? 'done' : ''}">${esc(label)}</div>
+        ${s.done ? `<div class="meta">${esc(t('completedByOn')(s.doneBy || '—', fmtDateTime(s.doneAt)))}${s.note ? ' — ' + esc(s.note) : ''}</div>${evidenceSummaryHtml(s, false)}${locked && canEdit ? `<div class="meta">🔒 ${esc(ev('lockedInfo'))}</div>` : ''}` : ''}
+      </div>
+      <div data-evidence-holder="${id}" style="flex-basis:100%"></div>
+    </div>`;
+  };
+  const wire = (el) => {
+    const cb = el.querySelector('[data-step]');
+    if (!canEdit || !cb) return;
+    cb.addEventListener('change', async () => {
+      const stepRef = db.collection('projects').doc(projectId).collection('checklist').doc(cb.dataset.step);
+      if (cb.checked) {
+        // La case ne se coche qu'une fois les preuves fournies.
+        cb.checked = false;
+        openStepEvidenceForm(el.querySelector('[data-evidence-holder]'), {
+          projectId, stepId: cb.dataset.step, stepRef, projectType,
+          stepIndex: cb.dataset.index === '' ? null : parseInt(cb.dataset.index, 10),
+        });
+      } else if (mode === 'admin' && confirm('Rouvrir cette étape ? Les preuves enregistrées seront effacées de l’étape (elles restent dans l’historique des photos).')) {
+        await stepRef.update({ done: false, doneBy: null, doneAt: null, note: '', evidence: null, reopenedBy: currentPerson.name, reopenedAt: firebase.firestore.FieldValue.serverTimestamp() });
+      } else {
+        cb.checked = true;
+      }
+    });
+  };
   const unsub = db.collection('projects').doc(projectId).collection('checklist').orderBy('order').onSnapshot(snap => {
+    if (!list.isConnected) return;
     const total = snap.size;
     const done = snap.docs.filter(d => d.data().done).length;
-    const canEdit = mode !== 'client';
-    target.innerHTML = `
-      <div class="card">
-        <p style="font-weight:600;margin-bottom:12px">${esc(t('stepsCompleted')(done, total))}</p>
-        ${snap.empty ? `<p class="empty">${esc(t('noStepsDefined'))}</p>` : snap.docs.map(d => {
-          const s = d.data();
-          const label = s.stepIndex != null ? checklistStepLabel(projectType, s.stepIndex) : (s.label || '');
-          return `<div class="checklist-item">
-            <input type="checkbox" data-step="${d.id}" ${s.done ? 'checked' : ''} ${canEdit ? '' : 'disabled'}>
-            <div style="flex:1">
-              <div class="label ${s.done ? 'done' : ''}">${esc(label)}</div>
-              ${s.done ? `<div class="meta">${esc(t('completedByOn')(s.doneBy || '—', fmtDateTime(s.doneAt)))}${s.note ? ' — ' + esc(s.note) : ''}</div>` : ''}
-            </div>
-          </div>`;
-        }).join('')}
-      </div>`;
-    if (canEdit) {
-      target.querySelectorAll('[data-step]').forEach(cb => {
-        cb.addEventListener('change', async () => {
-          const stepRef = db.collection('projects').doc(projectId).collection('checklist').doc(cb.dataset.step);
-          if (cb.checked) {
-            let note = prompt(t('stepNotePrompt'), "") || '';
-            await stepRef.update({ done: true, doneBy: currentPerson.name, doneAt: firebase.firestore.FieldValue.serverTimestamp(), note });
-          } else {
-            await stepRef.update({ done: false, doneBy: null, doneAt: null, note: '' });
-          }
-        });
-      });
-    }
+    countEl.textContent = t('stepsCompleted')(done, total);
+    if (snap.empty) { list.innerHTML = `<p class="empty">${esc(t('noStepsDefined'))}</p>`; return; }
+    const seen = new Set();
+    snap.docs.forEach(d => {
+      seen.add(d.id);
+      const html = itemHtml(d.id, d.data());
+      let it = items.get(d.id);
+      if (!it || it.sig !== html) {
+        const holder = document.createElement('div');
+        holder.innerHTML = html;
+        const el = holder.firstElementChild;
+        if (it) it.el.replaceWith(el); else list.appendChild(el);
+        wire(el);
+        it = { sig: html, el };
+        items.set(d.id, it);
+      }
+      list.appendChild(it.el); // ordre, sans recréer
+    });
+    for (const [id, it] of items) if (!seen.has(id)) { it.el.remove(); items.delete(id); }
   }, err => showError(target, t('loadError') + err.message));
   unsubscribers.push(unsub);
 }
 
 function renderJournalTab(target, projectId, mode) {
   const canPost = mode !== 'client';
-  let query = db.collection('projects').doc(projectId).collection('journal').orderBy('createdAt', 'desc');
-  const unsub = query.onSnapshot(snap => {
-    const entries = mode === 'client' ? snap.docs.filter(d => d.data().visibleToClient) : snap.docs;
+  const unsub = clientSafeQuery(projectId, 'journal', mode).onSnapshot(snap => {
+    const entries = sortedDocs(snap);
     target.innerHTML = `
       ${canPost ? `
         <div class="card">
@@ -2500,11 +2560,12 @@ function renderJournalTab(target, projectId, mode) {
         const docRef = db.collection('projects').doc(projectId).collection('journal').doc();
         try {
           btn.textContent = files.length ? t('sendingPhotos') : t('publishing');
-          const photoUrls = files.length ? await uploadPhotos(`projects/${projectId}/journal/${docRef.id}`, files) : [];
-          await docRef.set({
-            text, containerSerial, visibleToClient, photoUrls, authorName: currentPerson.name, authorRole: currentPerson.role,
-            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-          });
+          // js/offline-photos.js : sans réseau, les photos attendent sur le téléphone.
+          const { urls: photoUrls, pending } = await uploadPhotosOrQueue(`projects/${projectId}/journal/${docRef.id}`, files, docRef.path);
+          await saveDoc(docRef.set({
+            text, containerSerial, visibleToClient, photoUrls, pendingPhotos: pending, authorName: currentPerson.name, authorRole: currentPerson.role,
+            authorUid: currentUser.uid, createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+          }));
         } catch (err) {
           showError(form, t('sendErrorPrefix') + err.message);
           btn.disabled = false;
@@ -2518,8 +2579,9 @@ function renderJournalTab(target, projectId, mode) {
 
 function renderProblemsTab(target, projectId, mode, projectType) {
   const canReport = mode === 'staff';
-  const unsub = db.collection('projects').doc(projectId).collection('problems').orderBy('createdAt', 'desc').onSnapshot(async (snap) => {
-    const items = mode === 'client' ? snap.docs.filter(d => d.data().visibleToClient) : snap.docs;
+  const myGen = target.dataset.gen;
+  const unsub = clientSafeQuery(projectId, 'problems', mode).onSnapshot(async (snap) => {
+    const items = sortedDocs(snap);
 
     let checklistOptions = '';
     if (canReport) {
@@ -2530,7 +2592,7 @@ function renderProblemsTab(target, projectId, mode, projectType) {
         return `<option value="${stepIndex}" data-label="${esc(label)}">${esc(label)}</option>`;
       }).join('');
     }
-    if (!target.isConnected) return; // onglet quitté pendant le chargement
+    if (!target.isConnected || target.dataset.gen !== myGen) return; // onglet quitté pendant le chargement
 
     target.innerHTML = `
       ${canReport ? `
@@ -2540,6 +2602,7 @@ function renderProblemsTab(target, projectId, mode, projectType) {
             <div class="field"><label>${esc(t('stepConcernedLabel'))}</label>
               <select id="problem-step"><option value="">${esc(t('noSpecificStep'))}</option>${checklistOptions}</select>
             </div>
+            ${severitySelectHtml()}
             <div class="field"><label>${esc(t('descriptionLabel'))}</label><textarea id="problem-desc" required></textarea></div>
             <div class="field"><label>${esc(t('photosOptionalLabel'))}</label><input type="file" id="problem-photos" accept="image/*" capture="environment" multiple></div>
             <button type="submit" class="btn btn-primary btn-sm">${esc(t('reportBtn'))}</button>
@@ -2552,12 +2615,14 @@ function renderProblemsTab(target, projectId, mode, projectType) {
           const stepLabel = p.checklistStepIndex != null ? checklistStepLabel(projectType, p.checklistStepIndex) : null;
           return `<div style="padding:12px 0;border-bottom:1px solid var(--border)">
             <div style="display:flex;justify-content:space-between;align-items:flex-start">
-              <h3 style="font-size:1rem">${esc(p.title)}</h3>
-              <span class="badge badge-${p.status}">${esc(statusLabel)}</span>
+              <h3 style="font-size:1rem">${severityBadgeHtml(p)}${esc(p.title)}</h3>
+              <span class="badge badge-${p.status === 'accepted' ? 'resolved' : p.status}">${esc(p.status === 'accepted' ? ev('accepted') : statusLabel)}</span>
             </div>
             <p class="empty" style="font-style:normal;margin:4px 0">${esc(p.reportedByName)} · ${fmtDateTime(p.createdAt)}${stepLabel ? esc(t('stepConcernedInline')(stepLabel)) : ''}</p>
             <p>${esc(p.description)}</p>
             ${photoGalleryHtml(p.photoUrls)}
+            ${punchStatusHtml(p)}
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px">${punchActionsHtml(d.id, p, mode)}</div>
           </div>`;
         }).join('')}
       </div>`;
@@ -2568,6 +2633,7 @@ function renderProblemsTab(target, projectId, mode, projectType) {
         const description = document.getElementById('problem-desc').value.trim();
         const stepSel = document.getElementById('problem-step');
         const checklistStepIndex = stepSel.value !== '' ? parseInt(stepSel.value, 10) : null;
+        const severity = document.getElementById('problem-severity').value; // réserve A/B/C (js/evidence.js)
         const files = Array.from(document.getElementById('problem-photos').files || []);
         if (!title || !description) return;
         const form = e.target;
@@ -2576,12 +2642,12 @@ function renderProblemsTab(target, projectId, mode, projectType) {
         const docRef = db.collection('projects').doc(projectId).collection('problems').doc();
         try {
           btn.textContent = files.length ? t('sendingPhotos') : t('reporting');
-          const photoUrls = files.length ? await uploadPhotos(`projects/${projectId}/problems/${docRef.id}`, files) : [];
-          await docRef.set({
-            title, description, photoUrls, status: 'reported', visibleToClient: false,
-            checklistStepIndex,
-            reportedByName: currentPerson.name, createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-          });
+          const { urls: photoUrls, pending } = await uploadPhotosOrQueue(`projects/${projectId}/problems/${docRef.id}`, files, docRef.path);
+          await saveDoc(docRef.set({
+            title, description, photoUrls, pendingPhotos: pending, status: 'reported', visibleToClient: false,
+            checklistStepIndex, severity,
+            reportedByName: currentPerson.name, reportedByUid: currentUser.uid, createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+          }));
         } catch (err) {
           showError(form, t('sendErrorPrefix') + err.message);
           btn.disabled = false;
@@ -2589,6 +2655,7 @@ function renderProblemsTab(target, projectId, mode, projectType) {
         }
       });
     }
+    wirePunchActions(target, projectId); // levée (admin) / acceptation (client)
   }, err => showError(target, t('loadError') + err.message));
   unsubscribers.push(unsub);
 }
@@ -2669,11 +2736,11 @@ function renderTimesheetTab(target, projectId, mode) {
         try {
           const geo = await getGeoLocation();
           confirmBtn.textContent = files.length ? t('sendingPhotos') : t('confirmBtn');
-          const photoUrls = files.length ? await uploadPhotos(`projects/${projectId}/timesheets/${docRef.id}`, files) : [];
-          await docRef.set({
+          const { urls: photoUrls, pending } = await uploadPhotosOrQueue(`projects/${projectId}/timesheets/${docRef.id}`, files, docRef.path);
+          await saveDoc(docRef.set({
             personUid: currentUser.uid, personName: currentPerson.name, type: isIn ? 'out' : 'in',
-            note, photoUrls, geo, timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-          });
+            note, photoUrls, pendingPhotos: pending, geo, timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+          }));
         } catch (err) {
           showError(clockWrap, t('sendErrorPrefix') + err.message);
           confirmBtn.disabled = false;
@@ -2930,11 +2997,11 @@ function renderPurchasesTab(target, projectId, mode) {
     const docRef = db.collection('projects').doc(projectId).collection('purchases').doc();
     try {
       btn.textContent = files.length ? t('sendingPhotos') : t('reportingPurchase');
-      const photoUrls = files.length ? await uploadPhotos(`projects/${projectId}/purchases/${docRef.id}`, files) : [];
-      await docRef.set({
-        storeName, amount, photoUrls, reportedByName: currentPerson.name,
+      const { urls: photoUrls, pending } = await uploadPhotosOrQueue(`projects/${projectId}/purchases/${docRef.id}`, files, docRef.path);
+      await saveDoc(docRef.set({
+        storeName, amount, photoUrls, pendingPhotos: pending, reportedByName: currentPerson.name, reportedByUid: currentUser.uid,
         createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-      });
+      }));
       form.reset();
     } catch (err) {
       showError(form, t('sendErrorPrefix') + err.message);

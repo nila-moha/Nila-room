@@ -50,6 +50,12 @@ service cloud.firestore {
     function myTeamId() { return myPerson().teamId; }
     function myClientId() { return myPerson().clientId; }
 
+    // Seuls les champs de la file de photos hors connexion changent
+    // (js/offline-photos.js) : ajout d'URL, décompte des photos en attente.
+    function onlyPhotoQueue(field) {
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly([field, 'pendingPhotos']);
+    }
+
     function projectOf(projectId) {
       return get(/databases/$(database)/documents/projects/$(projectId)).data;
     }
@@ -126,6 +132,14 @@ service cloud.firestore {
       allow create: if isActive() && request.resource.data.uid == request.auth.uid;
       allow update: if isActive() && resource.data.uid == request.auth.uid && request.resource.data.uid == request.auth.uid;
       allow delete: if isSignedIn() && resource.data.uid == request.auth.uid;
+    }
+
+    // ---- Outillage et étalonnage (js/evidence.js) ----
+    // Lisible par le personnel (choix de l'outil sur le terrain), pas par
+    // les clients ; géré par l'admin.
+    match /tools/{toolId} {
+      allow read: if isAdmin() || (isActive() && myTeamId() != null);
+      allow write: if isAdmin();
     }
 
     // ---- Paramètres internes (ex. suivi de la purge de conservation) ----
@@ -226,9 +240,18 @@ service cloud.firestore {
       allow get, list: if isActive() && myClientId() != null && resource.data.clientId == myClientId();
       allow write: if isAdmin();
 
+      // Étape validée = preuve figée : l'équipe ne peut plus la modifier
+      // (sauf l'arrivée des photos restées hors connexion) ; l'admin rouvre.
       match /checklist/{stepId} {
         allow read: if isAdmin() || isMyTeamProject(projectId) || isMyClientProject(projectId);
-        allow create, update: if isAdmin() || isMyTeamProject(projectId);
+        allow create: if isAdmin() || isMyTeamProject(projectId);
+        allow update: if isAdmin() ||
+          (isMyTeamProject(projectId) && resource.data.done != true &&
+            (request.resource.data.done != true ||
+              (request.resource.data.doneByUid == request.auth.uid &&
+               request.resource.data.doneAt == request.time &&
+               request.resource.data.evidence is map))) ||
+          (isMyTeamProject(projectId) && onlyPhotoQueue('evidencePhotos'));
         allow delete: if isAdmin();
       }
 
@@ -237,6 +260,7 @@ service cloud.firestore {
           (isMyClientProject(projectId) && resource.data.visibleToClient == true);
         allow create: if isAdmin() || isMyTeamProject(projectId);
         allow update, delete: if isAdmin();
+        allow update: if isMyTeamProject(projectId) && resource.data.authorUid == request.auth.uid && onlyPhotoQueue('photoUrls');
       }
 
       match /problems/{problemId} {
@@ -244,6 +268,15 @@ service cloud.firestore {
           (isMyClientProject(projectId) && resource.data.visibleToClient == true);
         allow create: if isAdmin() || isMyTeamProject(projectId);
         allow update: if isAdmin();
+        allow update: if isMyTeamProject(projectId) && resource.data.reportedByUid == request.auth.uid && onlyPhotoQueue('photoUrls');
+        // Réserve levée par BN CORE : seul le client l'accepte ou la refuse.
+        allow update: if isMyClientProject(projectId) && resource.data.visibleToClient == true &&
+          resource.data.status == 'resolved' &&
+          ((request.resource.data.status == 'accepted' && request.resource.data.acceptedByUid == request.auth.uid &&
+            request.resource.data.acceptedAt == request.time &&
+            request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'acceptedByName', 'acceptedByUid', 'acceptedAt'])) ||
+           (request.resource.data.status == 'published' &&
+            request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'clientRejectReason'])));
         allow delete: if isAdmin();
       }
 
@@ -261,6 +294,7 @@ service cloud.firestore {
         allow create: if isAdmin() ||
           (isMyTeamProject(projectId) && request.resource.data.personUid == request.auth.uid);
         allow update, delete: if isAdmin();
+        allow update: if isMyTeamProject(projectId) && resource.data.personUid == request.auth.uid && onlyPhotoQueue('photoUrls');
       }
 
       // Kilométrage domicile-chantier saisi par chaque personne, utile pour
@@ -281,6 +315,18 @@ service cloud.firestore {
         allow read: if isAdmin() || isMyTeamProject(projectId);
         allow create: if isAdmin() || isMyTeamProject(projectId);
         allow update, delete: if isAdmin();
+        allow update: if isMyTeamProject(projectId) && resource.data.reportedByUid == request.auth.uid && onlyPhotoQueue('photoUrls');
+      }
+
+      // Procès-verbal de réception signé par le client (js/evidence.js) :
+      // une seule fois, à son nom, à l'heure du serveur ; jamais modifiable.
+      match /handover/{docId} {
+        allow read: if isAdmin() || isMyTeamProject(projectId) || isMyClientProject(projectId);
+        allow create: if docId == 'pv' && isMyClientProject(projectId) &&
+          request.resource.data.signedByUid == request.auth.uid &&
+          request.resource.data.signedAt == request.time &&
+          request.resource.data.signaturePng is string && request.resource.data.signaturePng.size() < 300000;
+        allow delete: if isAdmin();
       }
 
       // Frais d'hébergement/repas facturés au client — saisis par l'admin
