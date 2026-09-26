@@ -1,6 +1,6 @@
 {
-  "date": "2026-09-25",
-  "time": "2026-09-25T10:59:04.490Z",
+  "date": "2026-09-26",
+  "time": "2026-09-26T10:40:39.695Z",
   "checks": {
     "http_en": "green",
     "http_fr": "green",
@@ -36,7 +36,7 @@
     },
     "loadTime": {
       "status": "green",
-      "ms": 39
+      "ms": 28
     },
     "brokenLinks": {
       "status": "green",
