@@ -176,7 +176,22 @@ premier obtient l'accès qui lui est attaché.
 - **Ouvriers** (onglet « Missions ») : « Je viens » / « Je me retire ». Les
   premiers inscrits sont retenus, les suivants en liste d'attente ; l'admin
   valide l'équipe -> un créneau par personne et par jour ouvrable.
-- Pas de notification téléphone : prévenir par WhatsApp si c'est urgent.
+- **Notifications sur le téléphone** (voir ci-dessous) + bouton « 📲 Prévenir par
+  WhatsApp » (message tout prêt) quand une mission est ouverte.
+
+## Notifications push — ajouté le 26/09/2026
+
+- Chacun active les notifications une fois (bandeau « 🔔 Activer les
+  notifications » en haut de l'écran). iPhone : seulement avec l'app ajoutée
+  à l'écran d'accueil (iOS 16.4+).
+- Envoyées par `functions/index.js` (Cloud Functions, région europe-west1) :
+  nouvelle demande / annulation / volontaire -> admin ; mission ouverte ->
+  ouvriers concernés (dans leur langue) ; équipe confirmée -> client +
+  ouvriers retenus ; refus -> client.
+- **Nécessite le forfait Firebase Blaze** (paiement à l'usage ; à ce volume,
+  très probablement 0 € : quota gratuit Cloud Functions, FCM gratuit).
+- Déploiement : `firebase deploy --only functions` (installe les dépendances
+  automatiquement).
 
 ## Mettre à jour l'app en ligne
 
@@ -187,4 +202,5 @@ peuvent plus s'inscrire) :
 ```
 firebase deploy --only hosting
 firebase deploy --only firestore:rules,storage
+firebase deploy --only functions
 ```

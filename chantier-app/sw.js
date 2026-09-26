@@ -3,7 +3,7 @@
 // mises en cache séparément par Firestore (voir js/app.js,
 // enablePersistence) — ce fichier ne s'occupe que de l'app elle-même.
 
-const CACHE_NAME = 'bn-core-chantier-v7';
+const CACHE_NAME = 'bn-core-chantier-v8';
 const APP_SHELL = [
   './',
   './index.html',
@@ -12,11 +12,27 @@ const APP_SHELL = [
   './js/notice.js',
   './js/retention.js',
   './js/staffing.js',
+  './js/push.js',
   './js/firebase-config.js',
   './js/logo-base64.js',
   './icons/icon-192.png',
   './icons/icon-512.png',
 ];
+
+// Notifications push (js/push.js, functions/index.js) : le SDK Firebase
+// Messaging affiche lui-même les notifications reçues quand l'app est
+// fermée, et ouvre l'app au clic (lien fourni par le serveur). En
+// try/catch : si le SDK ne se charge pas (hors ligne), le reste du service
+// worker — le mode hors connexion — doit continuer de fonctionner.
+try {
+  importScripts(
+    'https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js',
+    'https://www.gstatic.com/firebasejs/10.13.0/firebase-messaging-compat.js',
+    'js/firebase-config.js'
+  );
+  firebase.initializeApp(firebaseConfig);
+  firebase.messaging();
+} catch (e) { /* notifications indisponibles, mode hors ligne intact */ }
 
 self.addEventListener('install', (event) => {
   event.waitUntil(

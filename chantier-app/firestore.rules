@@ -119,6 +119,15 @@ service cloud.firestore {
         getAfter(/databases/$(database)/documents/people/$(request.auth.uid)).data.inviteCode == code;
     }
 
+    // ---- Jetons de notification push (js/push.js) ----
+    // Chacun enregistre / retire les jetons de SES téléphones ; personne ne
+    // peut les lire depuis l'app (seul le serveur, functions/, les utilise).
+    match /pushTokens/{token} {
+      allow create: if isActive() && request.resource.data.uid == request.auth.uid;
+      allow update: if isActive() && resource.data.uid == request.auth.uid && request.resource.data.uid == request.auth.uid;
+      allow delete: if isSignedIn() && resource.data.uid == request.auth.uid;
+    }
+
     // ---- Paramètres internes (ex. suivi de la purge de conservation) ----
     match /settings/{docId} {
       allow read, write: if isAdmin();

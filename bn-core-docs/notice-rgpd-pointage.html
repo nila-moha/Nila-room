@@ -56,7 +56,7 @@
     <tr><td>Responsable du traitement</td><td>BN CORE GROUP — Ll.Graffplein 15, 1780 Wemmel, Belgique — TVA BE1027.648.484</td></tr>
     <tr><td>Contact</td><td>info@bncoregroup.com — +32 471 99 08 25</td></tr>
     <tr><td>Référence</td><td>BNC-RGPD-2026-01</td></tr>
-    <tr><td>Version</td><td>1.1 — 26 septembre 2026 (v1.0 du même jour + mesures techniques implémentées dans l'application)</td></tr>
+    <tr><td>Version</td><td>1.2 — 26 septembre 2026 (v1.1 + notifications push pour les demandes de personnel)</td></tr>
     <tr><td>Statut</td><td><span class="tag t-val">À VALIDER</span> — les durées de conservation (déjà appliquées par l'application) et le statut contractuel des intervenants doivent être confirmés par la direction ; le déploiement de l'application vaut adoption des durées affichées (voir section 6).</td></tr>
     <tr><td>Destinataires</td><td>Direction BN CORE GROUP. La section 2 est affichée dans l'application à chaque intervenant, qui doit la confirmer avant tout accès.</td></tr>
   </table>
@@ -124,6 +124,7 @@
     <tr><td>Rapports de chantier</td><td>Texte et photos du journal, problèmes signalés, numéros de série de conteneurs, auteur</td><td>La personne</td><td>Administrateur ; équipe ; client si marqué « visible client »</td></tr>
     <tr><td>Achats</td><td>Magasin, montant, photo du reçu, nom du déclarant</td><td>La personne</td><td>Administrateur ; équipe du projet</td></tr>
     <tr><td>Planning</td><td>Affectation personne / chantier / jour</td><td>Administrateur</td><td>Administrateur ; la personne ; son équipe</td></tr>
+    <tr><td>Notifications (v1.2)</td><td>Identifiant technique du téléphone (jeton Firebase Cloud Messaging), rôle, langue — uniquement si la personne active les notifications</td><td>Téléphone de la personne</td><td>Personne (jamais lisible dans l'application) ; utilisé uniquement par le serveur d'envoi ; supprimé à la déconnexion ou quand le téléphone ne le reconnaît plus</td></tr>
     <tr><td>Frais facturés</td><td>Nuits d'hébergement et jours de repas par personne</td><td>Administrateur</td><td>Administrateur uniquement</td></tr>
   </table>
   <p class="small">Aucune donnée sensible au sens de l'art. 9 RGPD (santé, opinions, etc.) n'est demandée par l'application. Une remarque libre ou une photo pourrait néanmoins en contenir ponctuellement (ex. « retard — rendez-vous médical ») : la notice invite à ne pas en saisir.</p>
@@ -157,7 +158,8 @@
       <li>l'heure de vos arrivées et départs, le chantier concerné et, si vous en ajoutez, une remarque et une photo ;</li>
       <li><strong>la position GPS de votre téléphone, uniquement au moment précis où vous pointez</strong> (arrivée ou départ) — jamais en continu, jamais en dehors de l'application ;</li>
       <li>vos kilomètres domicile–chantier et le type de véhicule ;</li>
-      <li>les rapports, photos, problèmes et achats que vous publiez.</li>
+      <li>les rapports, photos, problèmes et achats que vous publiez ;</li>
+      <li>si vous activez les notifications, un identifiant technique de votre téléphone, servant uniquement à vous les envoyer et supprimé à la déconnexion.</li>
     </ul>
 
     <p><strong>Pourquoi ?</strong></p>

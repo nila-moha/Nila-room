@@ -1254,6 +1254,7 @@ function translateAuthError(err) {
 
 async function logout() {
   clearSubscriptions();
+  await unregisterPushToken(); // js/push.js — ce téléphone ne reçoit plus les alertes de ce compte
   await auth.signOut();
 }
 
@@ -1348,6 +1349,7 @@ async function renderAdmin() {
   app.innerHTML = topbarHtml() + `<div class="wrap" id="admin-wrap"></div>`;
   wireLangSwitcher();
   renderAdminTabs();
+  mountPushBanner(); // js/push.js
   maybeRunRetentionPurge(); // js/retention.js — au plus une fois par 24 h
 }
 
@@ -2077,6 +2079,7 @@ async function renderStaff() {
   document.querySelectorAll('[data-stab]').forEach(btn => {
     btn.addEventListener('click', () => { staffTab = btn.dataset.stab; renderStaff(); });
   });
+  mountPushBanner(); // js/push.js
   const wrap = document.getElementById('staff-wrap');
   if (staffTab === 'calendar') renderStaffCalendar(wrap);
   else if (staffTab === 'missions') renderStaffMissions(wrap); // js/staffing.js
@@ -2166,6 +2169,7 @@ async function renderClient() {
   clearSubscriptions();
   app.innerHTML = topbarHtml() + `<div class="wrap" id="client-wrap"><div class="loading">${esc(t('loadingGeneric'))}</div></div>`;
   wireLangSwitcher();
+  mountPushBanner(); // js/push.js
   const wrap = document.getElementById('client-wrap');
   if (!currentPerson.clientId) {
     wrap.innerHTML = `<p class="empty">${esc(t('clientNoProject'))}</p>`;

@@ -655,6 +655,7 @@ function wireAdminRequestCard(id, r, ctx) {
         <p class="empty" style="font-style:normal;margin:6px 0">Samedis et dimanches jamais planifiés.</p>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
           <button type="button" class="btn btn-primary btn-sm p-go">Valider l'équipe cochée</button>
+          <a class="btn btn-outline btn-sm" target="_blank" rel="noopener" href="https://wa.me/?text=${encodeURIComponent(whatsappMissionText(r))}">📲 Prévenir par WhatsApp</a>
           <button type="button" class="btn btn-outline btn-sm p-close">Retirer la mission (repasser en attente)</button>
         </div>`;
       wireCreateProject(box);
@@ -675,6 +676,13 @@ function wireAdminRequestCard(id, r, ctx) {
     return u; // arrêté si la carte est redessinée
   }
   box.innerHTML = '';
+}
+
+// Message tout prêt pour le groupe WhatsApp des ouvriers (secours si un
+// téléphone n'a pas les notifications activées).
+function whatsappMissionText(r) {
+  const period = r.startDate === r.endDate ? fmtDateStr(r.startDate) : `${fmtDateStr(r.startDate)} au ${fmtDateStr(r.endDate)} (lun-ven)`;
+  return `🔔 BN CORE — Nouvelle mission\n📍 ${r.address || r.projectName || r.siteName || ''}\n📅 ${period} à ${r.startTime || '?'}\n👷 ${r.peopleNeeded} personne(s)\n🛠 ${r.work}\n${r.notes ? 'ℹ️ ' + r.notes + '\n' : ''}➡️ Répondez dans l'app, onglet « Missions » : https://app.bncoregroup.com`;
 }
 
 // Crée un créneau de planning par personne et par jour, puis confirme la

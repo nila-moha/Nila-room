@@ -10,8 +10,14 @@
       "**/node_modules/**",
       "firestore.rules",
       "storage.rules",
-      "README.md"
+      "README.md",
+      "functions/**"
     ]
+  },
+  "functions": {
+    "source": "functions",
+    "runtime": "nodejs20",
+    "predeploy": ["npm --prefix \"$RESOURCE_DIR\" install"]
   },
   "storage": {
     "rules": "storage.rules"
