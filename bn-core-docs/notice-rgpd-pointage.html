@@ -1,0 +1,364 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Notice RGPD — Pointage, géolocalisation et photos | BN CORE GROUP</title>
+<style>
+  @page { size: A4; margin: 30mm 18mm 22mm 18mm; }
+  :root { --gold:#A8762E; --gold-soft:#F6EBD9; --ink:#1d1d1f; --dim:#555; --line:#dcc9a8; }
+  * { box-sizing: border-box; }
+  body { font-family: "Georgia", "Times New Roman", serif; color: var(--ink); font-size: 10.5pt; line-height: 1.5; margin: 0; background:#fff; }
+  h1, h2, h3, .sans { font-family: "Helvetica Neue", Arial, sans-serif; }
+  h1 { font-size: 22pt; color: var(--gold); margin: 0 0 6mm; line-height: 1.2; }
+  h2 { font-size: 14pt; color: var(--gold); border-bottom: 1.5px solid var(--line); padding-bottom: 2mm; margin: 9mm 0 4mm; break-after: avoid; }
+  h3 { font-size: 11pt; margin: 5mm 0 2mm; break-after: avoid; }
+  p { margin: 0 0 3mm; }
+  ul, ol { margin: 0 0 3mm; padding-left: 6mm; }
+  li { margin-bottom: 1.2mm; }
+  table { width: 100%; border-collapse: collapse; margin: 2mm 0 5mm; font-size: 9.5pt; break-inside: auto; }
+  tr { break-inside: avoid; }
+  th { background: var(--gold-soft); text-align: left; font-family: Arial, sans-serif; font-size: 9pt; }
+  th, td { border: 1px solid var(--line); padding: 2mm 2.5mm; vertical-align: top; }
+  .page-break { break-before: page; }
+  .cover { height: 225mm; display: flex; flex-direction: column; }
+  .cover img { width: 95mm; margin: 6mm 0 14mm; }
+  .cover .kicker { font-family: Arial, sans-serif; letter-spacing: .18em; text-transform: uppercase; font-size: 9pt; color: var(--dim); margin-bottom: 3mm; }
+  .cover .sub { font-size: 13pt; color: var(--dim); margin-bottom: 12mm; }
+  .cover .meta { margin-top: auto; border-top: 1.5px solid var(--line); padding-top: 5mm; font-family: Arial, sans-serif; font-size: 9pt; }
+  .cover .meta td { border: none; padding: 1mm 0; }
+  .cover .meta td:first-child { width: 45mm; color: var(--dim); }
+  .box { border: 1px solid var(--line); background: #FCF8F1; padding: 4mm 5mm; margin: 3mm 0 5mm; break-inside: avoid; }
+  .warn { border-left: 4px solid #B3261E; background: #FDF1F0; padding: 3mm 5mm; margin: 3mm 0 5mm; break-inside: avoid; }
+  .tag { font-family: Arial, sans-serif; font-size: 7.5pt; font-weight: bold; padding: .4mm 1.6mm; border-radius: 1mm; white-space: nowrap; }
+  .t-fait { background:#E4F1E6; color:#1E6B2E; }
+  .t-prob { background:#FFF3D6; color:#7A5300; }
+  .t-hyp  { background:#EDE7F6; color:#4A2C8A; }
+  .t-val  { background:#FDE2E0; color:#8C1D18; }
+  .toc { font-family: Arial, sans-serif; }
+  .toc li { list-style: none; margin: 0 0 2mm; border-bottom: 1px dotted var(--line); }
+  .toc ul { padding-left: 0; }
+  .toc ul ul { padding-left: 6mm; font-size: 9.5pt; color: var(--dim); }
+  .notice { border: 2px solid var(--gold); padding: 6mm 7mm; }
+  .notice h3 { color: var(--gold); }
+  .sign td { height: 14mm; }
+  .small { font-size: 8.5pt; color: var(--dim); }
+</style>
+</head>
+<body>
+
+<!-- ====================== PAGE DE COUVERTURE ====================== -->
+<section class="cover">
+  <img src="{{LOGO_FULL}}" alt="BN CORE GROUP — Building from the Core">
+  <div class="kicker">Document interne — Protection des données</div>
+  <h1>Notice d'information RGPD<br>Pointage, géolocalisation et photos</h1>
+  <div class="sub">Application « Suivi chantier » (app.bncoregroup.com) — personnel intervenant sur les chantiers BESS, analyse de conformité et plan d'action</div>
+  <table class="meta">
+    <tr><td>Responsable du traitement</td><td>BN CORE GROUP — Ll.Graffplein 15, 1780 Wemmel, Belgique — TVA BE1027.648.484</td></tr>
+    <tr><td>Contact</td><td>info@bncoregroup.com — +32 471 99 08 25</td></tr>
+    <tr><td>Référence</td><td>BNC-RGPD-2026-01</td></tr>
+    <tr><td>Version</td><td>1.0 — projet du 26 septembre 2026</td></tr>
+    <tr><td>Statut</td><td><span class="tag t-val">À VALIDER</span> — les durées de conservation et le statut contractuel des intervenants doivent être confirmés par la direction avant diffusion (voir section 6).</td></tr>
+    <tr><td>Destinataires</td><td>Direction BN CORE GROUP ; après validation, la section 2 est remise à chaque intervenant avant son premier pointage.</td></tr>
+  </table>
+</section>
+
+<!-- ====================== SOMMAIRE ====================== -->
+<section class="page-break">
+  <h2>Sommaire</h2>
+  <div class="toc">
+    <ul>
+      <li>Légende des niveaux de certitude</li>
+      <li>1. Analyse — objet, contexte et données réellement collectées
+        <ul><li>1.1 Objet du document</li><li>1.2 Fonctionnement constaté dans l'application</li><li>1.3 Inventaire des données personnelles</li><li>1.4 Qualification juridique</li></ul></li>
+      <li>2. Notice d'information aux intervenants (texte à remettre)</li>
+      <li>3. Analyse de conformité — points conformes et écarts</li>
+      <li>4. Données financières — coûts de mise en conformité et exposition</li>
+      <li>5. Risques — matrice</li>
+      <li>6. Conclusion et plan d'action</li>
+      <li>Annexe A — Accusé de réception à faire signer</li>
+      <li>Annexe B — Fiche du registre des activités de traitement (art. 30 RGPD)</li>
+      <li>Annexe C — Pré-analyse d'impact (AIPD, art. 35 RGPD)</li>
+      <li>Annexe D — Sources</li>
+    </ul>
+  </div>
+
+  <h3>Légende des niveaux de certitude</h3>
+  <table>
+    <tr><th style="width:32mm">Marque</th><th>Signification</th></tr>
+    <tr><td><span class="tag t-fait">FAIT ÉTABLI</span></td><td>Vérifié dans le code de l'application ou texte légal / décision publiée cité en annexe D.</td></tr>
+    <tr><td><span class="tag t-prob">PROBABLE</span></td><td>Interprétation dominante ou position habituelle de l'autorité, non confirmée pour votre cas précis.</td></tr>
+    <tr><td><span class="tag t-hyp">HYPOTHÈSE</span></td><td>Supposition raisonnable à confirmer (organisation interne, contrats, estimations de coût).</td></tr>
+    <tr><td><span class="tag t-val">À VALIDER</span></td><td>Choix de gestion que la direction doit arrêter ; valeur proposée par défaut.</td></tr>
+  </table>
+</section>
+
+<!-- ====================== 1. ANALYSE ====================== -->
+<section class="page-break">
+  <h2>1. Analyse — objet, contexte et données réellement collectées</h2>
+
+  <h3>1.1 Objet du document</h3>
+  <p>L'application interne « Suivi chantier » de BN CORE GROUP permet au personnel intervenant sur les chantiers (ingénieurs, électriciens, aides techniques) de pointer leurs heures d'arrivée et de départ, avec une photo, une remarque et la position GPS de l'appareil, de déclarer leur kilométrage et de publier des rapports photo. Ces traitements concernent des personnes en situation de subordination ou de dépendance économique vis-à-vis de BN CORE GROUP ou de son client : le RGPD impose une information préalable complète (art. 12 à 14) et un examen de proportionnalité (art. 5.1.c). Le présent document fournit (i) le texte d'information à remettre, (ii) l'analyse qui le justifie et (iii) les actions restant à mener.</p>
+
+  <h3>1.2 Fonctionnement constaté dans l'application <span class="tag t-fait">FAIT ÉTABLI</span></h3>
+  <ul>
+    <li><strong>Géolocalisation ponctuelle, pas de suivi continu</strong> : la position est lue une seule fois, au moment où la personne appuie sur « arrivée » ou « départ » (fonction <code>getGeoLocation()</code>, délai de 5 s). Aucune position n'est enregistrée entre deux pointages ni en dehors de l'application.</li>
+    <li><strong>Refus sans conséquence technique</strong> : si le téléphone refuse l'accès à la position ou n'en obtient pas, le pointage est enregistré sans position. Le pointage n'est jamais bloqué.</li>
+    <li><strong>Consultation</strong> : la position n'est visible que par l'administrateur, sous forme d'un lien vers Google Maps affiché à côté du pointage.</li>
+    <li><strong>Cloisonnement</strong> : les règles de sécurité Firestore limitent la lecture des pointages et du kilométrage à l'administrateur et à l'équipe affectée au projet ; les clients n'y ont pas accès. Depuis la correction du 26/09/2026, une personne ne peut plus pointer au nom d'un collègue (vérifié par 9 tests automatisés sur l'émulateur Firebase).</li>
+    <li><strong>Photos</strong> : datées automatiquement et redimensionnées avant envoi ; stockées dans Firebase Storage.</li>
+    <li><strong>Retrait d'accès</strong> : un compte révoqué ne voit plus aucune donnée, mais <em>son historique est conservé sans limite de durée</em> — c'est l'écart principal traité en section 3.</li>
+    <li><strong>Frais d'hébergement et de repas</strong> : saisis uniquement par l'administrateur et invisibles pour l'équipe et le client.</li>
+  </ul>
+
+  <h3>1.3 Inventaire des données personnelles <span class="tag t-fait">FAIT ÉTABLI</span></h3>
+  <table>
+    <tr><th>Catégorie</th><th>Données</th><th>Source</th><th>Visible par</th></tr>
+    <tr><td>Identification / compte</td><td>Nom, adresse e-mail, mot de passe (géré et chiffré par Firebase Authentication, jamais lisible par BN CORE), rôle, équipe, langue choisie (stockée sur l'appareil uniquement)</td><td>La personne, via le lien d'invitation</td><td>Administrateur ; la personne elle-même</td></tr>
+    <tr><td>Temps de travail</td><td>Horodatage d'arrivée et de départ, projet, remarque libre</td><td>La personne</td><td>Administrateur ; équipe du projet</td></tr>
+    <tr><td>Géolocalisation</td><td>Latitude et longitude au moment du pointage</td><td>Téléphone de la personne</td><td>Administrateur</td></tr>
+    <tr><td>Photos de pointage</td><td>Photo facultative jointe au pointage (peut montrer la personne, des collègues ou le site)</td><td>La personne</td><td>Administrateur ; équipe du projet</td></tr>
+    <tr><td>Déplacements</td><td>Kilomètres domicile–chantier par jour, type de véhicule</td><td>La personne</td><td>Administrateur ; équipe du projet</td></tr>
+    <tr><td>Rapports de chantier</td><td>Texte et photos du journal, problèmes signalés, numéros de série de conteneurs, auteur</td><td>La personne</td><td>Administrateur ; équipe ; client si marqué « visible client »</td></tr>
+    <tr><td>Achats</td><td>Magasin, montant, photo du reçu, nom du déclarant</td><td>La personne</td><td>Administrateur ; équipe du projet</td></tr>
+    <tr><td>Planning</td><td>Affectation personne / chantier / jour</td><td>Administrateur</td><td>Administrateur ; la personne ; son équipe</td></tr>
+    <tr><td>Frais facturés</td><td>Nuits d'hébergement et jours de repas par personne</td><td>Administrateur</td><td>Administrateur uniquement</td></tr>
+  </table>
+  <p class="small">Aucune donnée sensible au sens de l'art. 9 RGPD (santé, opinions, etc.) n'est demandée par l'application. Une remarque libre ou une photo pourrait néanmoins en contenir ponctuellement (ex. « retard — rendez-vous médical ») : la notice invite à ne pas en saisir.</p>
+
+  <h3>1.4 Qualification juridique</h3>
+  <table>
+    <tr><th style="width:40mm">Question</th><th>Analyse</th><th style="width:24mm">Certitude</th></tr>
+    <tr><td>Responsable du traitement</td><td>BN CORE GROUP, qui détermine les finalités (facturation, preuve de présence, suivi de chantier) et les moyens (l'application).</td><td><span class="tag t-fait">FAIT ÉTABLI</span></td></tr>
+    <tr><td>Sous-traitant (art. 28)</td><td>Google (Firebase Authentication, Cloud Firestore, Cloud Storage, Firebase Hosting), sous les « Firebase Data Processing and Security Terms » acceptées à l'activation du projet.</td><td><span class="tag t-prob">PROBABLE</span> — à confirmer dans la console Firebase (Paramètres du projet → Confidentialité)</td></tr>
+    <tr><td>Localisation des données</td><td>Dépend de la région choisie à la création de la base Firestore (non visible dans le code). Firebase Authentication traite les données aux États-Unis.</td><td><span class="tag t-hyp">HYPOTHÈSE</span> — à vérifier dans Firestore → Paramètres → Emplacement</td></tr>
+    <tr><td>Transfert hors UE (art. 45)</td><td>Couvert par la décision d'adéquation UE–États-Unis « Data Privacy Framework » du 10/07/2023, pour les entreprises certifiées, dont Google LLC.</td><td><span class="tag t-fait">FAIT ÉTABLI</span> (décision) / <span class="tag t-prob">PROBABLE</span> (certification Google à vérifier sur dataprivacyframework.gov)</td></tr>
+    <tr><td>Statut des intervenants</td><td>Salariés de BN CORE, indépendants, intérimaires ou personnel d'un sous-traitant (ex. équipes roumaines). Le statut change la base légale du temps de travail et impose, pour le personnel d'un tiers, une clause de protection des données dans le contrat de sous-traitance.</td><td><span class="tag t-hyp">HYPOTHÈSE</span> — <span class="tag t-val">À VALIDER</span></td></tr>
+    <tr><td>Consentement comme base légale</td><td>À éviter : dans une relation de travail, le consentement est rarement libre (Lignes directrices 05/2020 du CEPD sur le consentement, § 21–23). La notice s'appuie donc sur le contrat et l'intérêt légitime, avec droit d'opposition.</td><td><span class="tag t-fait">FAIT ÉTABLI</span></td></tr>
+  </table>
+</section>
+
+<!-- ====================== 2. NOTICE ====================== -->
+<section class="page-break">
+  <h2>2. Notice d'information aux intervenants (texte à remettre)</h2>
+  <p class="small">Texte destiné à être remis, avant le premier pointage, à chaque personne invitée dans l'application, dans sa langue (FR / EN / RO / ZH), contre accusé de réception (annexe A). Les passages marqués <span class="tag t-val">À VALIDER</span> doivent être arrêtés par la direction avant diffusion.</p>
+
+  <div class="notice">
+    <h3>Vos données dans l'application « Suivi chantier » de BN CORE GROUP</h3>
+
+    <p><strong>Qui est responsable ?</strong><br>
+    BN CORE GROUP, Ll.Graffplein 15, 1780 Wemmel, Belgique — TVA BE1027.648.484 — info@bncoregroup.com — +32 471 99 08 25.</p>
+
+    <p><strong>Quelles données collectons-nous ?</strong></p>
+    <ul>
+      <li>votre nom, votre adresse e-mail et votre rôle (votre mot de passe est chiffré par notre prestataire et n'est jamais visible par BN CORE GROUP) ;</li>
+      <li>l'heure de vos arrivées et départs, le chantier concerné et, si vous en ajoutez, une remarque et une photo ;</li>
+      <li><strong>la position GPS de votre téléphone, uniquement au moment précis où vous pointez</strong> (arrivée ou départ) — jamais en continu, jamais en dehors de l'application ;</li>
+      <li>vos kilomètres domicile–chantier et le type de véhicule ;</li>
+      <li>les rapports, photos, problèmes et achats que vous publiez.</li>
+    </ul>
+
+    <p><strong>Pourquoi ?</strong></p>
+    <table>
+      <tr><th>Finalité</th><th>Base légale (RGPD art. 6.1)</th></tr>
+      <tr><td>Enregistrer votre temps de travail, vos déplacements et les calculer pour la paie ou la facturation de vos prestations</td><td>Exécution du contrat (b) et, pour les salariés, obligation légale d'enregistrement du temps de travail (c)</td></tr>
+      <tr><td>Facturer au client les heures et frais réellement prestés sur son chantier</td><td>Intérêt légitime de BN CORE GROUP (f)</td></tr>
+      <tr><td>Prouver votre présence sur le chantier en cas de contestation (position GPS et photo au pointage)</td><td>Intérêt légitime de BN CORE GROUP (f)</td></tr>
+      <tr><td>Documenter l'avancement du chantier et les problèmes rencontrés (rapports, photos)</td><td>Exécution du contrat avec le client et intérêt légitime (f)</td></tr>
+    </table>
+
+    <p><strong>La position GPS et la photo sont-elles obligatoires ?</strong><br>
+    Non. Vous pouvez refuser l'accès à la position dans votre téléphone : votre pointage sera enregistré normalement, sans position. La photo de pointage est facultative. En cas de contestation sur votre présence, BN CORE GROUP pourra toutefois vous demander d'autres éléments de preuve. <strong>Ne saisissez aucune information sur votre santé ou votre vie privée</strong> dans les remarques et ne photographiez pas de personnes sans nécessité.</p>
+
+    <p><strong>Qui voit vos données ?</strong><br>
+    L'administrateur de BN CORE GROUP voit tout. Les membres de votre équipe voient les pointages, le kilométrage et les rapports du chantier commun. Les clients ne voient jamais vos pointages, vos positions ni votre kilométrage ; ils voient uniquement les rapports que BN CORE GROUP a marqués comme visibles. Notre prestataire technique est Google (Firebase), qui héberge les données pour notre compte ; certaines données peuvent être traitées aux États-Unis dans le cadre du « EU-US Data Privacy Framework ». Vos données ne sont ni vendues ni utilisées à des fins publicitaires.</p>
+
+    <p><strong>Combien de temps ?</strong> <span class="tag t-val">À VALIDER</span></p>
+    <table>
+      <tr><th>Données</th><th>Durée de conservation</th></tr>
+      <tr><td>Position GPS des pointages</td><td>12 mois après le pointage, puis suppression</td></tr>
+      <tr><td>Photos de pointage</td><td>12 mois après le pointage, puis suppression</td></tr>
+      <tr><td>Heures, kilométrage (sans position)</td><td>5 ans après la fin de l'année du pointage</td></tr>
+      <tr><td>Rapports et photos de chantier</td><td>Durée du projet + 5 ans (preuve des travaux réalisés)</td></tr>
+      <tr><td>Compte (nom, e-mail)</td><td>Durée de la collaboration ; désactivé à son terme, puis supprimé 12 mois après, sauf données nécessaires aux durées ci-dessus</td></tr>
+      <tr><td>Factures émises au client</td><td>10 ans (obligation comptable)</td></tr>
+    </table>
+
+    <p><strong>Vos droits</strong><br>
+    Vous pouvez demander l'accès à vos données, leur rectification, leur effacement ou la limitation de leur traitement, recevoir une copie de vos données (portabilité) et <strong>vous opposer</strong> au traitement fondé sur l'intérêt légitime, notamment à la géolocalisation (art. 15 à 21 RGPD). Écrivez à <strong>info@bncoregroup.com</strong> ; nous répondons dans un délai d'un mois. Vous pouvez aussi introduire une réclamation auprès de l'<strong>Autorité de protection des données</strong>, rue de la Presse 35, 1000 Bruxelles — contact@apd-gba.be — www.autoriteprotectiondonnees.be.</p>
+
+    <p class="small">Version 1.0 — septembre 2026. En cas de modification importante, une nouvelle version vous sera remise avant son application.</p>
+  </div>
+</section>
+
+<!-- ====================== 3. CONFORMITÉ ====================== -->
+<section class="page-break">
+  <h2>3. Analyse de conformité — points conformes et écarts</h2>
+
+  <h3>3.1 Points conformes <span class="tag t-fait">FAIT ÉTABLI</span></h3>
+  <ul>
+    <li><strong>Minimisation de la géolocalisation</strong> : position ponctuelle au pointage, pas de suivi continu (art. 5.1.c) — c'est le choix le moins intrusif possible pour l'objectif « preuve de présence ».</li>
+    <li><strong>Caractère non bloquant</strong> : le refus de la position n'empêche pas le travail, ce qui rend le droit d'opposition effectif.</li>
+    <li><strong>Sécurité et cloisonnement</strong> (art. 32) : authentification Firebase, règles d'accès côté serveur (et pas seulement côté écran) : client ↔ client, équipe ↔ équipe, personne révoquée. Lecture sans connexion refusée (testé en ligne le 26/09/2026 : réponse 403).</li>
+    <li><strong>Intégrité des pointages</strong> : depuis le 26/09/2026, impossible de pointer au nom d'un autre ; un lien d'invitation ne crée plus qu'un seul compte.</li>
+    <li><strong>Séparation client</strong> : pointages, positions, kilométrage et frais jamais visibles par le client.</li>
+  </ul>
+
+  <h3>3.2 Écarts à corriger</h3>
+  <table>
+    <tr><th style="width:8mm">#</th><th>Écart</th><th>Référence</th><th style="width:22mm">Gravité</th><th>Correction</th></tr>
+    <tr><td>E1</td><td>Aucune information préalable remise aux intervenants <span class="tag t-fait">FAIT ÉTABLI</span> (rien dans l'application ni dans le dépôt)</td><td>Art. 12, 13 RGPD</td><td>Élevée</td><td>Remettre la notice (section 2) contre accusé de réception (annexe A) et l'afficher dans l'application au premier pointage.</td></tr>
+    <tr><td>E2</td><td>Aucune durée de conservation ni suppression automatique : l'historique des personnes révoquées est gardé indéfiniment <span class="tag t-fait">FAIT ÉTABLI</span></td><td>Art. 5.1.e RGPD</td><td>Élevée</td><td>Arrêter les durées (section 2) puis programmer une suppression automatique (tâche planifiée qui efface les positions et photos de plus de 12 mois).</td></tr>
+    <tr><td>E3</td><td>Pas d'analyse d'impact documentée <span class="tag t-prob">PROBABLE</span> : l'AIPD est en principe requise dès que deux critères des lignes directrices WP248 sont réunis — ici « surveillance systématique » (critère 3) et « personnes vulnérables / employés » (critère 7)</td><td>Art. 35 RGPD ; WP248 rév.01</td><td>Moyenne à élevée</td><td>Compléter et signer la pré-analyse de l'annexe C.</td></tr>
+    <tr><td>E4</td><td>Pas de registre des activités de traitement connu <span class="tag t-hyp">HYPOTHÈSE</span></td><td>Art. 30 RGPD (l'exemption des structures de moins de 250 personnes ne s'applique pas à un traitement régulier comme celui-ci)</td><td>Moyenne</td><td>Reprendre la fiche de l'annexe B dans votre registre.</td></tr>
+    <tr><td>E5</td><td>Personnel de sous-traitants (ex. équipes roumaines) : aucune clause de protection des données connue dans les contrats de sous-traitance <span class="tag t-hyp">HYPOTHÈSE</span></td><td>Art. 13, 26 ou 28 RGPD selon le montage</td><td>Moyenne</td><td>Ajouter une clause : le sous-traitant informe son personnel et BN CORE GROUP lui fournit la notice.</td></tr>
+    <tr><td>E6</td><td>Localisation des données Firestore et acceptation des conditions Firebase non vérifiées <span class="tag t-hyp">HYPOTHÈSE</span></td><td>Art. 28, 44 à 46 RGPD</td><td>Faible à moyenne</td><td>Vérifier dans la console Firebase ; privilégier une région UE (ex. europe-west1, Belgique) si le choix est encore possible.</td></tr>
+    <tr><td>E7</td><td>Accès à la position non documenté pour l'administrateur (qui consulte, quand, pourquoi) <span class="tag t-fait">FAIT ÉTABLI</span></td><td>Art. 5.2 (responsabilité)</td><td>Faible</td><td>Règle interne : la position n'est consultée qu'en cas de contestation de présence ou de facturation.</td></tr>
+    <tr><td>E8</td><td>Traduction roumaine non relue par un technicien natif (signalée dans le README de l'application) <span class="tag t-fait">FAIT ÉTABLI</span></td><td>Art. 12 RGPD (information « compréhensible ») ; sécurité au travail</td><td>Moyenne</td><td>Faire relire la notice et les étapes de sécurité en roumain.</td></tr>
+  </table>
+</section>
+
+<!-- ====================== 4. FINANCES ====================== -->
+<section class="page-break">
+  <h2>4. Données financières — coûts de mise en conformité et exposition</h2>
+
+  <h3>4.1 Coûts de mise en conformité</h3>
+  <table>
+    <tr><th>Poste</th><th>Coût estimé (HTVA)</th><th>Certitude</th></tr>
+    <tr><td>Rédaction de la notice, du registre et de la pré-AIPD (présent document)</td><td>0 € (déjà produit)</td><td><span class="tag t-fait">FAIT ÉTABLI</span></td></tr>
+    <tr><td>Relecture juridique par un avocat ou un consultant RGPD belge (notice + AIPD)</td><td>500 à 1 500 €</td><td><span class="tag t-hyp">HYPOTHÈSE</span> — fourchette de marché indicative, à confirmer par devis</td></tr>
+    <tr><td>Suppression automatique des données (tâche planifiée Firebase)</td><td>Développement interne ; exécution dans le quota gratuit Firebase au volume actuel</td><td><span class="tag t-prob">PROBABLE</span> — une Cloud Function planifiée exige le forfait « Blaze » (paiement à l'usage, montants négligeables à ce volume)</td></tr>
+    <tr><td>Traduction RO / EN / ZH de la notice et relecture technique roumaine</td><td>100 à 300 € ou relecture par un chef d'équipe</td><td><span class="tag t-hyp">HYPOTHÈSE</span></td></tr>
+    <tr><td>Temps de direction (validation, diffusion, collecte des accusés)</td><td>Environ 3 à 5 heures</td><td><span class="tag t-hyp">HYPOTHÈSE</span></td></tr>
+    <tr><td><strong>Total décaissé estimé</strong></td><td><strong>600 à 1 800 €</strong></td><td><span class="tag t-hyp">HYPOTHÈSE</span></td></tr>
+  </table>
+
+  <h3>4.2 Exposition en cas de non-conformité</h3>
+  <table>
+    <tr><th>Risque</th><th>Montant / conséquence</th><th>Certitude</th></tr>
+    <tr><td>Amende administrative — manquement aux principes et aux droits (art. 5, 12–22)</td><td>Jusqu'à 20 000 000 € ou 4 % du chiffre d'affaires annuel mondial (le montant le plus élevé)</td><td><span class="tag t-fait">FAIT ÉTABLI</span> (art. 83.5 RGPD)</td></tr>
+    <tr><td>Amende administrative — AIPD, registre, sécurité (art. 30, 32, 35)</td><td>Jusqu'à 10 000 000 € ou 2 % du chiffre d'affaires</td><td><span class="tag t-fait">FAIT ÉTABLI</span> (art. 83.4 RGPD)</td></tr>
+    <tr><td>Montant réaliste pour une PME belge sur plainte d'un travailleur</td><td>Réprimande, ordre de mise en conformité, ou amende de quelques milliers d'euros ; l'amende est proportionnée à la taille de l'entreprise</td><td><span class="tag t-prob">PROBABLE</span> — pratique de la Chambre contentieuse de l'APD, art. 83.1 et 83.2 RGPD</td></tr>
+    <tr><td>Preuve de présence écartée en litige</td><td>Une position GPS collectée sans information préalable peut être contestée dans un litige sur les heures ou la facturation, ce qui fait perdre l'avantage recherché</td><td><span class="tag t-prob">PROBABLE</span></td></tr>
+    <tr><td>Risque commercial</td><td>Les EPC et opérateurs BESS (ex. Sungrow Benelux) demandent de plus en plus la conformité RGPD de leurs prestataires lors des audits fournisseurs</td><td><span class="tag t-hyp">HYPOTHÈSE</span></td></tr>
+  </table>
+  <div class="box"><strong>Lecture</strong> : le coût de mise en conformité (moins de 2 000 €) est très inférieur à l'exposition. Surtout, sans information préalable, la preuve GPS pour laquelle la fonction a été créée devient fragile.</div>
+</section>
+
+<!-- ====================== 5. RISQUES ====================== -->
+<section class="page-break">
+  <h2>5. Risques — matrice</h2>
+  <table>
+    <tr><th>Risque</th><th style="width:22mm">Probabilité</th><th style="width:20mm">Impact</th><th>Mesure de réduction</th><th style="width:22mm">Risque résiduel</th></tr>
+    <tr><td>R1 — Plainte d'un intervenant pour géolocalisation non annoncée</td><td>Moyenne</td><td>Élevé</td><td>Notice + accusé de réception avant premier pointage (E1)</td><td>Faible</td></tr>
+    <tr><td>R2 — Usage détourné de la position (contrôle des pauses, surveillance hors chantier)</td><td>Faible</td><td>Élevé</td><td>Position ponctuelle uniquement (déjà en place) ; règle interne de consultation (E7) ; ne jamais étendre au suivi continu sans nouvelle AIPD</td><td>Faible</td></tr>
+    <tr><td>R3 — Conservation excessive (anciens intervenants, positions historiques)</td><td>Élevée (certaine aujourd'hui)</td><td>Moyen</td><td>Durées arrêtées et suppression automatique (E2)</td><td>Faible</td></tr>
+    <tr><td>R4 — Fuite de données (compte admin compromis)</td><td>Faible</td><td>Élevé</td><td>Mot de passe fort et unique pour le compte admin ; activer la double authentification Google / Firebase ; révoquer immédiatement les comptes des intervenants partis</td><td>Faible</td></tr>
+    <tr><td>R5 — Photos montrant des tiers (collègues, personnel du client) diffusées au client</td><td>Moyenne</td><td>Moyen</td><td>Consigne dans la notice ; l'administrateur vérifie les photos avant de les marquer « visible client »</td><td>Faible</td></tr>
+    <tr><td>R6 — Personnel d'un sous-traitant non informé</td><td>Moyenne</td><td>Moyen</td><td>Clause contractuelle (E5) + notice dans la langue</td><td>Faible</td></tr>
+    <tr><td>R7 — Contestation du caractère « libre » si le GPS devient de fait obligatoire (pression hiérarchique)</td><td>Faible</td><td>Moyen</td><td>Ne pas fonder la base légale sur le consentement ; ne jamais sanctionner un refus de GPS en tant que tel</td><td>Faible</td></tr>
+  </table>
+</section>
+
+<!-- ====================== 6. CONCLUSION ====================== -->
+<section class="page-break">
+  <h2>6. Conclusion et plan d'action</h2>
+  <p>Sur le plan technique, l'application est proportionnée : géolocalisation ponctuelle, non bloquante, cloisonnée, jamais montrée au client. <strong>La conformité bloque sur l'organisation, pas sur le code</strong> : les intervenants ne sont pas informés, aucune durée de conservation n'existe et l'analyse d'impact n'est pas documentée. Tant que ces trois points ne sont pas réglés, il est déconseillé d'utiliser le pointage GPS sur un chantier réel. Une fois réglés, le risque résiduel est faible.</p>
+
+  <table>
+    <tr><th style="width:8mm">#</th><th>Action</th><th style="width:30mm">Responsable</th><th style="width:30mm">Échéance proposée</th></tr>
+    <tr><td>1</td><td>Valider les durées de conservation et le statut des intervenants (sections 1.4 et 2)</td><td>Direction</td><td>Avant le premier chantier</td></tr>
+    <tr><td>2</td><td>Vérifier dans la console Firebase la région Firestore et l'acceptation des conditions de traitement des données</td><td>Direction</td><td>Avant le premier chantier</td></tr>
+    <tr><td>3</td><td>Traduire la notice (EN / RO / ZH), la faire relire en roumain, la remettre contre signature (annexe A)</td><td>Direction / chef d'équipe</td><td>Avant le premier pointage de chaque personne</td></tr>
+    <tr><td>4</td><td>Afficher la notice dans l'application (écran d'acceptation à l'inscription + lien permanent)</td><td>Développement</td><td>Avant le premier chantier</td></tr>
+    <tr><td>5</td><td>Programmer la suppression automatique (positions et photos de plus de 12 mois ; comptes révoqués)</td><td>Développement</td><td>Dans les 3 mois</td></tr>
+    <tr><td>6</td><td>Compléter et signer la pré-AIPD (annexe C) ; reprendre la fiche de registre (annexe B)</td><td>Direction</td><td>Dans le mois</td></tr>
+    <tr><td>7</td><td>Ajouter une clause de protection des données aux contrats avec les sous-traitants de main-d'œuvre</td><td>Direction / conseil</td><td>Au prochain contrat</td></tr>
+    <tr><td>8</td><td>Relecture juridique de l'ensemble par un conseil RGPD belge</td><td>Direction</td><td>Recommandé avant diffusion</td></tr>
+  </table>
+</section>
+
+<!-- ====================== ANNEXE A ====================== -->
+<section class="page-break">
+  <h2>Annexe A — Accusé de réception à faire signer</h2>
+  <div class="box">
+    <p>Je soussigné(e) reconnais avoir reçu et lu la notice d'information « Vos données dans l'application Suivi chantier de BN CORE GROUP » (version 1.0, septembre 2026) dans une langue que je comprends, en particulier les informations relatives à la position GPS enregistrée au moment du pointage, à son caractère facultatif, aux durées de conservation et à mes droits, dont le droit de m'opposer à la géolocalisation.</p>
+    <p class="small">Cet accusé de réception atteste uniquement la remise de l'information. Il ne constitue pas un consentement et n'est pas la base légale du traitement.</p>
+  </div>
+  <table class="sign">
+    <tr><th style="width:45mm">Nom et prénom</th><td></td></tr>
+    <tr><th>Employeur (si autre que BN CORE GROUP)</th><td></td></tr>
+    <tr><th>Langue de la notice remise</th><td>FR &nbsp;☐ &nbsp;&nbsp; EN &nbsp;☐ &nbsp;&nbsp; RO &nbsp;☐ &nbsp;&nbsp; ZH &nbsp;☐</td></tr>
+    <tr><th>Date</th><td></td></tr>
+    <tr><th>Signature</th><td style="height:25mm"></td></tr>
+  </table>
+</section>
+
+<!-- ====================== ANNEXE B ====================== -->
+<section class="page-break">
+  <h2>Annexe B — Fiche du registre des activités de traitement (art. 30 RGPD)</h2>
+  <table>
+    <tr><th style="width:50mm">Rubrique</th><th>Contenu</th></tr>
+    <tr><td>Nom du traitement</td><td>Suivi de chantier — pointage, déplacements et rapports du personnel intervenant</td></tr>
+    <tr><td>Responsable</td><td>BN CORE GROUP, Ll.Graffplein 15, 1780 Wemmel — TVA BE1027.648.484 — info@bncoregroup.com</td></tr>
+    <tr><td>Délégué à la protection des données</td><td>Non désigné — non obligatoire a priori (art. 37 : pas de suivi « à grande échelle ») <span class="tag t-prob">PROBABLE</span></td></tr>
+    <tr><td>Finalités</td><td>Enregistrement du temps de travail et des déplacements ; facturation client ; preuve de présence ; documentation de l'avancement et des incidents de chantier</td></tr>
+    <tr><td>Catégories de personnes</td><td>Personnel intervenant (salariés, indépendants, personnel de sous-traitants) ; contacts clients (comptes clients)</td></tr>
+    <tr><td>Catégories de données</td><td>Identification, temps de travail, géolocalisation ponctuelle, photos, kilométrage, rapports, achats (voir section 1.3)</td></tr>
+    <tr><td>Bases légales</td><td>Art. 6.1.b, 6.1.c (salariés) et 6.1.f</td></tr>
+    <tr><td>Destinataires</td><td>Administrateur BN CORE ; équipe du projet ; client (rapports marqués visibles uniquement)</td></tr>
+    <tr><td>Sous-traitant</td><td>Google — Firebase (Authentication, Firestore, Storage, Hosting)</td></tr>
+    <tr><td>Transferts hors UE</td><td>États-Unis (Firebase Authentication, possiblement d'autres services) — décision d'adéquation EU-US Data Privacy Framework (10/07/2023)</td></tr>
+    <tr><td>Durées de conservation</td><td>Voir section 2 <span class="tag t-val">À VALIDER</span></td></tr>
+    <tr><td>Mesures de sécurité</td><td>Authentification Firebase ; règles d'accès côté serveur par rôle, équipe et client ; révocation d'accès ; invitations à usage unique ; HTTPS ; redimensionnement des photos ; pointage limité à son propre nom</td></tr>
+  </table>
+</section>
+
+<!-- ====================== ANNEXE C ====================== -->
+<section class="page-break">
+  <h2>Annexe C — Pré-analyse d'impact (AIPD, art. 35 RGPD)</h2>
+  <p class="small">Trame à compléter et signer par la direction. Elle reprend les éléments exigés par l'art. 35.7 RGPD. Une relecture par un conseil est recommandée.</p>
+  <table>
+    <tr><th style="width:50mm">Élément (art. 35.7)</th><th>Contenu</th></tr>
+    <tr><td>a) Description du traitement et des finalités</td><td>Sections 1.2, 1.3 et 2 du présent document.</td></tr>
+    <tr><td>b) Nécessité et proportionnalité</td><td>
+      <ul>
+        <li>Nécessité : la facturation au client repose sur les heures réellement prestées sur site ; une preuve objective de présence réduit les litiges.</li>
+        <li>Alternatives moins intrusives examinées : déclaration sans preuve (insuffisante en cas de contestation) ; feuille signée par le client sur site (possible, mais lourde) ; <strong>position ponctuelle au pointage (retenue)</strong> ; suivi continu (<strong>rejeté</strong>, disproportionné).</li>
+        <li>Minimisation : pas de suivi continu, pas d'accès client, GPS facultatif et non bloquant.</li>
+        <li>Conservation limitée : 12 mois pour la position et les photos de pointage <span class="tag t-val">À VALIDER</span>.</li>
+      </ul></td></tr>
+    <tr><td>c) Risques pour les droits et libertés</td><td>Section 5 (R1 à R7) : sentiment de surveillance, usage détourné, conservation excessive, fuite, diffusion de photos de tiers.</td></tr>
+    <tr><td>d) Mesures envisagées</td><td>Section 6, actions 1 à 8 ; mesures techniques de l'annexe B.</td></tr>
+    <tr><td>Consultation des personnes (art. 35.9)</td><td>Recommandé : présenter la notice aux chefs d'équipe et recueillir leurs remarques avant diffusion.</td></tr>
+    <tr><td>Conclusion</td><td>Risque résiduel <strong>faible</strong> une fois les actions 1 à 6 réalisées ; pas de consultation préalable de l'APD requise (art. 36) <span class="tag t-prob">PROBABLE</span>.</td></tr>
+    <tr><td>Réexamen</td><td>À chaque évolution de la géolocalisation (fréquence, visibilité, suivi continu) et au moins une fois par an.</td></tr>
+  </table>
+  <table class="sign">
+    <tr><th style="width:50mm">Validée par (nom, fonction)</th><td></td></tr>
+    <tr><th>Date</th><td></td></tr>
+    <tr><th>Signature</th><td style="height:22mm"></td></tr>
+  </table>
+</section>
+
+<!-- ====================== ANNEXE D ====================== -->
+<section class="page-break">
+  <h2>Annexe D — Sources</h2>
+  <ol>
+    <li>Règlement (UE) 2016/679 (RGPD), en particulier art. 5, 6, 12 à 22, 28, 30, 32, 35, 36, 37, 45 et 83 — eur-lex.europa.eu, CELEX 32016R0679.</li>
+    <li>Loi belge du 30 juillet 2018 relative à la protection des personnes physiques à l'égard des traitements de données à caractère personnel (M.B. 05/09/2018).</li>
+    <li>Loi belge du 3 décembre 2017 portant création de l'Autorité de protection des données (M.B. 10/01/2018).</li>
+    <li>Groupe de travail « Article 29 » / CEPD — Lignes directrices WP248 rév.01 concernant l'analyse d'impact relative à la protection des données (4 octobre 2017), critères 3 et 7.</li>
+    <li>CEPD — Lignes directrices 05/2020 sur le consentement au sens du règlement 2016/679 (4 mai 2020), § 21 à 23 (relation de travail).</li>
+    <li>Groupe de travail « Article 29 » — Avis 2/2017 sur le traitement des données sur le lieu de travail (WP249), section sur la géolocalisation des véhicules et appareils.</li>
+    <li>CJUE, 14 mai 2019, C-55/18, CCOO c/ Deutsche Bank SAE — obligation de mettre en place un système objectif d'enregistrement du temps de travail des salariés.</li>
+    <li>Commission européenne — Décision d'exécution C(2023) 4745 du 10 juillet 2023 relative au niveau de protection adéquat assuré par l'EU-US Data Privacy Framework.</li>
+    <li>Code de droit économique, art. III.88 — conservation des pièces comptables (10 ans).</li>
+    <li>Autorité de protection des données — www.autoriteprotectiondonnees.be (liste des traitements soumis à AIPD, décisions de la Chambre contentieuse).</li>
+    <li>Firebase — « Firebase Data Processing and Security Terms » et « Privacy and Security in Firebase » — firebase.google.com/terms/data-processing-terms.</li>
+    <li>Code source de l'application « Suivi chantier » (chantier-app : js/app.js, firestore.rules, storage.rules), état au 26/09/2026, et tests de règles sur l'émulateur Firebase (9/9 réussis).</li>
+  </ol>
+  <p class="small">Ce document est une analyse de conformité préparatoire. Il ne remplace pas un avis juridique personnalisé. Les éléments marqués PROBABLE, HYPOTHÈSE ou À VALIDER doivent être confirmés avant diffusion.</p>
+</section>
+
+</body>
+</html>
