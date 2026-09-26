@@ -143,6 +143,8 @@ service cloud.firestore {
         request.resource.data.startDate is string && request.resource.data.endDate is string &&
         request.resource.data.startDate <= request.resource.data.endDate &&
         request.resource.data.work is string && request.resource.data.work.size() > 0 &&
+        request.resource.data.address is string && request.resource.data.address.size() > 0 &&
+        request.resource.data.startTime is string && request.resource.data.startTime.size() > 0 &&
         (request.resource.data.projectId == null ||
           get(/databases/$(database)/documents/projects/$(request.resource.data.projectId)).data.clientId == myClientId());
       allow update: if isAdmin();

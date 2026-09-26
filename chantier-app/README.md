@@ -162,16 +162,20 @@ premier obtient l'accès qui lui est attaché.
 
 ## Demandes de personnel (client -> ouvriers) — ajouté le 26/09/2026
 
-- **Client** : « + Demander du personnel » — chantier (existant ou nouveau
-  site), travail à faire, du … au …, heure d'arrivée, nombre de personnes,
-  qualification, remarques. Il suit l'état : reçue / recherche en cours /
-  confirmée / refusée (il ne voit ni les volontaires ni les pointages).
-- **Admin** (onglet « Personnel demandé ») : pour chaque demande,
-  « Je choisis les personnes » (créneaux créés dans le calendrier) ou
-  « Ouvrir aux volontaires » (à une équipe ou à tous), ou « Refuser ».
-- **Ouvriers** (onglet « Missions ») : chacun décide « Je viens » /
-  « Je me retire ». Les premiers inscrits sont retenus, les suivants en
-  liste d'attente ; l'admin valide ensuite l'équipe (créneaux créés).
+- **Client** : « + Demander du personnel ». « Nouveau chantier » est proposé
+  par défaut (ou un chantier existant). Obligatoire : adresse, travail à
+  faire, du … au …, heure d'arrivée, nombre de personnes. Facultatif : nom
+  du chantier, qualification, remarques. **Jamais le week-end** : une date
+  de début ou de fin un samedi/dimanche est refusée ; les week-ends compris
+  dans une période plus longue ne sont jamais planifiés. Il suit l'état :
+  reçue / recherche en cours / confirmée / refusée.
+- **Admin** (onglet « Personnel demandé ») : pour un nouveau chantier,
+  « Créer ce chantier » en un clic (nom, adresse, client repris de la
+  demande ; vous choisissez l'équipe). Puis « Je choisis les personnes »
+  ou « Ouvrir aux volontaires » (une équipe ou tous), ou « Refuser ».
+- **Ouvriers** (onglet « Missions ») : « Je viens » / « Je me retire ». Les
+  premiers inscrits sont retenus, les suivants en liste d'attente ; l'admin
+  valide l'équipe -> un créneau par personne et par jour ouvrable.
 - Pas de notification téléphone : prévenir par WhatsApp si c'est urgent.
 
 ## Mettre à jour l'app en ligne

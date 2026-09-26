@@ -25,7 +25,13 @@ const STAFFING_I18N = {
     clientNewBtn: '+ Demander du personnel',
     formTitle: 'Nouvelle demande de personnel',
     fProject: 'Chantier',
-    fNewSite: 'Autre site / nouveau chantier',
+    fNewSite: 'Nouveau chantier',
+    fSiteName: 'Nom du chantier (facultatif)',
+    fAddress: 'Adresse du chantier',
+    fAddressPh: 'Rue, numéro, code postal, ville',
+    errWeekend: 'Pas de travail le week-end : choisissez des dates du lundi au vendredi.',
+    errTime: "Indiquez l'heure d'arrivée.",
+    weekdaysNote: 'Du lundi au vendredi uniquement — samedi et dimanche ne sont jamais planifiés.',
     fSite: 'Nom et adresse du site',
     fWork: 'Travail à faire',
     fWorkPh: 'Ex. : remplacement de 4 modules, contrôle des serrages, container C-12',
@@ -41,7 +47,7 @@ const STAFFING_I18N = {
     cancelRequest: 'Annuler la demande',
     confirmCancel: 'Annuler cette demande ?',
     errDates: 'La date de fin doit être égale ou postérieure à la date de début.',
-    errSite: 'Indiquez le nom et l\'adresse du site.',
+    errSite: "Indiquez l'adresse du chantier.",
     noRequests: 'Aucune demande pour le moment.',
     people: (n) => `${n} personne${n > 1 ? 's' : ''}`,
     from: 'du', to: 'au', at: 'à',
@@ -67,7 +73,13 @@ const STAFFING_I18N = {
     clientNewBtn: '+ Request staff',
     formTitle: 'New staffing request',
     fProject: 'Site',
-    fNewSite: 'Other site / new site',
+    fNewSite: 'New site',
+    fSiteName: 'Site name (optional)',
+    fAddress: 'Site address',
+    fAddressPh: 'Street, number, postcode, city',
+    errWeekend: 'No work at weekends: choose dates from Monday to Friday.',
+    errTime: 'Please enter the arrival time.',
+    weekdaysNote: 'Monday to Friday only — Saturdays and Sundays are never scheduled.',
     fSite: 'Site name and address',
     fWork: 'Work to be done',
     fWorkPh: 'E.g. replace 4 modules, torque checks, container C-12',
@@ -83,7 +95,7 @@ const STAFFING_I18N = {
     cancelRequest: 'Cancel request',
     confirmCancel: 'Cancel this request?',
     errDates: 'The end date must be the same as or after the start date.',
-    errSite: 'Please enter the site name and address.',
+    errSite: 'Please enter the site address.',
     noRequests: 'No requests yet.',
     people: (n) => `${n} ${n > 1 ? 'people' : 'person'}`,
     from: 'from', to: 'to', at: 'at',
@@ -109,7 +121,13 @@ const STAFFING_I18N = {
     clientNewBtn: '+ Solicită personal',
     formTitle: 'Cerere nouă de personal',
     fProject: 'Șantier',
-    fNewSite: 'Alt amplasament / șantier nou',
+    fNewSite: 'Șantier nou',
+    fSiteName: 'Numele șantierului (opțional)',
+    fAddress: 'Adresa șantierului',
+    fAddressPh: 'Stradă, număr, cod poștal, oraș',
+    errWeekend: 'Nu se lucrează în weekend: alegeți date de luni până vineri.',
+    errTime: 'Indicați ora sosirii.',
+    weekdaysNote: 'Doar de luni până vineri — sâmbăta și duminica nu se planifică niciodată.',
     fSite: 'Numele și adresa amplasamentului',
     fWork: 'Lucrări de efectuat',
     fWorkPh: 'Ex.: înlocuirea a 4 module, verificarea strângerilor, container C-12',
@@ -125,7 +143,7 @@ const STAFFING_I18N = {
     cancelRequest: 'Anulează cererea',
     confirmCancel: 'Anulați această cerere?',
     errDates: 'Data de sfârșit trebuie să fie aceeași sau după data de început.',
-    errSite: 'Introduceți numele și adresa amplasamentului.',
+    errSite: 'Introduceți adresa șantierului.',
     noRequests: 'Nicio cerere deocamdată.',
     people: (n) => `${n} ${n > 1 ? 'persoane' : 'persoană'}`,
     from: 'de la', to: 'până la', at: 'la',
@@ -151,7 +169,13 @@ const STAFFING_I18N = {
     clientNewBtn: '+ 申请人员',
     formTitle: '新的人员需求',
     fProject: '工地',
-    fNewSite: '其他地点 / 新工地',
+    fNewSite: '新工地',
+    fSiteName: '工地名称（可选）',
+    fAddress: '工地地址',
+    fAddressPh: '街道、门牌号、邮编、城市',
+    errWeekend: '周末不工作：请选择周一至周五的日期。',
+    errTime: '请填写到达时间。',
+    weekdaysNote: '仅限周一至周五 — 周六和周日从不安排。',
     fSite: '工地名称和地址',
     fWork: '工作内容',
     fWorkPh: '例如：更换 4 个模块、检查紧固扭矩、集装箱 C-12',
@@ -167,7 +191,7 @@ const STAFFING_I18N = {
     cancelRequest: '撤销需求',
     confirmCancel: '确定撤销此需求吗？',
     errDates: '结束日期必须等于或晚于开始日期。',
-    errSite: '请填写工地名称和地址。',
+    errSite: '请填写工地地址。',
     noRequests: '暂无需求。',
     people: (n) => `${n} 人`,
     from: '从', to: '至', at: '时间',
@@ -201,7 +225,17 @@ const REQ_STATUS_KEY = { pending: 'stPending', open: 'stOpen', assigned: 'stAssi
 const REQ_BADGE = { pending: 'reported', open: 'open', assigned: 'active', filled: 'active', refused: 'closed', cancelled: 'closed' };
 
 function todayStr() { const d = new Date(); return dateStrOf(d.getFullYear(), d.getMonth(), d.getDate()); }
-function tomorrowStr() { const d = new Date(); d.setDate(d.getDate() + 1); return dateStrOf(d.getFullYear(), d.getMonth(), d.getDate()); }
+function isWeekendStr(dateStr) {
+  const [y, m, d] = dateStr.split('-').map(Number);
+  const wd = new Date(y, m - 1, d).getDay();
+  return wd === 0 || wd === 6;
+}
+// Prochain jour ouvrable (« demain », ou lundi si demain tombe le week-end).
+function nextWorkdayStr() {
+  const d = new Date(); d.setDate(d.getDate() + 1);
+  while (d.getDay() === 0 || d.getDay() === 6) d.setDate(d.getDate() + 1);
+  return dateStrOf(d.getFullYear(), d.getMonth(), d.getDate());
+}
 
 // Jours du … au … inclus ; option : sans samedi ni dimanche.
 function datesBetween(start, end, weekdaysOnly) {
@@ -218,9 +252,10 @@ function datesBetween(start, end, weekdaysOnly) {
 }
 
 function requestSummaryHtml(r) {
-  const site = r.projectName || r.siteName || '—';
+  const site = r.projectName || r.siteName || r.address || '—';
   return `
     <div class="name" style="font-weight:600">${esc(site)}</div>
+    ${r.address && r.address !== site ? `<div class="sub">📍 ${esc(r.address)}</div>` : ''}
     <div class="sub">${esc(st('from'))} ${esc(fmtDateStr(r.startDate))} ${esc(st('to'))} ${esc(fmtDateStr(r.endDate))}${r.startTime ? ` · ${esc(st('at'))} ${esc(r.startTime)}` : ''} · ${esc(st('people', r.peopleNeeded))}${r.roleWanted ? ` · ${esc(roleLabel(r.roleWanted))}` : ''}</div>
     <p style="margin:6px 0 0;white-space:pre-wrap">${esc(r.work)}</p>
     ${r.notes ? `<p class="empty" style="font-style:normal;margin:4px 0 0;white-space:pre-wrap">${esc(r.notes)}</p>` : ''}`;
@@ -275,25 +310,30 @@ function renderClientStaffingSection(target, getProjects) {
 
 function renderClientStaffingForm(wrap, projects) {
   const active = projects.filter(p => p.status !== 'closed');
+  const first = nextWorkdayStr();
+  // « Nouveau chantier » en premier et par défaut : c'est le cas le plus
+  // fréquent (« demain, nouveau chantier, besoin de 2 personnes »).
   wrap.innerHTML = `
     <div class="card" style="margin-top:12px">
       <h3>${esc(st('formTitle'))}</h3>
       <form id="staffing-form" style="margin-top:10px">
         <div class="field"><label>${esc(st('fProject'))}</label>
           <select id="sr-project">
-            ${active.map(p => `<option value="${esc(p.id)}">${esc(p.name)}</option>`).join('')}
             <option value="">${esc(st('fNewSite'))}</option>
+            ${active.map(p => `<option value="${esc(p.id)}">${esc(p.name)}</option>`).join('')}
           </select>
         </div>
-        <div class="field" id="sr-site-field" style="${active.length ? 'display:none' : ''}"><label>${esc(st('fSite'))}</label><input type="text" id="sr-site" maxlength="200"></div>
-        <div class="field"><label>${esc(st('fWork'))}</label><textarea id="sr-work" rows="3" required maxlength="2000" placeholder="${esc(st('fWorkPh'))}"></textarea></div>
+        <div class="field" id="sr-site-field"><label>${esc(st('fSiteName'))}</label><input type="text" id="sr-site" maxlength="120"></div>
+        <div class="field"><label>${esc(st('fAddress'))} *</label><input type="text" id="sr-address" required maxlength="250" placeholder="${esc(st('fAddressPh'))}"></div>
+        <div class="field"><label>${esc(st('fWork'))} *</label><textarea id="sr-work" rows="3" required maxlength="2000" placeholder="${esc(st('fWorkPh'))}"></textarea></div>
         <div class="row">
-          <div class="field"><label>${esc(st('fStart'))}</label><input type="date" id="sr-start" required value="${tomorrowStr()}" min="${todayStr()}"></div>
-          <div class="field"><label>${esc(st('fEnd'))}</label><input type="date" id="sr-end" required value="${tomorrowStr()}" min="${todayStr()}"></div>
-          <div class="field"><label>${esc(st('fTime'))}</label><input type="time" id="sr-time" value="07:30"></div>
+          <div class="field"><label>${esc(st('fStart'))} *</label><input type="date" id="sr-start" required value="${first}" min="${todayStr()}"></div>
+          <div class="field"><label>${esc(st('fEnd'))} *</label><input type="date" id="sr-end" required value="${first}" min="${todayStr()}"></div>
+          <div class="field"><label>${esc(st('fTime'))} *</label><input type="time" id="sr-time" required value="07:30"></div>
         </div>
+        <p class="empty" style="font-style:normal;margin:-4px 0 10px">${esc(st('weekdaysNote'))}</p>
         <div class="row">
-          <div class="field"><label>${esc(st('fPeople'))}</label><input type="number" id="sr-people" required min="1" max="50" value="2"></div>
+          <div class="field"><label>${esc(st('fPeople'))} *</label><input type="number" id="sr-people" required min="1" max="50" value="2"></div>
           <div class="field"><label>${esc(st('fRole'))}</label>
             <select id="sr-role"><option value="">${esc(st('fRoleAny'))}</option>${STAFF_ROLES.map(r => `<option value="${r}">${esc(roleLabel(r))}</option>`).join('')}</select>
           </div>
@@ -307,7 +347,12 @@ function renderClientStaffingForm(wrap, projects) {
     </div>`;
   const projSel = document.getElementById('sr-project');
   const siteField = document.getElementById('sr-site-field');
-  projSel.addEventListener('change', () => { siteField.style.display = projSel.value ? 'none' : ''; });
+  const addrIn = document.getElementById('sr-address');
+  projSel.addEventListener('change', () => {
+    siteField.style.display = projSel.value ? 'none' : '';
+    const p = active.find(x => x.id === projSel.value);
+    if (p && p.address && !addrIn.value) addrIn.value = p.address;
+  });
   const startIn = document.getElementById('sr-start'), endIn = document.getElementById('sr-end');
   startIn.addEventListener('change', () => { if (endIn.value < startIn.value) endIn.value = startIn.value; endIn.min = startIn.value; });
   document.getElementById('sr-cancel').addEventListener('click', () => { wrap.innerHTML = ''; });
@@ -316,18 +361,24 @@ function renderClientStaffingForm(wrap, projects) {
     const form = e.target;
     const projectId = projSel.value || null;
     const project = projectId ? active.find(p => p.id === projectId) : null;
-    const siteName = document.getElementById('sr-site').value.trim();
+    const address = addrIn.value.trim();
+    const time = document.getElementById('sr-time').value;
+    if (!address) return showError(form, st('errSite'));
+    if (!time) return showError(form, st('errTime'));
     if (startIn.value > endIn.value) return showError(form, st('errDates'));
-    if (!projectId && !siteName) return showError(form, st('errSite'));
+    // Le début et la fin ne peuvent pas tomber un samedi/dimanche ; les
+    // week-ends compris dans une période plus longue sont sautés au planning.
+    if (isWeekendStr(startIn.value) || isWeekendStr(endIn.value)) return showError(form, st('errWeekend'));
     const btn = form.querySelector('button[type=submit]');
     btn.disabled = true;
     try {
       await db.collection('staffRequests').add({
         clientId: currentPerson.clientId,
-        projectId, projectName: project ? project.name : null, siteName: projectId ? null : siteName,
+        projectId, projectName: project ? project.name : null,
+        siteName: projectId ? null : (document.getElementById('sr-site').value.trim() || null),
+        address,
         work: document.getElementById('sr-work').value.trim(),
-        startDate: startIn.value, endDate: endIn.value,
-        startTime: document.getElementById('sr-time').value || null,
+        startDate: startIn.value, endDate: endIn.value, startTime: time,
         peopleNeeded: Math.max(1, Math.min(50, parseInt(document.getElementById('sr-people').value, 10) || 1)),
         roleWanted: document.getElementById('sr-role').value || null,
         notes: document.getElementById('sr-notes').value.trim() || null,
@@ -429,11 +480,7 @@ function renderAdminStaffing(content) {
     const clients = Object.fromEntries(clientsSnap.docs.map(d => [d.id, d.data()]));
     const projects = projectsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
 
-    const unsub = db.collection('staffRequests').onSnapshot(snap => {
-      const rank = { pending: 0, open: 1, assigned: 2, filled: 2, refused: 3, cancelled: 3 };
-      const docs = snap.docs.slice().sort((a, b) =>
-        (rank[a.data().status] ?? 9) - (rank[b.data().status] ?? 9) || (a.data().startDate || '').localeCompare(b.data().startDate || ''));
-      content.innerHTML = `
+    content.innerHTML = `
         <div class="card">
           <h3>Demandes de personnel des clients</h3>
           <p class="empty" style="font-style:normal;margin:4px 0 0">
@@ -443,8 +490,39 @@ function renderAdminStaffing(content) {
             Pas de notification téléphone : prévenez par WhatsApp si c'est urgent.
           </p>
         </div>
-        ${docs.length ? docs.map(d => adminRequestCardHtml(d.id, d.data(), clients, teams)).join('') : '<p class="empty">Aucune demande.</p>'}`;
-      docs.forEach(d => wireAdminRequestCard(d.id, d.data(), { staff, teams, projects }));
+        <div id="staffing-list"></div>`;
+    const list = document.getElementById('staffing-list');
+    const ctx = { staff, teams, projects };
+    // Rendu carte par carte : seule une demande qui a changé est redessinée,
+    // pour qu'une nouvelle demande (ou un volontaire) qui arrive n'efface pas
+    // le panneau que l'admin est en train de remplir sur une autre demande.
+    const cards = new Map(); // id -> { sig, el, unsub }
+    const unsub = db.collection('staffRequests').onSnapshot(snap => {
+      if (!list.isConnected) return;
+      const rank = { pending: 0, open: 1, assigned: 2, filled: 2, refused: 3, cancelled: 3 };
+      const docs = snap.docs.slice().sort((a, b) =>
+        (rank[a.data().status] ?? 9) - (rank[b.data().status] ?? 9) || (a.data().startDate || '').localeCompare(b.data().startDate || ''));
+      const seen = new Set();
+      docs.forEach(d => {
+        seen.add(d.id);
+        const r = d.data();
+        const sig = JSON.stringify(r);
+        let card = cards.get(d.id);
+        if (!card || card.sig !== sig) {
+          if (card) { if (card.unsub) card.unsub(); card.el.remove(); }
+          const holder = document.createElement('div');
+          holder.innerHTML = adminRequestCardHtml(d.id, r, clients, teams);
+          card = { sig, el: holder.firstElementChild };
+          list.appendChild(card.el);
+          card.unsub = wireAdminRequestCard(d.id, r, ctx);
+          cards.set(d.id, card);
+        }
+        list.appendChild(card.el); // remet dans l'ordre sans recréer
+      });
+      for (const [id, card] of cards) if (!seen.has(id)) { if (card.unsub) card.unsub(); card.el.remove(); cards.delete(id); }
+      const empty = list.querySelector('.staffing-empty');
+      if (!docs.length && !empty) list.insertAdjacentHTML('beforeend', '<p class="empty staffing-empty">Aucune demande.</p>');
+      if (docs.length && empty) empty.remove();
     }, err => showError(content, 'Erreur : ' + err.message));
     unsubscribers.push(unsub);
   }).catch(err => showError(content, 'Erreur : ' + err.message));
@@ -452,16 +530,17 @@ function renderAdminStaffing(content) {
 
 function adminRequestCardHtml(id, r, clients, teams) {
   const audience = r.status === 'open' ? (r.audience === 'all' ? 'tous les ouvriers' : `équipe ${teams[r.teamId]?.name || '—'}`) : null;
+  // Badge en haut (pas sur le côté) : lisible sur téléphone.
   return `<div class="card" id="req-${id}">
-    <div class="list-row" style="border:none;padding:0">
-      <div class="main">
-        <div class="sub">${esc(clients[r.clientId]?.name || '—')} · demandé par ${esc(r.createdByName || '—')} le ${fmtDateTime(r.createdAt)}</div>
-        ${requestSummaryHtml(r)}
-        ${audience ? `<div class="sub" style="margin-top:4px">Ouvert à : ${esc(audience)}</div>` : ''}
-        ${r.assignedNames && r.assignedNames.length ? `<div class="sub" style="margin-top:4px">Équipe : ${r.assignedNames.map(esc).join(', ')}</div>` : ''}
-        ${r.adminNote ? `<div class="sub" style="margin-top:4px">Motif : ${esc(r.adminNote)}</div>` : ''}
-      </div>
-      <div class="actions"><span class="badge badge-${REQ_BADGE[r.status] || 'closed'}">${esc(STAFFING_I18N.fr[REQ_STATUS_KEY[r.status]] || r.status)}</span></div>
+    <div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:center">
+      <span class="badge badge-${REQ_BADGE[r.status] || 'closed'}">${esc(STAFFING_I18N.fr[REQ_STATUS_KEY[r.status]] || r.status)}</span>
+      <span class="sub" style="font-size:0.8rem;color:var(--text-mute)">${esc(clients[r.clientId]?.name || '—')} · ${esc(r.createdByName || '—')} · ${fmtDateTime(r.createdAt)}</span>
+    </div>
+    <div style="margin-top:8px">
+      ${requestSummaryHtml(r)}
+      ${audience ? `<div class="sub" style="margin-top:4px">Ouvert à : ${esc(audience)}</div>` : ''}
+      ${r.assignedNames && r.assignedNames.length ? `<div class="sub" style="margin-top:4px">Équipe : ${r.assignedNames.map(esc).join(', ')}</div>` : ''}
+      ${r.adminNote ? `<div class="sub" style="margin-top:4px">Motif : ${esc(r.adminNote)}</div>` : ''}
     </div>
     <div id="req-actions-${id}" style="margin-top:10px"></div>
   </div>`;
@@ -476,21 +555,58 @@ function wireAdminRequestCard(id, r, ctx) {
   const box = document.getElementById(`req-actions-${id}`);
   if (!box) return;
   const ref = db.collection('staffRequests').doc(id);
-  const noProjectHint = r.projectId ? '' : `<p class="empty" style="font-style:normal">Nouveau site demandé : « ${esc(r.siteName || '')} ». Créez d'abord le projet (onglet Projets) pour ce client, puis choisissez-le ici.</p>`;
+  // Nouveau chantier demandé : on le crée ici en un clic (nom, adresse et
+  // client repris de la demande) au lieu de passer par l'onglet Projets.
+  const noProjectHint = r.projectId ? '' : `<div class="card" style="background:var(--gold-100);margin:0 0 10px">
+      <b>Nouveau chantier demandé</b> — ${esc(r.siteName || r.address || '')}
+      <div class="row" style="margin-top:8px;align-items:flex-end">
+        <div class="field"><label>Nom du chantier</label><input type="text" class="np-name" value="${esc(r.siteName || r.address || '')}"></div>
+        <div class="field"><label>Équipe responsable</label><select class="np-team">${Object.entries(ctx.teams).map(([tid, tm]) => `<option value="${esc(tid)}">${esc(tm.name)}</option>`).join('')}</select></div>
+        <div class="field"><label>Type</label><select class="np-type">${Object.entries(PROJECT_TYPE_LABELS).map(([k, v]) => `<option value="${k}" ${k === 'workforce' ? 'selected' : ''}>${esc(v)}</option>`).join('')}</select></div>
+      </div>
+      <button type="button" class="btn btn-primary btn-sm np-go">Créer ce chantier</button>
+    </div>`;
+  const wireCreateProject = (root) => {
+    const go = root.querySelector('.np-go');
+    if (!go) return;
+    go.addEventListener('click', async () => {
+      const name = root.querySelector('.np-name').value.trim();
+      const teamId = root.querySelector('.np-team').value;
+      const type = root.querySelector('.np-type').value;
+      if (!name || !teamId) return showError(root, 'Nom et équipe obligatoires (créez une équipe dans l\'onglet Équipes si besoin).');
+      go.disabled = true;
+      try {
+        const color = PROJECT_COLORS[ctx.projects.length % PROJECT_COLORS.length].value;
+        const projectRef = await db.collection('projects').add({
+          name, type, teamId, clientId: r.clientId, color, address: r.address || null, status: 'active',
+          createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+        });
+        // Connu tout de suite des menus « Projet » (avant que la carte ne
+        // se redessine avec la demande liée à ce chantier).
+        ctx.projects.push({ id: projectRef.id, name, type, teamId, clientId: r.clientId, color, status: 'active' });
+        const batch = db.batch();
+        (CHECKLIST_TEMPLATES.fr[type] || []).forEach((_, i) => batch.set(projectRef.collection('checklist').doc(),
+          { stepIndex: i, order: i, done: false, doneBy: null, doneAt: null, note: '' }));
+        batch.update(ref, { projectId: projectRef.id, projectName: name });
+        await batch.commit();
+      } catch (err) { go.disabled = false; showError(root, 'Erreur : ' + err.message); }
+    });
+  };
 
   if (r.status === 'pending') {
-    box.innerHTML = `<div style="display:flex;gap:8px;flex-wrap:wrap">
+    box.innerHTML = `${noProjectHint}<div style="display:flex;gap:8px;flex-wrap:wrap">
         <button type="button" class="btn btn-primary btn-sm" data-mode="assign">Je choisis les personnes</button>
         <button type="button" class="btn btn-outline btn-sm" data-mode="open">Ouvrir aux volontaires</button>
         <button type="button" class="btn btn-danger btn-sm" data-mode="refuse">Refuser</button>
       </div><div class="panel" style="margin-top:10px"></div>`;
+    wireCreateProject(box);
     const panel = box.querySelector('.panel');
     box.querySelector('[data-mode="assign"]').addEventListener('click', () => {
-      panel.innerHTML = `${noProjectHint}
+      panel.innerHTML = `
         <div class="field"><label>Projet</label><select class="p-project">${projectOptionsFor(r, ctx.projects) || '<option value="">Aucun projet actif pour ce client</option>'}</select></div>
         <div class="field"><label>Personnes (${r.peopleNeeded} demandée${r.peopleNeeded > 1 ? 's' : ''}${r.roleWanted ? ', ' + esc(roleLabel(r.roleWanted)) : ''})</label>
           <div>${ctx.staff.map(p => `<label style="display:block;font-weight:normal"><input type="checkbox" value="${esc(p.id)}"> ${esc(p.name)} — ${esc(roleLabel(p.role))} · ${esc(ctx.teams[p.teamId]?.name || '—')}</label>`).join('') || '<p class="empty">Aucun membre du personnel.</p>'}</div></div>
-        <label style="display:block;font-weight:normal;margin:6px 0"><input type="checkbox" class="p-weekdays"> Exclure samedi et dimanche de la période</label>
+        <p class="empty" style="font-style:normal;margin:6px 0">Samedis et dimanches jamais planifiés.</p>
         <button type="button" class="btn btn-primary btn-sm p-go">Créer les créneaux et confirmer au client</button>`;
       panel.querySelector('.p-go').addEventListener('click', async (e) => {
         const projectId = panel.querySelector('.p-project').value;
@@ -499,7 +615,7 @@ function wireAdminRequestCard(id, r, ctx) {
         if (!chosen.length) return showError(panel, 'Cochez au moins une personne.');
         if (chosen.length !== r.peopleNeeded && !confirm(`${chosen.length} personne(s) choisie(s) pour ${r.peopleNeeded} demandée(s). Continuer ?`)) return;
         e.target.disabled = true;
-        try { await confirmStaffingTeam(ref, r, projectId, chosen, panel.querySelector('.p-weekdays').checked, 'assigned', ctx); }
+        try { await confirmStaffingTeam(ref, r, projectId, chosen, 'assigned', ctx); }
         catch (err) { e.target.disabled = false; showError(panel, 'Erreur : ' + err.message); }
       });
     });
@@ -536,11 +652,12 @@ function wireAdminRequestCard(id, r, ctx) {
         <div>${vols.map((v, i) => `<label style="display:block;font-weight:normal"><input type="checkbox" value="${esc(v.id)}" ${i < r.peopleNeeded ? 'checked' : ''}>
             ${esc(v.name)} — ${esc(roleLabel(v.role))} · ${esc(ctx.teams[v.teamId]?.name || '—')} · inscrit le ${fmtDateTime(v.createdAt)}${i >= r.peopleNeeded ? ' <span class="badge badge-reported">liste d\'attente</span>' : ''}</label>`).join('') || '<p class="empty">Personne pour l\'instant.</p>'}</div>
         <div class="field" style="margin-top:8px"><label>Projet</label><select class="p-project">${projectOptionsFor(r, ctx.projects) || '<option value="">Aucun projet actif pour ce client</option>'}</select></div>
-        <label style="display:block;font-weight:normal;margin:6px 0"><input type="checkbox" class="p-weekdays"> Exclure samedi et dimanche de la période</label>
+        <p class="empty" style="font-style:normal;margin:6px 0">Samedis et dimanches jamais planifiés.</p>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
           <button type="button" class="btn btn-primary btn-sm p-go">Valider l'équipe cochée</button>
           <button type="button" class="btn btn-outline btn-sm p-close">Retirer la mission (repasser en attente)</button>
         </div>`;
+      wireCreateProject(box);
       box.querySelector('.p-go').addEventListener('click', async (e) => {
         const projectId = box.querySelector('.p-project').value;
         const chosenIds = [...box.querySelectorAll('input[type=checkbox][value]:checked')].map(i => i.value);
@@ -549,23 +666,24 @@ function wireAdminRequestCard(id, r, ctx) {
         if (!projectId) return showError(box, 'Choisissez un projet.');
         if (!chosen.length) return showError(box, 'Cochez au moins une personne.');
         e.target.disabled = true;
-        try { await confirmStaffingTeam(ref, r, projectId, chosen, box.querySelector('.p-weekdays').checked, 'filled', ctx); }
+        try { await confirmStaffingTeam(ref, r, projectId, chosen, 'filled', ctx); }
         catch (err) { e.target.disabled = false; showError(box, 'Erreur : ' + err.message); }
       });
       box.querySelector('.p-close').addEventListener('click', () => ref.update({ status: 'pending', audience: null, teamId: null }));
     }, err => showError(box, 'Erreur : ' + err.message));
     unsubscribers.push(u);
-    return;
+    return u; // arrêté si la carte est redessinée
   }
   box.innerHTML = '';
 }
 
 // Crée un créneau de planning par personne et par jour, puis confirme la
 // demande (le client la voit « Confirmée »).
-async function confirmStaffingTeam(ref, r, projectId, people, weekdaysOnly, finalStatus, ctx) {
+async function confirmStaffingTeam(ref, r, projectId, people, finalStatus, ctx) {
   const project = ctx.projects.find(p => p.id === projectId);
-  const dates = datesBetween(r.startDate, r.endDate, weekdaysOnly);
-  if (!dates.length) throw new Error('Aucun jour dans la période (week-end uniquement ?) — décochez « Exclure samedi et dimanche ».');
+  // Jamais de week-end : samedi et dimanche sont toujours sautés.
+  const dates = datesBetween(r.startDate, r.endDate, true);
+  if (!dates.length) throw new Error('La période ne contient que des samedis/dimanches : aucun jour à planifier.');
   let batch = db.batch(), n = 0;
   for (const p of people) {
     for (const date of dates) {
