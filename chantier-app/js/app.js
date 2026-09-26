@@ -1315,6 +1315,8 @@ window.addEventListener('hashchange', () => {
 
 function routeByRole() {
   if (!currentPerson) return renderLogin();
+  // Notice RGPD (js/notice.js) : le personnel la confirme avant tout accès.
+  if (needsNotice(currentPerson)) return renderNoticeGate();
   if (currentPerson.role === 'admin') return renderAdmin();
   if (['engineer', 'electrician', 'worker'].includes(currentPerson.role)) return renderStaff();
   if (currentPerson.role === 'client') return renderClient();
@@ -1328,6 +1330,7 @@ function topbarHtml(extra) {
       <div class="who">
         <span>${esc(currentPerson.name)} · ${esc(roleLabel(currentPerson.role))}</span>
         ${langSwitcherHtml()}
+        <button type="button" onclick="showNoticeOverlay()">${esc(noticeText().link)}</button>
         ${extra || ''}
         <button onclick="logout()">${esc(t('disconnect'))}</button>
       </div>
@@ -1922,7 +1925,9 @@ function renderPeopleList(target, teams, clients) {
       return `<div class="list-row">
         <div class="main">
           <div class="name">${esc(p.name)} ${p.revoked ? '<span class="badge badge-closed">Accès révoqué</span>' : ''}</div>
-          <div class="sub">${ROLE_LABELS[p.role] || p.role} · ${esc(context)}</div>
+          <div class="sub">${ROLE_LABELS[p.role] || p.role} · ${esc(context)}${p.role === 'client' || p.role === 'admin' ? '' : (p.noticeVersion === NOTICE_VERSION && p.noticeAcceptedAt
+            ? ` · Notice RGPD v${esc(p.noticeVersion)} confirmée le ${esc(p.noticeAcceptedAt.toDate().toLocaleString('fr-BE'))} (${esc((p.noticeLang || '').toUpperCase())})`
+            : ' · <span class="badge badge-closed">Notice RGPD non confirmée</span>')}</div>
         </div>
         <div class="actions">
           ${p.revoked

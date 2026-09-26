@@ -89,6 +89,13 @@ service cloud.firestore {
          validInviteFor(request.resource.data) &&
          inviteConsumedBy(request.resource.data.inviteCode, personId));
       allow update, delete: if isAdmin();
+      // Une personne active peut enregistrer elle-même sa confirmation de la
+      // notice RGPD (preuve de remise de l'information) — et rien d'autre
+      // sur son profil (rôle, équipe, révocation restent réservés à l'admin).
+      allow update: if isActive() && request.auth.uid == personId &&
+        request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['noticeVersion', 'noticeLang', 'noticeAcceptedAt']) &&
+        request.resource.data.noticeAcceptedAt == request.time;
     }
 
     // ---- Invites ----
