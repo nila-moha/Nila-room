@@ -160,6 +160,20 @@ premier obtient l'accès qui lui est attaché.
 - **Photos** : le client n'a aucun accès direct au stockage ; l'équipe
   ajoute des photos mais ne peut ni les écraser ni les supprimer.
 
+## Demandes de personnel (client -> ouvriers) — ajouté le 26/09/2026
+
+- **Client** : « + Demander du personnel » — chantier (existant ou nouveau
+  site), travail à faire, du … au …, heure d'arrivée, nombre de personnes,
+  qualification, remarques. Il suit l'état : reçue / recherche en cours /
+  confirmée / refusée (il ne voit ni les volontaires ni les pointages).
+- **Admin** (onglet « Personnel demandé ») : pour chaque demande,
+  « Je choisis les personnes » (créneaux créés dans le calendrier) ou
+  « Ouvrir aux volontaires » (à une équipe ou à tous), ou « Refuser ».
+- **Ouvriers** (onglet « Missions ») : chacun décide « Je viens » /
+  « Je me retire ». Les premiers inscrits sont retenus, les suivants en
+  liste d'attente ; l'admin valide ensuite l'équipe (créneaux créés).
+- Pas de notification téléphone : prévenir par WhatsApp si c'est urgent.
+
 ## Mettre à jour l'app en ligne
 
 Depuis ce dossier `chantier-app/`, dans cet ordre (l'app d'abord, les

@@ -124,6 +124,51 @@ service cloud.firestore {
       allow read, write: if isAdmin();
     }
 
+    // ---- Demandes de personnel (js/staffing.js) ----
+    // Le client crée et suit SES demandes (et peut annuler tant qu'elle est
+    // « pending ») ; l'admin décide (choisir les personnes ou ouvrir aux
+    // volontaires) ; le personnel ne voit que les missions ouvertes à tous
+    // ou à SON équipe, et ne peut que s'y inscrire / s'en retirer lui-même.
+    match /staffRequests/{reqId} {
+      allow get, list: if isAdmin();
+      allow get, list: if isActive() && myClientId() != null && resource.data.clientId == myClientId();
+      allow get, list: if isActive() && myTeamId() != null && resource.data.status == 'open' &&
+        (resource.data.audience == 'all' || resource.data.teamId == myTeamId());
+      allow create: if isActive() && myPerson().role == 'client' &&
+        request.resource.data.clientId == myClientId() &&
+        request.resource.data.createdByUid == request.auth.uid &&
+        request.resource.data.status == 'pending' &&
+        request.resource.data.peopleNeeded is int &&
+        request.resource.data.peopleNeeded >= 1 && request.resource.data.peopleNeeded <= 50 &&
+        request.resource.data.startDate is string && request.resource.data.endDate is string &&
+        request.resource.data.startDate <= request.resource.data.endDate &&
+        request.resource.data.work is string && request.resource.data.work.size() > 0 &&
+        (request.resource.data.projectId == null ||
+          get(/databases/$(database)/documents/projects/$(request.resource.data.projectId)).data.clientId == myClientId());
+      allow update: if isAdmin();
+      allow update: if isActive() && myClientId() != null && resource.data.clientId == myClientId() &&
+        resource.data.status == 'pending' && request.resource.data.status == 'cancelled' &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status']);
+      allow delete: if isAdmin();
+
+      match /volunteers/{uid} {
+        allow read: if isAdmin() ||
+          (isActive() && myTeamId() != null &&
+           get(/databases/$(database)/documents/staffRequests/$(reqId)).data.status == 'open' &&
+           (get(/databases/$(database)/documents/staffRequests/$(reqId)).data.audience == 'all' ||
+            get(/databases/$(database)/documents/staffRequests/$(reqId)).data.teamId == myTeamId()));
+        allow create: if isActive() && myTeamId() != null && uid == request.auth.uid &&
+          request.resource.data.uid == request.auth.uid &&
+          request.resource.data.createdAt == request.time &&
+          get(/databases/$(database)/documents/staffRequests/$(reqId)).data.status == 'open' &&
+          (get(/databases/$(database)/documents/staffRequests/$(reqId)).data.audience == 'all' ||
+           get(/databases/$(database)/documents/staffRequests/$(reqId)).data.teamId == myTeamId());
+        allow delete: if isAdmin() ||
+          (isActive() && uid == request.auth.uid &&
+           get(/databases/$(database)/documents/staffRequests/$(reqId)).data.status == 'open');
+      }
+    }
+
     // ---- Teams ----
     match /teams/{teamId} {
       allow read: if isAdmin() || (isActive() && myTeamId() == teamId);

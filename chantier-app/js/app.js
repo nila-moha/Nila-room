@@ -1330,7 +1330,7 @@ function topbarHtml(extra) {
       <div class="who">
         <span>${esc(currentPerson.name)} · ${esc(roleLabel(currentPerson.role))}</span>
         ${langSwitcherHtml()}
-        <button type="button" onclick="showNoticeOverlay()">${esc(noticeText().link)}</button>
+        ${['engineer', 'electrician', 'worker'].includes(currentPerson.role) ? `<button type="button" onclick="showNoticeOverlay()">${esc(noticeText().link)}</button>` : ''}
         ${extra || ''}
         <button onclick="logout()">${esc(t('disconnect'))}</button>
       </div>
@@ -1359,6 +1359,7 @@ function renderAdminTabs() {
     ['calendar', 'Calendrier'],
     ['problems', 'Problèmes à valider'],
     ['requests', 'Demandes clients'],
+    ['staffing', 'Personnel demandé'],
     ['teams', 'Équipes'],
     ['clients', 'Clients'],
     ['billing', 'Facturation matériel'],
@@ -1382,6 +1383,7 @@ function renderAdminTabs() {
   else if (adminTab === 'calendar') renderAdminCalendar(content);
   else if (adminTab === 'problems') renderAdminProblems(content);
   else if (adminTab === 'requests') renderAdminRequests(content);
+  else if (adminTab === 'staffing') renderAdminStaffing(content); // js/staffing.js
   else if (adminTab === 'teams') renderAdminTeams(content);
   else if (adminTab === 'clients') renderAdminClients(content);
   else if (adminTab === 'billing') renderAdminBillingEntities(content);
@@ -1392,6 +1394,9 @@ function renderAdminTabs() {
 function renderAdminProjects(content) {
   const unsub = db.collection('projects').orderBy('createdAt', 'desc').onSnapshot(async (snap) => {
     const [teamsSnap, clientsSnap] = await Promise.all([db.collection('teams').get(), db.collection('clients').get()]);
+    // L'admin a pu changer d'onglet pendant le chargement : ne pas dessiner
+    // dans un onglet qui n'est plus affiché (plantait sur réseau lent).
+    if (!content.isConnected) return;
     const teams = Object.fromEntries(teamsSnap.docs.map(d => [d.id, d.data()]));
     const clients = Object.fromEntries(clientsSnap.docs.map(d => [d.id, d.data()]));
 
@@ -2064,6 +2069,7 @@ async function renderStaff() {
       <div class="tabs">
         <button class="tab ${staffTab === 'projects' ? 'active' : ''}" data-stab="projects">${esc(t('yourProjects'))}</button>
         <button class="tab ${staffTab === 'calendar' ? 'active' : ''}" data-stab="calendar">${esc(t('yourPlanning'))}</button>
+        <button class="tab ${staffTab === 'missions' ? 'active' : ''}" data-stab="missions">${esc(st('staffTab'))}</button>
       </div>
       <div id="staff-wrap"><div class="loading">${esc(t('loadingGeneric'))}</div></div>
     </div>`;
@@ -2073,6 +2079,7 @@ async function renderStaff() {
   });
   const wrap = document.getElementById('staff-wrap');
   if (staffTab === 'calendar') renderStaffCalendar(wrap);
+  else if (staffTab === 'missions') renderStaffMissions(wrap); // js/staffing.js
   else renderStaffProjectsList(wrap);
 }
 
@@ -2164,9 +2171,17 @@ async function renderClient() {
     wrap.innerHTML = `<p class="empty">${esc(t('clientNoProject'))}</p>`;
     return;
   }
+  // Deux zones indépendantes : les projets (rafraîchis en direct) et les
+  // demandes de personnel (js/staffing.js), pour qu'une mise à jour des
+  // projets n'efface pas un formulaire de demande en cours de saisie.
+  wrap.innerHTML = `<div id="client-projects"><div class="loading">${esc(t('loadingGeneric'))}</div></div><div id="client-staffing" style="margin-top:28px"></div>`;
+  let clientProjects = [];
+  renderClientStaffingSection(document.getElementById('client-staffing'), () => clientProjects);
+  const projWrap = document.getElementById('client-projects');
   const unsub = db.collection('projects').where('clientId', '==', currentPerson.clientId)
     .onSnapshot(snap => {
-      wrap.innerHTML = `
+      clientProjects = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      projWrap.innerHTML = `
         <h2 class="section-title">${esc(t('clientYourProjects'))}</h2>
         ${snap.empty ? `<p class="empty">${esc(t('noProjectsYet'))}</p>` : snap.docs.map(d => `
           <div class="card project-card" data-project="${d.id}">
@@ -2176,10 +2191,10 @@ async function renderClient() {
             </div>
             <p class="empty" style="font-style:normal">${esc(projectTypeLabel(d.data().type))}</p>
           </div>`).join('')}`;
-      wrap.querySelectorAll('[data-project]').forEach(el => {
+      projWrap.querySelectorAll('[data-project]').forEach(el => {
         el.addEventListener('click', () => renderClientProjectDetail(el.dataset.project));
       });
-    }, err => showError(wrap, t('loadError') + err.message));
+    }, err => showError(projWrap, t('loadError') + err.message));
   unsubscribers.push(unsub);
 }
 
@@ -2511,6 +2526,7 @@ function renderProblemsTab(target, projectId, mode, projectType) {
         return `<option value="${stepIndex}" data-label="${esc(label)}">${esc(label)}</option>`;
       }).join('');
     }
+    if (!target.isConnected) return; // onglet quitté pendant le chargement
 
     target.innerHTML = `
       ${canReport ? `
