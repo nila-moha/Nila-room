@@ -18,6 +18,11 @@
 const EV_I18N = {
   fr: {
     evidenceTitle: 'Preuves requises pour valider cette étape',
+    resultLabel: 'Résultat du contrôle', resOK: 'OK — conforme', resNC: 'NC — non conforme', resNA: 'NA — non applicable',
+    expected: 'attendu', outOfRangeBadge: 'hors seuil', refOem: 'Seuil de référence OEM — à confirmer pour le modèle',
+    errOutOfRange: (l) => `Valeur hors seuil pour « ${l} » : décrivez dans la remarque l'action prise (ou la décision demandée).`,
+    errNcNote: 'Résultat NC : décrivez l’écart constaté dans la remarque (et signalez une réserve si nécessaire).',
+    fgasOnly: 'Étape réservée à un technicien certifié F-gas (règlement UE 2024/573). Votre passeport ne contient pas de certificat F-gas valide : demandez à l’administrateur.',
     photosReq: (n) => `Photos (minimum ${n})`, photosOpt: 'Photos (facultatif)',
     serials: 'Numéro(s) de série (conteneur, module, onduleur…) — séparés par des virgules',
     tool: 'Outil utilisé', toolNone: '— choisir l’outil —', toolExpired: 'étalonnage expiré', toolValid: 'étalonné jusqu’au',
@@ -50,6 +55,11 @@ const EV_I18N = {
   },
   en: {
     evidenceTitle: 'Evidence required to validate this step',
+    resultLabel: 'Check result', resOK: 'OK — compliant', resNC: 'NC — non-compliant', resNA: 'NA — not applicable',
+    expected: 'expected', outOfRangeBadge: 'out of range', refOem: 'OEM reference threshold — to be confirmed for the model',
+    errOutOfRange: (l) => `Value out of range for "${l}": describe the action taken (or decision requested) in the note.`,
+    errNcNote: 'NC result: describe the deviation in the note (and report a punch item if needed).',
+    fgasOnly: 'Step reserved for an F-gas certified technician (EU Regulation 2024/573). Your passport has no valid F-gas certificate: ask the administrator.',
     photosReq: (n) => `Photos (minimum ${n})`, photosOpt: 'Photos (optional)',
     serials: 'Serial number(s) (container, module, inverter…) — comma-separated',
     tool: 'Tool used', toolNone: '— choose the tool —', toolExpired: 'calibration expired', toolValid: 'calibrated until',
@@ -82,6 +92,11 @@ const EV_I18N = {
   },
   ro: {
     evidenceTitle: 'Dovezi necesare pentru validarea acestei etape',
+    resultLabel: 'Rezultatul verificării', resOK: 'OK — conform', resNC: 'NC — neconform', resNA: 'NA — nu se aplică',
+    expected: 'așteptat', outOfRangeBadge: 'în afara pragului', refOem: 'Prag de referință OEM — de confirmat pentru model',
+    errOutOfRange: (l) => `Valoare în afara pragului pentru „${l}”: descrieți în observație acțiunea luată (sau decizia cerută).`,
+    errNcNote: 'Rezultat NC: descrieți abaterea în observație (și semnalați o rezervă dacă e cazul).',
+    fgasOnly: 'Etapă rezervată unui tehnician certificat F-gas (Regulamentul UE 2024/573). Pașaportul dvs. nu conține un certificat F-gas valabil: întrebați administratorul.',
     photosReq: (n) => `Fotografii (minimum ${n})`, photosOpt: 'Fotografii (opțional)',
     serials: 'Număr(e) de serie (container, modul, invertor…) — separate prin virgulă',
     tool: 'Sculă folosită', toolNone: '— alegeți scula —', toolExpired: 'etalonare expirată', toolValid: 'etalonată până la',
@@ -114,6 +129,11 @@ const EV_I18N = {
   },
   zh: {
     evidenceTitle: '验证此步骤所需的证据',
+    resultLabel: '检查结果', resOK: 'OK — 合格', resNC: 'NC — 不合格', resNA: 'NA — 不适用',
+    expected: '应为', outOfRangeBadge: '超出阈值', refOem: 'OEM 参考阈值 — 需按型号确认',
+    errOutOfRange: (l) => `“${l}”超出阈值：请在备注中说明已采取的措施（或所需决定）。`,
+    errNcNote: '结果为 NC：请在备注中说明偏差（必要时登记整改项）。',
+    fgasOnly: '此步骤仅限持 F-gas 证书的技术员（欧盟法规 2024/573）。您的证件中没有有效的 F-gas 证书：请联系管理员。',
     photosReq: (n) => `照片（至少 ${n} 张）`, photosOpt: '照片（可选）',
     serials: '序列号（集装箱、模块、逆变器等）— 用逗号分隔',
     tool: '所用工具', toolNone: '— 选择工具 —', toolExpired: '校准已过期', toolValid: '校准有效期至',
@@ -213,8 +233,9 @@ async function openStepEvidenceForm(holder, { projectId, stepId, stepRef, projec
     const def = MEASURES[m.k];
     const list = def.tool ? tools.filter(t => t.type === def.tool) : [];
     return `<div class="card" style="padding:10px;margin:8px 0">
-      <div class="field"><label>${esc(measureLabel(m.k))} (${esc(def.unit)})${m.optional ? '' : ' *'}</label>
-        <input type="number" step="any" inputmode="decimal" data-measure="${m.k}"></div>
+      <div class="field"><label>${esc(measureLabel(m.k))} (${esc(def.unit)})${m.optional ? '' : ' *'}${def.range ? ` — ${esc(ev('expected'))} ${esc(rangeText(m.k))}` : ''}</label>
+        <input type="number" step="any" inputmode="decimal" data-measure="${m.k}">
+        ${def.range ? `<div class="meta">${esc(ev('refOem'))}</div>` : ''}</div>
       ${def.tool ? `<div class="field"><label>${esc(ev('tool'))} — ${esc(toolTypeLabel(def.tool))}</label>
         ${list.length ? `<select data-tool-for="${m.k}"><option value="">${esc(ev('toolNone'))}</option>${list.map(t => {
           const ok = toolIsValid(t);
@@ -229,6 +250,8 @@ async function openStepEvidenceForm(holder, { projectId, stepId, stepRef, projec
         <input type="file" data-ev="photos" accept="image/*" capture="environment" multiple></div>
       ${rules.serials ? `<div class="field"><label>${esc(ev('serials'))} *</label><input type="text" data-ev="serials"></div>` : ''}
       ${measuresHtml}
+      <div class="field"><label>${esc(ev('resultLabel'))}</label><select data-ev="result">
+        <option value="OK">${esc(ev('resOK'))}</option><option value="NC">${esc(ev('resNC'))}</option><option value="NA">${esc(ev('resNA'))}</option></select></div>
       <div class="field"><label>${esc(ev('note'))}${rules.note ? ' *' : ''}</label><textarea data-ev="note" rows="2"></textarea></div>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
         <button type="button" class="btn btn-primary btn-sm" data-ev="go">${esc(ev('validate'))}</button>
@@ -243,15 +266,27 @@ async function openStepEvidenceForm(holder, { projectId, stepId, stepRef, projec
     const note = q('[data-ev="note"]').value.trim();
     const serials = rules.serials ? q('[data-ev="serials"]').value.split(',').map(s => s.trim()).filter(Boolean) : [];
     const box = holder.firstElementChild;
-    if (rules.photos && files.length < rules.photos) return showError(box, ev('errPhotos', rules.photos));
-    if (rules.serials && !serials.length) return showError(box, ev('errSerials'));
+    const result = q('[data-ev="result"]').value;
+    // Circuit frigorifique : technicien certifié F-gas uniquement (js/compliance.js).
+    if (rules.fgas && currentPerson.role !== 'admin') {
+      let comp = null;
+      try { comp = await loadMyCompliance(); } catch (e) { /* hors ligne */ }
+      if (!hasValidFgas(comp)) return showError(box, ev('fgasOnly'));
+    }
+    if (rules.photos && files.length < rules.photos && result !== 'NA') return showError(box, ev('errPhotos', rules.photos));
+    if (rules.serials && !serials.length && result !== 'NA') return showError(box, ev('errSerials'));
     if (rules.note && !note) return showError(box, ev('errNote'));
+    if (result !== 'OK' && !note) return showError(box, ev('errNcNote'));
     const measures = {};
     for (const m of rules.measures || []) {
       const raw = q(`[data-measure="${m.k}"]`).value;
       const def = MEASURES[m.k];
-      if (raw === '') { if (m.optional) continue; return showError(box, ev('errMeasure', measureLabel(m.k))); }
+      if (raw === '') { if (m.optional || result === 'NA') continue; return showError(box, ev('errMeasure', measureLabel(m.k))); }
       const entry = { value: Number(raw), unit: def.unit };
+      if (typeof measureOutOfRange === 'function' && measureOutOfRange(m.k, raw)) {
+        entry.outOfRange = true; entry.expected = rangeText(m.k);
+        if (!note) return showError(box, ev('errOutOfRange', measureLabel(m.k)));
+      }
       if (def.tool) {
         const sel = q(`[data-tool-for="${m.k}"]`);
         const tool = sel && tools.find(t => t.id === sel.value);
@@ -271,7 +306,7 @@ async function openStepEvidenceForm(holder, { projectId, stepId, stepRef, projec
       const { urls, pending } = await uploadPhotosOrQueue(`projects/${projectId}/checklist/${stepId}`, files, stepRef.path, 'evidencePhotos');
       await saveDoc(stepRef.update({
         done: true, doneBy: currentPerson.name, doneByUid: currentUser.uid, doneAt: firebase.firestore.FieldValue.serverTimestamp(), note,
-        evidencePhotos: urls, pendingPhotos: pending, evidence: { serials, measures },
+        evidencePhotos: urls, pendingPhotos: pending, evidence: { serials, measures, result },
       }));
       holder.innerHTML = '';
       onDone && onDone(true);
@@ -286,9 +321,10 @@ async function openStepEvidenceForm(holder, { projectId, stepId, stepRef, projec
 function evidenceSummaryHtml(s, forReport) {
   const e = s.evidence || {};
   const parts = [];
+  if (e.result && e.result !== 'OK') parts.push(`<b style="color:${e.result === 'NC' ? 'var(--red,#b3261e)' : 'inherit'}">${esc(ev(e.result === 'NC' ? 'resNC' : 'resNA'))}</b>`);
   if (e.serials && e.serials.length) parts.push(`${esc(ev('serialsShort'))} : ${e.serials.map(esc).join(', ')}`);
   for (const [k, m] of Object.entries(e.measures || {})) {
-    parts.push(`${esc(measureLabel(k))} : <b>${esc(m.value)} ${esc(m.unit)}</b>${m.toolName ? ` — ${esc(ev('measuredWith'))} ${esc(m.toolName)}${m.toolSerial ? ' (' + esc(m.toolSerial) + ')' : ''}, ${esc(ev('toolValid'))} ${esc(fmtDate(m.toolCalibrationValidUntil))}` : ''}`);
+    parts.push(`${esc(measureLabel(k))} : <b${m.outOfRange ? ' style="color:var(--red,#b3261e)"' : ''}>${esc(m.value)} ${esc(m.unit)}${m.outOfRange ? ` ⚠ ${esc(ev('outOfRangeBadge'))} (${esc(ev('expected'))} ${esc(m.expected || '')})` : ''}</b>${m.toolName ? ` — ${esc(ev('measuredWith'))} ${esc(m.toolName)}${m.toolSerial ? ' (' + esc(m.toolSerial) + ')' : ''}, ${esc(ev('toolValid'))} ${esc(fmtDate(m.toolCalibrationValidUntil))}` : ''}`);
   }
   if (s.pendingPhotos > 0) parts.push(`📷 ${esc(ev('photosPending', s.pendingPhotos))}`);
   const photos = (s.evidencePhotos || []).map(u => forReport ? `<img src="${esc(u)}">` : '').join('');

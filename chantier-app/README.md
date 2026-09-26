@@ -214,6 +214,21 @@ premier obtient l'accès qui lui est attaché.
   à 14 h, liste des non-confirmés à l'admin à 18 h (functions, jours ouvrables).
 - **Alerte d'expiration** des documents : 30 j, 7 j, jour J (functions, 7 h).
 
+## Refroidissement (LCU) et ventilateurs PCS — ajouté le 26/09/2026
+
+- Deux nouveaux types de projet (`js/cooling.js`), tirés des dossiers BN CORE
+  du Drive (Dossier pilote ventilateurs BESS/PCS v0.2, Dossier interne LCU
+  v1.0) et du manuel de maintenance Sungrow PowerTitan 1.0 :
+  **Maintenance refroidissement (LCU)** (11 étapes) et **Inspection
+  ventilateurs PCS** (11 étapes).
+- Mesures avec seuils de référence (PowerTitan 1.0, **à confirmer par
+  modèle**) : HP ≤ 2,8 bar, BP ≥ 0,2 bar, pH ≥ 7,3, entrée d'air encrassée
+  ≤ 5 %, jeu ventilateur ≥ 2 mm. Hors seuil = remarque obligatoire + rouge
+  dans le rapport. Glycol mesuré au réfractomètre (outil enregistré).
+- Chaque étape porte un code **OK / NC / NA** (NC ou NA = justification).
+- Étape « circuit frigorifique » réservée aux techniciens avec **certificat
+  F-gas** dans leur passeport (règlement UE 2024/573).
+
 ## Mettre à jour l'app en ligne
 
 Depuis ce dossier `chantier-app/`, dans cet ordre (l'app d'abord, les

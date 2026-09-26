@@ -13,12 +13,13 @@
 // ne garde QUE la date de validité — aucune copie, aucune donnée médicale.
 // ============================================================
 
-const COMP_TYPES = ['limosa', 'a1', 'vca', 'ba', 'medical', 'idcard'];
+const COMP_TYPES = ['limosa', 'a1', 'vca', 'ba', 'fgas', 'medical', 'idcard'];
 const COMP_LABELS = {
   limosa: { fr: 'Déclaration Limosa-1', en: 'Limosa-1 declaration', ro: 'Declarație Limosa-1', zh: 'Limosa-1 申报' },
   a1: { fr: 'Certificat A1 (sécurité sociale)', en: 'A1 certificate (social security)', ro: 'Certificat A1 (asigurări sociale)', zh: 'A1 证明（社会保险）' },
   vca: { fr: 'Certificat VCA', en: 'VCA certificate', ro: 'Certificat VCA', zh: 'VCA 安全证书' },
   ba: { fr: 'Habilitation électrique', en: 'Electrical authorisation', ro: 'Autorizare electrică', zh: '电工资质' },
+  fgas: { fr: 'Certificat F-gas (froid)', en: 'F-gas certificate (refrigeration)', ro: 'Certificat F-gas (frig)', zh: 'F-gas 制冷证书' },
   medical: { fr: 'Aptitude médicale (date uniquement)', en: 'Medical fitness (date only)', ro: 'Aviz medical (doar data)', zh: '体检合格（仅日期）' },
   idcard: { fr: "Pièce d'identité (date uniquement)", en: 'ID document (date only)', ro: 'Act de identitate (doar data)', zh: '身份证件（仅日期）' },
 };
@@ -53,6 +54,7 @@ function requiredCompTypes(person, comp) {
 function compItemStatus(comp, type, required) {
   const it = comp && comp.items && comp.items[type];
   const until = it && compDate(it.validUntil);
+  if (type === 'fgas' && it && it.category && !until) return 'ok'; // certificat sans date de fin
   if (!until) return required ? 'missing' : null;
   const ms = until.getTime() - Date.now();
   return ms < 0 ? 'expired' : ms < SOON_MS ? 'soon' : 'ok';
@@ -81,6 +83,16 @@ function compShortHtml(person, comp) {
   if (o.status === 'ok') return ' ' + compBadgeHtml('ok', 'Conforme');
   return ' ' + compBadgeHtml(o.status, o.problems.map(p => `${compLabel(p.type).split(' (')[0]} : ${cp(p.st).toLowerCase()}`).join(', '));
 }
+// Certificat frigorifique F-gas (règlement UE 2024/573) : catégorie indiquée
+// et, si une date de fin est connue, non expirée. Exigé pour ouvrir le
+// circuit frigorifique d'un LCU (js/cooling.js).
+function hasValidFgas(comp) {
+  const it = comp && comp.items && comp.items.fgas;
+  if (!it || !it.category) return false;
+  const until = compDate(it.validUntil);
+  return !until || until.getTime() >= Date.now();
+}
+
 // L'ouvrier a-t-il l'habilitation demandée (BA4 : BA4 ou BA5 ; BA5 : BA5) ?
 function hasValidBa(comp, required) {
   if (!required) return true;
@@ -110,7 +122,7 @@ async function renderMyCompliance(wrap) {
     const st = compItemStatus(comp, type, req.includes(type));
     if (!st) return '';
     const it = (comp && comp.items && comp.items[type]) || {};
-    return `<div class="list-row"><div class="main"><div class="name">${esc(compLabel(type))}${type === 'ba' && it.level ? ' — ' + esc(it.level) : ''}</div>
+    return `<div class="list-row"><div class="main"><div class="name">${esc(compLabel(type))}${type === 'ba' && it.level ? ' — ' + esc(it.level) : ''}${type === 'fgas' && it.category ? ' — ' + esc(it.category) : ''}</div>
       <div class="sub">${it.validUntil ? esc(cp('until')) + ' ' + esc(fmtDate(it.validUntil)) : ''}${it.fileUrl ? ` · <a href="${esc(it.fileUrl)}" target="_blank" rel="noopener">📄</a>` : ''}</div></div>
       <div class="actions">${compBadgeHtml(st)}</div></div>`;
   }).join('');
@@ -124,7 +136,7 @@ function openComplianceEditor(person) {
     const comp = snap.exists ? snap.data() : { posted: false, items: {} };
     const items = comp.items || {};
     const d = (v) => { const x = compDate(v); return x ? x.toISOString().slice(0, 10) : ''; };
-    const withFile = ['limosa', 'a1', 'vca', 'ba'];
+    const withFile = ['limosa', 'a1', 'vca', 'ba', 'fgas'];
     const overlay = document.createElement('div');
     overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:1000;overflow:auto;padding:16px';
     overlay.innerHTML = `<div class="card" style="max-width:640px;margin:0 auto">
@@ -134,6 +146,7 @@ function openComplianceEditor(person) {
       ${COMP_TYPES.map(type => `<div class="card" style="padding:10px;margin:8px 0">
         <b>${esc(COMP_LABELS[type].fr)}</b>
         <div class="row" style="margin-top:6px">
+          ${type === 'fgas' ? `<div class="field"><label>Catégorie (règl. 2024/2215)</label><select data-cp-fgas><option value="">—</option>${['A1', 'A2', 'B', 'C', 'D', 'E'].map(c => `<option ${items.fgas?.category === c ? 'selected' : ''}>${c}</option>`).join('')}</select></div>` : ''}
           ${type === 'ba' ? `<div class="field"><label>Niveau</label><select data-cp-level><option value="">—</option><option ${items.ba?.level === 'BA4' ? 'selected' : ''}>BA4</option><option ${items.ba?.level === 'BA5' ? 'selected' : ''}>BA5</option></select></div>` : ''}
           ${['limosa', 'a1'].includes(type) ? `<div class="field"><label>Référence</label><input type="text" data-cp-ref="${type}" value="${esc(items[type]?.ref || '')}"></div>` : ''}
           <div class="field"><label>Valable jusqu'au</label><input type="date" data-cp-until="${type}" value="${d(items[type]?.validUntil)}"></div>
@@ -155,6 +168,7 @@ function openComplianceEditor(person) {
           const refIn = overlay.querySelector(`[data-cp-ref="${type}"]`);
           if (refIn) it.ref = refIn.value.trim() || null;
           if (type === 'ba') it.level = overlay.querySelector('[data-cp-level]').value || null;
+          if (type === 'fgas') it.category = overlay.querySelector('[data-cp-fgas]').value || null;
           const fileIn = overlay.querySelector(`[data-cp-file="${type}"]`);
           const file = fileIn && fileIn.files && fileIn.files[0];
           if (file) {
