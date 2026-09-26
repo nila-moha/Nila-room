@@ -3,7 +3,7 @@
 // mises en cache séparément par Firestore (voir js/app.js,
 // enablePersistence) — ce fichier ne s'occupe que de l'app elle-même.
 
-const CACHE_NAME = 'bn-core-chantier-v9';
+const CACHE_NAME = 'bn-core-chantier-v11';
 const APP_SHELL = [
   './',
   './index.html',
@@ -15,6 +15,8 @@ const APP_SHELL = [
   './js/push.js',
   './js/offline-photos.js',
   './js/evidence.js',
+  './js/confirm.js',
+  './js/compliance.js',
   './js/firebase-config.js',
   './js/logo-base64.js',
   './icons/icon-192.png',

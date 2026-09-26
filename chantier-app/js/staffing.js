@@ -292,6 +292,7 @@ function renderClientStaffingSection(target, getProjects) {
           // Statut et bouton SOUS la demande (pas à côté) : lisible sur téléphone.
           return `<div style="padding:12px 0;border-bottom:1px solid var(--border)">${requestSummaryHtml(r)}
             ${r.status === 'refused' && r.adminNote ? `<p class="empty" style="font-style:normal;margin:4px 0 0">${esc(st('reason'))} : ${esc(r.adminNote)}</p>` : ''}
+            ${['assigned', 'filled'].includes(r.status) ? complianceSummaryClientHtml(r) : ''}
             <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:8px">
               <span class="badge badge-${REQ_BADGE[r.status] || 'closed'}">${esc(st(REQ_STATUS_KEY[r.status] || 'stPending'))}</span>
               ${r.status === 'pending' ? `<button type="button" class="btn btn-outline btn-sm" data-cancel-req="${d.id}">${esc(st('cancelRequest'))}</button>` : ''}
@@ -404,6 +405,8 @@ function renderStaffMissions(wrap) {
   const byId = new Map();
   const volunteersByReq = new Map();
   const volUnsubs = new Map();
+  let myComp = null; // mon passeport (habilitation) — js/compliance.js
+  loadMyCompliance().then(c => { myComp = c; draw(); }).catch(() => {});
 
   const draw = () => {
     const docs = sortByStart([...byId.values()]).filter(d => d.data().endDate >= todayStr());
@@ -414,13 +417,16 @@ function renderStaffMissions(wrap) {
       const idx = vols.findIndex(v => v.id === currentUser.uid);
       const mine = idx >= 0;
       const status = mine ? (idx < r.peopleNeeded ? st('youConfirmed') : st('youWaitlist')) : null;
+      const qualified = hasValidBa(myComp, r.requiredBa); // js/compliance.js
       return `<div class="card"><div class="list-row" style="border:none;padding:0"><div class="main">${requestSummaryHtml(r)}
+          ${r.requiredBa ? `<p style="margin:6px 0 0"><span class="badge badge-reported">⚡ ${esc(cp('baRequired', r.requiredBa))}</span></p>` : ''}
           <p class="empty" style="font-style:normal;margin:6px 0 0">${esc(vols.length >= r.peopleNeeded ? st('full') : st('spots', vols.length, r.peopleNeeded))}</p>
         </div></div>
         <div style="display:flex;gap:8px;align-items:center;margin-top:10px;flex-wrap:wrap">
           ${mine ? `<span class="badge badge-${idx < r.peopleNeeded ? 'active' : 'reported'}">${esc(status)}</span>
                     <button type="button" class="btn btn-outline btn-sm" data-withdraw="${d.id}">${esc(st('iWithdraw'))}</button>`
-                 : `<button type="button" class="btn btn-primary btn-sm" data-come="${d.id}">${esc(st('iCome'))}</button>`}
+                 : qualified ? `<button type="button" class="btn btn-primary btn-sm" data-come="${d.id}">${esc(st('iCome'))}</button>`
+                 : `<span class="empty" style="font-style:normal">⛔ ${esc(cp('notQualified', r.requiredBa))}</span>`}
         </div></div>`;
     }).join('');
     list.querySelectorAll('[data-come]').forEach(btn => btn.addEventListener('click', async () => {
@@ -473,7 +479,8 @@ function renderAdminStaffing(content) {
   content.innerHTML = '<div class="loading">Chargement…</div>';
   Promise.all([
     db.collection('people').get(), db.collection('teams').get(), db.collection('clients').get(), db.collection('projects').get(),
-  ]).then(([peopleSnap, teamsSnap, clientsSnap, projectsSnap]) => {
+    loadAllCompliance(), // js/compliance.js
+  ]).then(([peopleSnap, teamsSnap, clientsSnap, projectsSnap, compliance]) => {
     const staff = peopleSnap.docs.map(d => ({ id: d.id, ...d.data() }))
       .filter(p => STAFF_ROLES.includes(p.role) && !p.revoked).sort((a, b) => a.name.localeCompare(b.name));
     const teams = Object.fromEntries(teamsSnap.docs.map(d => [d.id, d.data()]));
@@ -492,7 +499,7 @@ function renderAdminStaffing(content) {
         </div>
         <div id="staffing-list"></div>`;
     const list = document.getElementById('staffing-list');
-    const ctx = { staff, teams, projects };
+    const ctx = { staff, teams, projects, compliance };
     // Rendu carte par carte : seule une demande qui a changé est redessinée,
     // pour qu'une nouvelle demande (ou un volontaire) qui arrive n'efface pas
     // le panneau que l'admin est en train de remplir sur une autre demande.
@@ -605,7 +612,8 @@ function wireAdminRequestCard(id, r, ctx) {
       panel.innerHTML = `
         <div class="field"><label>Projet</label><select class="p-project">${projectOptionsFor(r, ctx.projects) || '<option value="">Aucun projet actif pour ce client</option>'}</select></div>
         <div class="field"><label>Personnes (${r.peopleNeeded} demandée${r.peopleNeeded > 1 ? 's' : ''}${r.roleWanted ? ', ' + esc(roleLabel(r.roleWanted)) : ''})</label>
-          <div>${ctx.staff.map(p => `<label style="display:block;font-weight:normal"><input type="checkbox" value="${esc(p.id)}"> ${esc(p.name)} — ${esc(roleLabel(p.role))} · ${esc(ctx.teams[p.teamId]?.name || '—')}</label>`).join('') || '<p class="empty">Aucun membre du personnel.</p>'}</div></div>
+          <div>${ctx.staff.map(p => `<label style="display:block;font-weight:normal"><input type="checkbox" value="${esc(p.id)}"> ${esc(p.name)} — ${esc(roleLabel(p.role))} · ${esc(ctx.teams[p.teamId]?.name || '—')}${compShortHtml(p, ctx.compliance[p.id])}${r.requiredBa && !hasValidBa(ctx.compliance[p.id], r.requiredBa) ? ` <span class="badge badge-open">⛔ pas ${esc(r.requiredBa)}</span>` : ''}</label>`).join('') || '<p class="empty">Aucun membre du personnel.</p>'}</div></div>
+        <div class="field"><label>Habilitation électrique exigée</label><select class="p-ba"><option value="">Aucune</option><option ${r.requiredBa === 'BA4' ? 'selected' : ''}>BA4</option><option ${r.requiredBa === 'BA5' ? 'selected' : ''}>BA5</option></select></div>
         <p class="empty" style="font-style:normal;margin:6px 0">Samedis et dimanches jamais planifiés.</p>
         <button type="button" class="btn btn-primary btn-sm p-go">Créer les créneaux et confirmer au client</button>`;
       panel.querySelector('.p-go').addEventListener('click', async (e) => {
@@ -614,8 +622,18 @@ function wireAdminRequestCard(id, r, ctx) {
         if (!projectId) return showError(panel, 'Choisissez un projet.');
         if (!chosen.length) return showError(panel, 'Cochez au moins une personne.');
         if (chosen.length !== r.peopleNeeded && !confirm(`${chosen.length} personne(s) choisie(s) pour ${r.peopleNeeded} demandée(s). Continuer ?`)) return;
+        // Conformité (js/compliance.js) : l'admin est prévenu, pas bloqué —
+        // c'est lui qui porte la responsabilité de l'envoi sur site.
+        const ba = panel.querySelector('.p-ba').value || null;
+        const warn = chosen.map(p => {
+          const o = compOverall(p, ctx.compliance[p.id]);
+          const issues = o.problems.filter(x => x.st !== 'soon').map(x => `${COMP_LABELS[x.type].fr.split(' (')[0]} ${x.st === 'expired' ? 'expiré' : 'manquant'}`);
+          if (ba && !hasValidBa(ctx.compliance[p.id], ba)) issues.push(`pas d'habilitation ${ba} valide`);
+          return issues.length ? `• ${p.name} : ${issues.join(', ')}` : null;
+        }).filter(Boolean);
+        if (warn.length && !confirm(`Attention, documents non conformes :\n${warn.join('\n')}\n\nEnvoyer quand même ? (risque d'amende en cas de contrôle)`)) return;
         e.target.disabled = true;
-        try { await confirmStaffingTeam(ref, r, projectId, chosen, 'assigned', ctx); }
+        try { if (ba !== (r.requiredBa || null)) await ref.update({ requiredBa: ba }); await confirmStaffingTeam(ref, { ...r, requiredBa: ba }, projectId, chosen, 'assigned', ctx); }
         catch (err) { e.target.disabled = false; showError(panel, 'Erreur : ' + err.message); }
       });
     });
@@ -627,11 +645,13 @@ function wireAdminRequestCard(id, r, ctx) {
             <option value="all">Tous les ouvriers (toutes équipes)</option>
             ${Object.entries(ctx.teams).map(([tid, tm]) => `<option value="${esc(tid)}" ${tid === projectTeam ? 'selected' : ''}>Seulement l'équipe ${esc(tm.name)}</option>`).join('')}
           </select></div>
+        <div class="field"><label>Habilitation électrique exigée (seuls les ouvriers habilités pourront se proposer)</label>
+          <select class="p-ba"><option value="">Aucune</option><option>BA4</option><option>BA5</option></select></div>
         <button type="button" class="btn btn-primary btn-sm p-go">Publier la mission</button>`;
       panel.querySelector('.p-go').addEventListener('click', async (e) => {
         const aud = panel.querySelector('.p-audience').value;
         e.target.disabled = true;
-        try { await ref.update({ status: 'open', audience: aud === 'all' ? 'all' : 'team', teamId: aud === 'all' ? null : aud, openedAt: firebase.firestore.FieldValue.serverTimestamp() }); }
+        try { await ref.update({ status: 'open', audience: aud === 'all' ? 'all' : 'team', teamId: aud === 'all' ? null : aud, requiredBa: panel.querySelector('.p-ba').value || null, openedAt: firebase.firestore.FieldValue.serverTimestamp() }); }
         catch (err) { e.target.disabled = false; showError(panel, 'Erreur : ' + err.message); }
       });
     });
@@ -650,7 +670,7 @@ function wireAdminRequestCard(id, r, ctx) {
       box.innerHTML = `${noProjectHint}
         <div class="sub"><b>Volontaires : ${vols.length}</b> pour ${r.peopleNeeded} place${r.peopleNeeded > 1 ? 's' : ''} (les premiers inscrits sont cochés)</div>
         <div>${vols.map((v, i) => `<label style="display:block;font-weight:normal"><input type="checkbox" value="${esc(v.id)}" ${i < r.peopleNeeded ? 'checked' : ''}>
-            ${esc(v.name)} — ${esc(roleLabel(v.role))} · ${esc(ctx.teams[v.teamId]?.name || '—')} · inscrit le ${fmtDateTime(v.createdAt)}${i >= r.peopleNeeded ? ' <span class="badge badge-reported">liste d\'attente</span>' : ''}</label>`).join('') || '<p class="empty">Personne pour l\'instant.</p>'}</div>
+            ${esc(v.name)} — ${esc(roleLabel(v.role))} · ${esc(ctx.teams[v.teamId]?.name || '—')} · inscrit le ${fmtDateTime(v.createdAt)}${compShortHtml(ctx.staff.find(p => p.id === v.id) || v, ctx.compliance[v.id])}${i >= r.peopleNeeded ? ' <span class="badge badge-reported">liste d\'attente</span>' : ''}</label>`).join('') || '<p class="empty">Personne pour l\'instant.</p>'}</div>
         <div class="field" style="margin-top:8px"><label>Projet</label><select class="p-project">${projectOptionsFor(r, ctx.projects) || '<option value="">Aucun projet actif pour ce client</option>'}</select></div>
         <p class="empty" style="font-style:normal;margin:6px 0">Samedis et dimanches jamais planifiés.</p>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
@@ -698,12 +718,15 @@ async function confirmStaffingTeam(ref, r, projectId, people, finalStatus, ctx) 
       batch.set(db.collection('assignments').doc(), {
         personUid: p.id, personName: p.name, teamId: p.teamId || null,
         projectId, projectName: project.name, projectColor: project.color || DEFAULT_PROJECT_COLOR,
-        date, staffRequestId: ref.id, createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+        date, startTime: r.startTime || null, address: r.address || project.address || null,
+        staffRequestId: ref.id, createdAt: firebase.firestore.FieldValue.serverTimestamp(),
       });
       if (++n % 400 === 0) { await batch.commit(); batch = db.batch(); }
     }
   }
+  const staffById = Object.fromEntries(ctx.staff.map(p => [p.id, p]));
   batch.update(ref, {
+    complianceSummary: complianceSummaryFor(people, ctx.compliance || {}, staffById), // js/compliance.js
     status: finalStatus, projectId, projectName: project.name,
     assignedUids: people.map(p => p.id), assignedNames: people.map(p => p.name),
     confirmedAt: firebase.firestore.FieldValue.serverTimestamp(),

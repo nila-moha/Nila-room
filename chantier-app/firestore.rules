@@ -134,6 +134,14 @@ service cloud.firestore {
       allow delete: if isSignedIn() && resource.data.uid == request.auth.uid;
     }
 
+    // ---- Passeport de conformité (js/compliance.js) ----
+    // L'admin gère ; l'ouvrier lit le sien ; personne d'autre (ni collègues
+    // ni clients — le client ne reçoit qu'un résumé sur la demande).
+    match /compliance/{uid} {
+      allow read: if isAdmin() || (isActive() && request.auth.uid == uid);
+      allow write: if isAdmin();
+    }
+
     // ---- Outillage et étalonnage (js/evidence.js) ----
     // Lisible par le personnel (choix de l'outil sur le terrain), pas par
     // les clients ; géré par l'admin.
@@ -145,6 +153,16 @@ service cloud.firestore {
     // ---- Paramètres internes (ex. suivi de la purge de conservation) ----
     match /settings/{docId} {
       allow read, write: if isAdmin();
+    }
+
+    // Habilitation électrique exigée par une mission (BA4 : BA4 ou BA5 ;
+    // BA5 : BA5), valable à la date d'inscription (passeport de conformité).
+    function baQualified(required, uid) {
+      return required == null ||
+        (exists(/databases/$(database)/documents/compliance/$(uid)) &&
+         get(/databases/$(database)/documents/compliance/$(uid)).data.baValidUntil > request.time &&
+         ((required == 'BA4' && get(/databases/$(database)/documents/compliance/$(uid)).data.baLevel in ['BA4', 'BA5']) ||
+          (required == 'BA5' && get(/databases/$(database)/documents/compliance/$(uid)).data.baLevel == 'BA5')));
     }
 
     // ---- Demandes de personnel (js/staffing.js) ----
@@ -185,6 +203,7 @@ service cloud.firestore {
         allow create: if isActive() && myTeamId() != null && uid == request.auth.uid &&
           request.resource.data.uid == request.auth.uid &&
           request.resource.data.createdAt == request.time &&
+          baQualified(get(/databases/$(database)/documents/staffRequests/$(reqId)).data.get('requiredBa', null), uid) &&
           get(/databases/$(database)/documents/staffRequests/$(reqId)).data.status == 'open' &&
           (get(/databases/$(database)/documents/staffRequests/$(reqId)).data.audience == 'all' ||
            get(/databases/$(database)/documents/staffRequests/$(reqId)).data.teamId == myTeamId());
@@ -224,6 +243,11 @@ service cloud.firestore {
         (isActive() && (resource.data.personUid == request.auth.uid ||
           (myTeamId() != null && resource.data.teamId == myTeamId())));
       allow write: if isAdmin();
+      // L'ouvrier confirme SA présence (js/confirm.js) : uniquement l'heure
+      // de confirmation, à l'heure du serveur.
+      allow update: if isActive() && resource.data.personUid == request.auth.uid &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['confirmedAt']) &&
+        request.resource.data.confirmedAt == request.time;
     }
 
     // ---- Projects ----

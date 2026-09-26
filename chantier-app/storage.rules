@@ -42,6 +42,13 @@ service firebase.storage {
       allow read, write: if isAdmin();
     }
 
+    // Documents de conformité (Limosa, A1, VCA, habilitation) : l'admin les
+    // dépose ; l'ouvrier peut relire les siens ; taille limitée (photo/PDF).
+    match /compliance/{uid}/{file} {
+      allow read: if isAdmin() || (isSignedIn() && request.auth.uid == uid);
+      allow write: if isAdmin() && (request.resource == null || request.resource.size < 15 * 1024 * 1024);
+    }
+
     match /projects/{projectId}/{allPaths=**} {
       function isMyTeamProject() {
         return isSignedIn() &&

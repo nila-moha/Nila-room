@@ -16,6 +16,7 @@
 
 const { onDocumentCreated, onDocumentUpdated, onDocumentDeleted } = require('firebase-functions/v2/firestore');
 const { setGlobalOptions } = require('firebase-functions/v2');
+const { onSchedule } = require('firebase-functions/v2/scheduler');
 const admin = require('firebase-admin');
 const { FieldValue } = require('firebase-admin/firestore');
 
@@ -175,3 +176,93 @@ async function volunteerChange(event, verb) {
 exports.onVolunteerAdded = onDocumentCreated('staffRequests/{reqId}/volunteers/{uid}', (e) => volunteerChange(e, 'se propose'));
 exports.onVolunteerRemoved = onDocumentDeleted('staffRequests/{reqId}/volunteers/{uid}', (e) => volunteerChange(e, 'se retire'));
 
+
+// ============================================================
+// Tâches planifiées (heure de Bruxelles, du lundi au vendredi)
+// ============================================================
+const TZ = 'Europe/Brussels';
+// Date du jour à Bruxelles (AAAA-MM-JJ), puis prochain jour ouvrable.
+function brusselsToday(now = new Date()) {
+  return new Intl.DateTimeFormat('en-CA', { timeZone: TZ, year: 'numeric', month: '2-digit', day: '2-digit' }).format(now);
+}
+function nextWorkday(dayStr) {
+  const d = new Date(dayStr + 'T12:00:00Z');
+  do { d.setUTCDate(d.getUTCDate() + 1); } while (d.getUTCDay() === 0 || d.getUTCDay() === 6);
+  return d.toISOString().slice(0, 10);
+}
+const CONFIRM_TXT = {
+  fr: { t: 'Confirmez votre présence', b: (a) => `${a.projectName} — ${fmt(a.date)}${a.startTime ? ' à ' + a.startTime : ''}. Ouvrez l'app et appuyez sur « Je confirme ».` },
+  en: { t: 'Please confirm your attendance', b: (a) => `${a.projectName} — ${fmt(a.date)}${a.startTime ? ' at ' + a.startTime : ''}. Open the app and tap "I confirm".` },
+  ro: { t: 'Confirmați prezența', b: (a) => `${a.projectName} — ${fmt(a.date)}${a.startTime ? ' la ' + a.startTime : ''}. Deschideți aplicația și apăsați „Confirm”.` },
+  zh: { t: '请确认到场', b: (a) => `${a.projectName} — ${fmt(a.date)}${a.startTime ? ' ' + a.startTime : ''}。请打开应用并点击“我确认到场”。` },
+};
+
+async function unconfirmedFor(day) {
+  const snap = await db.collection('assignments').where('date', '==', day).get();
+  return snap.docs.map((d) => ({ id: d.id, ...d.data() })).filter((a) => !a.confirmedAt);
+}
+
+// 14 h : rappel aux ouvriers qui n'ont pas encore confirmé demain.
+async function runConfirmReminder(now = new Date()) {
+  const day = nextWorkday(brusselsToday(now));
+  const list = await unconfirmedFor(day);
+  const byUid = new Map(list.map((a) => [a.personUid, a]));
+  for (const p of await byUids([...byUid.keys()])) {
+    const a = byUid.get(p.uid);
+    const txt = CONFIRM_TXT[p.noticeLang] || CONFIRM_TXT.fr;
+    await notify([p], () => ({ title: txt.t, body: txt.b(a) }), 'confirm-' + day);
+  }
+  return list.length;
+}
+// 18 h : l'admin reçoit la liste des non-confirmés (il reste la soirée pour remplacer).
+async function runUnconfirmedAlert(now = new Date()) {
+  const day = nextWorkday(brusselsToday(now));
+  const list = await unconfirmedFor(day);
+  if (!list.length) return;
+  await notify(await admins(), () => ({
+    title: `${list.length} présence(s) non confirmée(s) pour le ${fmt(day)}`,
+    body: list.map((a) => `${a.personName} (${a.projectName})`).join(', ').slice(0, 300),
+  }), 'unconfirmed-' + day);
+}
+
+// 7 h : documents de conformité expirés ou expirant dans les 30 jours.
+const COMP_NAMES = { limosa: 'Limosa-1', a1: 'A1', vca: 'VCA', ba: 'Habilitation BA', medical: 'Aptitude médicale', idcard: "Pièce d'identité" };
+const COMP_TXT = {
+  fr: { t: 'Document à renouveler', b: (x) => `${x}. Prévenez BN CORE GROUP.` },
+  en: { t: 'Document to renew', b: (x) => `${x}. Please inform BN CORE GROUP.` },
+  ro: { t: 'Document de reînnoit', b: (x) => `${x}. Anunțați BN CORE GROUP.` },
+  zh: { t: '证件需更新', b: (x) => `${x}。请告知 BN CORE GROUP。` },
+};
+async function runComplianceCheck(now = new Date()) {
+  const soon = now.getTime() + 30 * 86400000;
+  const [compSnap, peopleSnap] = await Promise.all([db.collection('compliance').get(), db.collection('people').get()]);
+  const people = Object.fromEntries(peopleSnap.docs.map((d) => [d.id, { uid: d.id, ...d.data() }]));
+  const lines = [];
+  for (const d of compSnap.docs) {
+    const p = people[d.id];
+    if (!p || p.revoked) continue;
+    const issues = [];
+    for (const [type, it] of Object.entries(d.data().items || {})) {
+      const until = it && it.validUntil && it.validUntil.toDate ? it.validUntil.toDate() : null;
+      if (!until) continue;
+      // Une seule alerte par document : le jour où il entre dans les 30 jours,
+      // puis le jour de l'expiration (pas un rappel quotidien pendant un mois).
+      const days = Math.floor((until.getTime() - now.getTime()) / 86400000);
+      if (days === 30 || days === 7 || days === 0 || days === -1) issues.push(`${COMP_NAMES[type] || type} ${until.getTime() < now.getTime() ? 'expiré' : 'expire le ' + until.toISOString().slice(8, 10) + '/' + until.toISOString().slice(5, 7)}`);
+    }
+    if (!issues.length) continue;
+    lines.push(`${p.name} : ${issues.join(', ')}`);
+    const txt = COMP_TXT[p.noticeLang] || COMP_TXT.fr;
+    await notify([p], () => ({ title: txt.t, body: txt.b(issues.join(', ')) }), 'comp-' + d.id);
+  }
+  if (lines.length) {
+    await notify(await admins(), () => ({ title: `Conformité : ${lines.length} ouvrier(s) concerné(s)`, body: lines.join(' · ').slice(0, 300) }), 'comp-admin');
+  }
+  return lines;
+}
+
+// scheduleTime = heure prévue de l'exécution (fournie par Cloud Scheduler).
+const at = (e) => (e && e.scheduleTime ? new Date(e.scheduleTime) : new Date());
+exports.confirmReminder = onSchedule({ schedule: '0 14 * * 1-5', timeZone: TZ }, (e) => runConfirmReminder(at(e)));
+exports.unconfirmedAlert = onSchedule({ schedule: '0 18 * * 1-5', timeZone: TZ }, (e) => runUnconfirmedAlert(at(e)));
+exports.complianceCheck = onSchedule({ schedule: '0 7 * * *', timeZone: TZ }, (e) => runComplianceCheck(at(e)));

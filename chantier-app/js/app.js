@@ -1576,7 +1576,7 @@ function renderCalDayDetail(dateStr, items, people, projects, parentContent) {
       <div style="margin-top:10px">
         ${items.length === 0 ? '<p class="empty">Personne d\'assigné ce jour-là.</p>' : items.map(a => `
           <div class="list-row">
-            <div class="main"><span class="badge" style="background:${esc(a.projectColor || DEFAULT_PROJECT_COLOR)};color:#fff">${esc(a.projectName)}</span> ${esc(a.personName)}</div>
+            <div class="main"><span class="badge" style="background:${esc(a.projectColor || DEFAULT_PROJECT_COLOR)};color:#fff">${esc(a.projectName)}</span> ${esc(a.personName)}${confirmMarkHtml(a)}</div>
             <div class="actions"><button class="btn btn-danger btn-sm" data-del-assign="${a.id}">Retirer</button></div>
           </div>`).join('')}
       </div>
@@ -1934,7 +1934,15 @@ function renderPendingInvites(target, teams, clients) {
 }
 
 function renderPeopleList(target, teams, clients) {
-  const unsub = db.collection('people').onSnapshot(snap => {
+  let compliance = {}, lastSnap = null;
+  // Passeports de conformité (js/compliance.js) : badges tenus à jour.
+  unsubscribers.push(db.collection('compliance').onSnapshot(cs => {
+    compliance = Object.fromEntries(cs.docs.map(d => [d.id, d.data()]));
+    if (lastSnap) draw(lastSnap);
+  }, () => {}));
+  const unsub = db.collection('people').onSnapshot(snap => { lastSnap = snap; draw(snap); }, err => showError(target, "Erreur : " + err.message));
+  function draw(snap) {
+    if (!target.isConnected) return;
     target.innerHTML = snap.empty ? '<p class="empty">Aucun compte actif pour le moment.</p>' : snap.docs.map(d => {
       const p = d.data();
       const context = p.role === 'client' ? (clients[p.clientId]?.name || '—') : (teams[p.teamId]?.name || '—');
@@ -1943,9 +1951,10 @@ function renderPeopleList(target, teams, clients) {
           <div class="name">${esc(p.name)} ${p.revoked ? '<span class="badge badge-closed">Accès révoqué</span>' : ''}</div>
           <div class="sub">${ROLE_LABELS[p.role] || p.role} · ${esc(context)}${p.role === 'client' || p.role === 'admin' ? '' : (p.noticeVersion === NOTICE_VERSION && p.noticeAcceptedAt
             ? ` · Notice RGPD v${esc(p.noticeVersion)} confirmée le ${esc(p.noticeAcceptedAt.toDate().toLocaleString('fr-BE'))} (${esc((p.noticeLang || '').toUpperCase())})`
-            : ' · <span class="badge badge-closed">Notice RGPD non confirmée</span>')}</div>
+            : ' · <span class="badge badge-closed">Notice RGPD non confirmée</span>')}${['engineer', 'electrician', 'worker'].includes(p.role) ? compShortHtml(p, compliance[d.id]) : ''}</div>
         </div>
         <div class="actions">
+          ${['engineer', 'electrician', 'worker'].includes(p.role) ? `<button class="btn btn-outline btn-sm" data-passport="${d.id}">Passeport</button>` : ''}
           ${p.revoked
             ? `<button class="btn btn-outline btn-sm" data-reactivate="${d.id}">Réactiver l'accès</button>`
             : `<button class="btn btn-danger btn-sm" data-revoke="${d.id}">Retirer l'accès</button>`}
@@ -1959,12 +1968,16 @@ function renderPeopleList(target, teams, clients) {
         }
       });
     });
+    target.querySelectorAll('[data-passport]').forEach(btn => {
+      const doc = snap.docs.find(x => x.id === btn.dataset.passport);
+      btn.addEventListener('click', () => openComplianceEditor({ id: doc.id, ...doc.data() }));
+    });
     target.querySelectorAll('[data-reactivate]').forEach(btn => {
       btn.addEventListener('click', async () => {
         await db.collection('people').doc(btn.dataset.reactivate).update({ revoked: false, revokedAt: firebase.firestore.FieldValue.delete() });
       });
     });
-  }, err => showError(target, "Erreur : " + err.message));
+  }
   unsubscribers.push(unsub);
 }
 
@@ -2071,10 +2084,12 @@ async function renderStaff() {
   clearSubscriptions();
   app.innerHTML = topbarHtml() + `
     <div class="wrap">
+      <div id="staff-upcoming"></div>
       <div class="tabs">
         <button class="tab ${staffTab === 'projects' ? 'active' : ''}" data-stab="projects">${esc(t('yourProjects'))}</button>
         <button class="tab ${staffTab === 'calendar' ? 'active' : ''}" data-stab="calendar">${esc(t('yourPlanning'))}</button>
         <button class="tab ${staffTab === 'missions' ? 'active' : ''}" data-stab="missions">${esc(st('staffTab'))}</button>
+        <button class="tab ${staffTab === 'docs' ? 'active' : ''}" data-stab="docs">${esc(cp('myDocs'))}</button>
       </div>
       <div id="staff-wrap"><div class="loading">${esc(t('loadingGeneric'))}</div></div>
     </div>`;
@@ -2083,9 +2098,11 @@ async function renderStaff() {
     btn.addEventListener('click', () => { staffTab = btn.dataset.stab; renderStaff(); });
   });
   mountPushBanner(); // js/push.js
+  renderUpcomingConfirmCard(document.getElementById('staff-upcoming')); // js/confirm.js
   const wrap = document.getElementById('staff-wrap');
   if (staffTab === 'calendar') renderStaffCalendar(wrap);
   else if (staffTab === 'missions') renderStaffMissions(wrap); // js/staffing.js
+  else if (staffTab === 'docs') renderMyCompliance(wrap); // js/compliance.js
   else renderStaffProjectsList(wrap);
 }
 

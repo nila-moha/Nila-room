@@ -193,6 +193,27 @@ premier obtient l'accès qui lui est attaché.
 - Déploiement : `firebase deploy --only functions` (installe les dépendances
   automatiquement).
 
+## Preuve de commissioning, conformité, confirmation — ajouté le 26/09/2026
+
+- **Preuve par étape** (`js/evidence.js`) : photos minimales, n° de série,
+  mesures (couple, isolement, terre, capacité, RTE, température) avec
+  l'outil utilisé et sa date d'étalonnage. Étape validée = verrouillée pour
+  l'équipe (seul l'admin rouvre). Onglet admin **Outillage** : registre des
+  outils et de leur étalonnage (outil expiré = refusé sur le terrain).
+- **Réserves A/B/C** : levée par BN CORE, **acceptée par le client** ; l'étape
+  « levée de réserves » est bloquée tant qu'une réserve A est ouverte.
+- **PV de réception** signé par le client sur son téléphone ; tout est repris
+  dans le rapport « Exporter / Imprimer ».
+- **Photos hors connexion** (`js/offline-photos.js`) : en attente sur le
+  téléphone, envoyées automatiquement au retour du réseau.
+- **Passeport de conformité** (`js/compliance.js`, bouton « Passeport » dans
+  Comptes) : Limosa-1, A1, VCA, BA4/BA5 (+ dates pièce d'identité / aptitude
+  médicale, sans copie). Une mission peut exiger BA4/BA5 : seuls les
+  ouvriers habilités peuvent se proposer. Le client voit un résumé.
+- **Confirmation la veille** (`js/confirm.js`) : l'ouvrier confirme ; rappel
+  à 14 h, liste des non-confirmés à l'admin à 18 h (functions, jours ouvrables).
+- **Alerte d'expiration** des documents : 30 j, 7 j, jour J (functions, 7 h).
+
 ## Mettre à jour l'app en ligne
 
 Depuis ce dossier `chantier-app/`, dans cet ordre (l'app d'abord, les

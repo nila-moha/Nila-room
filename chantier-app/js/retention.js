@@ -5,7 +5,8 @@
 //   - position GPS et photos de pointage : 12 mois
 //   - pointages et kilométrage : 5 ans
 //   - journal et problèmes (texte + photos) : 5 ans après la clôture du projet
-//   - compte révoqué : profil supprimé 12 mois après la révocation
+//   - compte révoqué : profil et passeport de conformité supprimés 12 mois
+//     après la révocation
 // Les achats (reçus) et les frais facturés ne sont PAS purgés ici : ce sont
 // des pièces liées à la facturation (10 ans, Code de droit économique
 // art. III.88).
@@ -88,6 +89,13 @@ async function runRetentionPurge() {
       await d.ref.update({ revokedAt: firebase.firestore.FieldValue.serverTimestamp() });
       report.revokedDated++;
     } else if (since < cutRevoked) {
+      // Passeport de conformité (js/compliance.js) : supprimé avec le compte,
+      // documents (Limosa, A1, VCA, habilitation) compris.
+      try {
+        const files = await storage.ref(`compliance/${d.id}`).listAll();
+        await Promise.all(files.items.map(f => f.delete()));
+      } catch (e) { /* aucun document */ }
+      await db.collection('compliance').doc(d.id).delete();
       await d.ref.delete();
       authToDelete.push({ uid: d.id, name: p.name || '' });
       report.accountsDeleted++;
