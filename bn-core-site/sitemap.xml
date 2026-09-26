@@ -9,6 +9,8 @@
     <xhtml:link rel="alternate" hreflang="ar" href="https://www.bncoregroup.com/ar/index.html"/>
     <xhtml:link rel="alternate" hreflang="es" href="https://www.bncoregroup.com/es/index.html"/>
     <xhtml:link rel="alternate" hreflang="nl" href="https://www.bncoregroup.com/nl/index.html"/>
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.bncoregroup.com/pl/index.html"/>
+    <xhtml:link rel="alternate" hreflang="ro" href="https://www.bncoregroup.com/ro/index.html"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://www.bncoregroup.com/index.html"/>
   </url>
   <url>
@@ -19,6 +21,8 @@
     <xhtml:link rel="alternate" hreflang="ar" href="https://www.bncoregroup.com/ar/index.html"/>
     <xhtml:link rel="alternate" hreflang="es" href="https://www.bncoregroup.com/es/index.html"/>
     <xhtml:link rel="alternate" hreflang="nl" href="https://www.bncoregroup.com/nl/index.html"/>
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.bncoregroup.com/pl/index.html"/>
+    <xhtml:link rel="alternate" hreflang="ro" href="https://www.bncoregroup.com/ro/index.html"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://www.bncoregroup.com/index.html"/>
   </url>
   <url>
@@ -29,6 +33,8 @@
     <xhtml:link rel="alternate" hreflang="ar" href="https://www.bncoregroup.com/ar/index.html"/>
     <xhtml:link rel="alternate" hreflang="es" href="https://www.bncoregroup.com/es/index.html"/>
     <xhtml:link rel="alternate" hreflang="nl" href="https://www.bncoregroup.com/nl/index.html"/>
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.bncoregroup.com/pl/index.html"/>
+    <xhtml:link rel="alternate" hreflang="ro" href="https://www.bncoregroup.com/ro/index.html"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://www.bncoregroup.com/index.html"/>
   </url>
   <url>
@@ -39,6 +45,8 @@
     <xhtml:link rel="alternate" hreflang="ar" href="https://www.bncoregroup.com/ar/index.html"/>
     <xhtml:link rel="alternate" hreflang="es" href="https://www.bncoregroup.com/es/index.html"/>
     <xhtml:link rel="alternate" hreflang="nl" href="https://www.bncoregroup.com/nl/index.html"/>
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.bncoregroup.com/pl/index.html"/>
+    <xhtml:link rel="alternate" hreflang="ro" href="https://www.bncoregroup.com/ro/index.html"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://www.bncoregroup.com/index.html"/>
   </url>
   <url>
@@ -49,6 +57,8 @@
     <xhtml:link rel="alternate" hreflang="ar" href="https://www.bncoregroup.com/ar/index.html"/>
     <xhtml:link rel="alternate" hreflang="es" href="https://www.bncoregroup.com/es/index.html"/>
     <xhtml:link rel="alternate" hreflang="nl" href="https://www.bncoregroup.com/nl/index.html"/>
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.bncoregroup.com/pl/index.html"/>
+    <xhtml:link rel="alternate" hreflang="ro" href="https://www.bncoregroup.com/ro/index.html"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://www.bncoregroup.com/index.html"/>
   </url>
   <url>
@@ -59,6 +69,32 @@
     <xhtml:link rel="alternate" hreflang="ar" href="https://www.bncoregroup.com/ar/index.html"/>
     <xhtml:link rel="alternate" hreflang="es" href="https://www.bncoregroup.com/es/index.html"/>
     <xhtml:link rel="alternate" hreflang="nl" href="https://www.bncoregroup.com/nl/index.html"/>
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.bncoregroup.com/pl/index.html"/>
+    <xhtml:link rel="alternate" hreflang="ro" href="https://www.bncoregroup.com/ro/index.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.bncoregroup.com/index.html"/>
+  </url>
+  <url>
+    <loc>https://www.bncoregroup.com/pl/index.html</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.bncoregroup.com/index.html"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://www.bncoregroup.com/fr/index.html"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://www.bncoregroup.com/zh/index.html"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://www.bncoregroup.com/ar/index.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://www.bncoregroup.com/es/index.html"/>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://www.bncoregroup.com/nl/index.html"/>
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.bncoregroup.com/pl/index.html"/>
+    <xhtml:link rel="alternate" hreflang="ro" href="https://www.bncoregroup.com/ro/index.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.bncoregroup.com/index.html"/>
+  </url>
+  <url>
+    <loc>https://www.bncoregroup.com/ro/index.html</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.bncoregroup.com/index.html"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://www.bncoregroup.com/fr/index.html"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://www.bncoregroup.com/zh/index.html"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://www.bncoregroup.com/ar/index.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://www.bncoregroup.com/es/index.html"/>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://www.bncoregroup.com/nl/index.html"/>
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.bncoregroup.com/pl/index.html"/>
+    <xhtml:link rel="alternate" hreflang="ro" href="https://www.bncoregroup.com/ro/index.html"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://www.bncoregroup.com/index.html"/>
   </url>
   <url>
@@ -69,6 +105,8 @@
     <xhtml:link rel="alternate" hreflang="ar" href="https://www.bncoregroup.com/ar/a-propos.html"/>
     <xhtml:link rel="alternate" hreflang="es" href="https://www.bncoregroup.com/es/a-propos.html"/>
     <xhtml:link rel="alternate" hreflang="nl" href="https://www.bncoregroup.com/nl/a-propos.html"/>
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.bncoregroup.com/pl/a-propos.html"/>
+    <xhtml:link rel="alternate" hreflang="ro" href="https://www.bncoregroup.com/ro/a-propos.html"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://www.bncoregroup.com/a-propos.html"/>
   </url>
   <url>
@@ -79,6 +117,8 @@
     <xhtml:link rel="alternate" hreflang="ar" href="https://www.bncoregroup.com/ar/a-propos.html"/>
     <xhtml:link rel="alternate" hreflang="es" href="https://www.bncoregroup.com/es/a-propos.html"/>
     <xhtml:link rel="alternate" hreflang="nl" href="https://www.bncoregroup.com/nl/a-propos.html"/>
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.bncoregroup.com/pl/a-propos.html"/>
+    <xhtml:link rel="alternate" hreflang="ro" href="https://www.bncoregroup.com/ro/a-propos.html"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://www.bncoregroup.com/a-propos.html"/>
   </url>
   <url>
@@ -89,6 +129,8 @@
     <xhtml:link rel="alternate" hreflang="ar" href="https://www.bncoregroup.com/ar/a-propos.html"/>
     <xhtml:link rel="alternate" hreflang="es" href="https://www.bncoregroup.com/es/a-propos.html"/>
     <xhtml:link rel="alternate" hreflang="nl" href="https://www.bncoregroup.com/nl/a-propos.html"/>
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.bncoregroup.com/pl/a-propos.html"/>
+    <xhtml:link rel="alternate" hreflang="ro" href="https://www.bncoregroup.com/ro/a-propos.html"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://www.bncoregroup.com/a-propos.html"/>
   </url>
   <url>
@@ -99,6 +141,8 @@
     <xhtml:link rel="alternate" hreflang="ar" href="https://www.bncoregroup.com/ar/a-propos.html"/>
     <xhtml:link rel="alternate" hreflang="es" href="https://www.bncoregroup.com/es/a-propos.html"/>
     <xhtml:link rel="alternate" hreflang="nl" href="https://www.bncoregroup.com/nl/a-propos.html"/>
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.bncoregroup.com/pl/a-propos.html"/>
+    <xhtml:link rel="alternate" hreflang="ro" href="https://www.bncoregroup.com/ro/a-propos.html"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://www.bncoregroup.com/a-propos.html"/>
   </url>
   <url>
@@ -109,6 +153,8 @@
     <xhtml:link rel="alternate" hreflang="ar" href="https://www.bncoregroup.com/ar/a-propos.html"/>
     <xhtml:link rel="alternate" hreflang="es" href="https://www.bncoregroup.com/es/a-propos.html"/>
     <xhtml:link rel="alternate" hreflang="nl" href="https://www.bncoregroup.com/nl/a-propos.html"/>
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.bncoregroup.com/pl/a-propos.html"/>
+    <xhtml:link rel="alternate" hreflang="ro" href="https://www.bncoregroup.com/ro/a-propos.html"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://www.bncoregroup.com/a-propos.html"/>
   </url>
   <url>
@@ -119,6 +165,32 @@
     <xhtml:link rel="alternate" hreflang="ar" href="https://www.bncoregroup.com/ar/a-propos.html"/>
     <xhtml:link rel="alternate" hreflang="es" href="https://www.bncoregroup.com/es/a-propos.html"/>
     <xhtml:link rel="alternate" hreflang="nl" href="https://www.bncoregroup.com/nl/a-propos.html"/>
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.bncoregroup.com/pl/a-propos.html"/>
+    <xhtml:link rel="alternate" hreflang="ro" href="https://www.bncoregroup.com/ro/a-propos.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.bncoregroup.com/a-propos.html"/>
+  </url>
+  <url>
+    <loc>https://www.bncoregroup.com/pl/a-propos.html</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.bncoregroup.com/a-propos.html"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://www.bncoregroup.com/fr/a-propos.html"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://www.bncoregroup.com/zh/a-propos.html"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://www.bncoregroup.com/ar/a-propos.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://www.bncoregroup.com/es/a-propos.html"/>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://www.bncoregroup.com/nl/a-propos.html"/>
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.bncoregroup.com/pl/a-propos.html"/>
+    <xhtml:link rel="alternate" hreflang="ro" href="https://www.bncoregroup.com/ro/a-propos.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.bncoregroup.com/a-propos.html"/>
+  </url>
+  <url>
+    <loc>https://www.bncoregroup.com/ro/a-propos.html</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.bncoregroup.com/a-propos.html"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://www.bncoregroup.com/fr/a-propos.html"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://www.bncoregroup.com/zh/a-propos.html"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://www.bncoregroup.com/ar/a-propos.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://www.bncoregroup.com/es/a-propos.html"/>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://www.bncoregroup.com/nl/a-propos.html"/>
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.bncoregroup.com/pl/a-propos.html"/>
+    <xhtml:link rel="alternate" hreflang="ro" href="https://www.bncoregroup.com/ro/a-propos.html"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://www.bncoregroup.com/a-propos.html"/>
   </url>
   <url>
@@ -129,6 +201,8 @@
     <xhtml:link rel="alternate" hreflang="ar" href="https://www.bncoregroup.com/ar/services.html"/>
     <xhtml:link rel="alternate" hreflang="es" href="https://www.bncoregroup.com/es/services.html"/>
     <xhtml:link rel="alternate" hreflang="nl" href="https://www.bncoregroup.com/nl/services.html"/>
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.bncoregroup.com/pl/services.html"/>
+    <xhtml:link rel="alternate" hreflang="ro" href="https://www.bncoregroup.com/ro/services.html"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://www.bncoregroup.com/services.html"/>
   </url>
   <url>
@@ -139,6 +213,8 @@
     <xhtml:link rel="alternate" hreflang="ar" href="https://www.bncoregroup.com/ar/services.html"/>
     <xhtml:link rel="alternate" hreflang="es" href="https://www.bncoregroup.com/es/services.html"/>
     <xhtml:link rel="alternate" hreflang="nl" href="https://www.bncoregroup.com/nl/services.html"/>
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.bncoregroup.com/pl/services.html"/>
+    <xhtml:link rel="alternate" hreflang="ro" href="https://www.bncoregroup.com/ro/services.html"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://www.bncoregroup.com/services.html"/>
   </url>
   <url>
@@ -149,6 +225,8 @@
     <xhtml:link rel="alternate" hreflang="ar" href="https://www.bncoregroup.com/ar/services.html"/>
     <xhtml:link rel="alternate" hreflang="es" href="https://www.bncoregroup.com/es/services.html"/>
     <xhtml:link rel="alternate" hreflang="nl" href="https://www.bncoregroup.com/nl/services.html"/>
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.bncoregroup.com/pl/services.html"/>
+    <xhtml:link rel="alternate" hreflang="ro" href="https://www.bncoregroup.com/ro/services.html"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://www.bncoregroup.com/services.html"/>
   </url>
   <url>
@@ -159,6 +237,8 @@
     <xhtml:link rel="alternate" hreflang="ar" href="https://www.bncoregroup.com/ar/services.html"/>
     <xhtml:link rel="alternate" hreflang="es" href="https://www.bncoregroup.com/es/services.html"/>
     <xhtml:link rel="alternate" hreflang="nl" href="https://www.bncoregroup.com/nl/services.html"/>
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.bncoregroup.com/pl/services.html"/>
+    <xhtml:link rel="alternate" hreflang="ro" href="https://www.bncoregroup.com/ro/services.html"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://www.bncoregroup.com/services.html"/>
   </url>
   <url>
@@ -169,6 +249,8 @@
     <xhtml:link rel="alternate" hreflang="ar" href="https://www.bncoregroup.com/ar/services.html"/>
     <xhtml:link rel="alternate" hreflang="es" href="https://www.bncoregroup.com/es/services.html"/>
     <xhtml:link rel="alternate" hreflang="nl" href="https://www.bncoregroup.com/nl/services.html"/>
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.bncoregroup.com/pl/services.html"/>
+    <xhtml:link rel="alternate" hreflang="ro" href="https://www.bncoregroup.com/ro/services.html"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://www.bncoregroup.com/services.html"/>
   </url>
   <url>
@@ -179,6 +261,32 @@
     <xhtml:link rel="alternate" hreflang="ar" href="https://www.bncoregroup.com/ar/services.html"/>
     <xhtml:link rel="alternate" hreflang="es" href="https://www.bncoregroup.com/es/services.html"/>
     <xhtml:link rel="alternate" hreflang="nl" href="https://www.bncoregroup.com/nl/services.html"/>
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.bncoregroup.com/pl/services.html"/>
+    <xhtml:link rel="alternate" hreflang="ro" href="https://www.bncoregroup.com/ro/services.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.bncoregroup.com/services.html"/>
+  </url>
+  <url>
+    <loc>https://www.bncoregroup.com/pl/services.html</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.bncoregroup.com/services.html"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://www.bncoregroup.com/fr/services.html"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://www.bncoregroup.com/zh/services.html"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://www.bncoregroup.com/ar/services.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://www.bncoregroup.com/es/services.html"/>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://www.bncoregroup.com/nl/services.html"/>
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.bncoregroup.com/pl/services.html"/>
+    <xhtml:link rel="alternate" hreflang="ro" href="https://www.bncoregroup.com/ro/services.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.bncoregroup.com/services.html"/>
+  </url>
+  <url>
+    <loc>https://www.bncoregroup.com/ro/services.html</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.bncoregroup.com/services.html"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://www.bncoregroup.com/fr/services.html"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://www.bncoregroup.com/zh/services.html"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://www.bncoregroup.com/ar/services.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://www.bncoregroup.com/es/services.html"/>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://www.bncoregroup.com/nl/services.html"/>
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.bncoregroup.com/pl/services.html"/>
+    <xhtml:link rel="alternate" hreflang="ro" href="https://www.bncoregroup.com/ro/services.html"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://www.bncoregroup.com/services.html"/>
   </url>
   <url>
@@ -189,6 +297,8 @@
     <xhtml:link rel="alternate" hreflang="ar" href="https://www.bncoregroup.com/ar/realisations.html"/>
     <xhtml:link rel="alternate" hreflang="es" href="https://www.bncoregroup.com/es/realisations.html"/>
     <xhtml:link rel="alternate" hreflang="nl" href="https://www.bncoregroup.com/nl/realisations.html"/>
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.bncoregroup.com/pl/realisations.html"/>
+    <xhtml:link rel="alternate" hreflang="ro" href="https://www.bncoregroup.com/ro/realisations.html"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://www.bncoregroup.com/realisations.html"/>
   </url>
   <url>
@@ -199,6 +309,8 @@
     <xhtml:link rel="alternate" hreflang="ar" href="https://www.bncoregroup.com/ar/realisations.html"/>
     <xhtml:link rel="alternate" hreflang="es" href="https://www.bncoregroup.com/es/realisations.html"/>
     <xhtml:link rel="alternate" hreflang="nl" href="https://www.bncoregroup.com/nl/realisations.html"/>
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.bncoregroup.com/pl/realisations.html"/>
+    <xhtml:link rel="alternate" hreflang="ro" href="https://www.bncoregroup.com/ro/realisations.html"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://www.bncoregroup.com/realisations.html"/>
   </url>
   <url>
@@ -209,6 +321,8 @@
     <xhtml:link rel="alternate" hreflang="ar" href="https://www.bncoregroup.com/ar/realisations.html"/>
     <xhtml:link rel="alternate" hreflang="es" href="https://www.bncoregroup.com/es/realisations.html"/>
     <xhtml:link rel="alternate" hreflang="nl" href="https://www.bncoregroup.com/nl/realisations.html"/>
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.bncoregroup.com/pl/realisations.html"/>
+    <xhtml:link rel="alternate" hreflang="ro" href="https://www.bncoregroup.com/ro/realisations.html"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://www.bncoregroup.com/realisations.html"/>
   </url>
   <url>
@@ -219,6 +333,8 @@
     <xhtml:link rel="alternate" hreflang="ar" href="https://www.bncoregroup.com/ar/realisations.html"/>
     <xhtml:link rel="alternate" hreflang="es" href="https://www.bncoregroup.com/es/realisations.html"/>
     <xhtml:link rel="alternate" hreflang="nl" href="https://www.bncoregroup.com/nl/realisations.html"/>
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.bncoregroup.com/pl/realisations.html"/>
+    <xhtml:link rel="alternate" hreflang="ro" href="https://www.bncoregroup.com/ro/realisations.html"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://www.bncoregroup.com/realisations.html"/>
   </url>
   <url>
@@ -229,6 +345,8 @@
     <xhtml:link rel="alternate" hreflang="ar" href="https://www.bncoregroup.com/ar/realisations.html"/>
     <xhtml:link rel="alternate" hreflang="es" href="https://www.bncoregroup.com/es/realisations.html"/>
     <xhtml:link rel="alternate" hreflang="nl" href="https://www.bncoregroup.com/nl/realisations.html"/>
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.bncoregroup.com/pl/realisations.html"/>
+    <xhtml:link rel="alternate" hreflang="ro" href="https://www.bncoregroup.com/ro/realisations.html"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://www.bncoregroup.com/realisations.html"/>
   </url>
   <url>
@@ -239,6 +357,32 @@
     <xhtml:link rel="alternate" hreflang="ar" href="https://www.bncoregroup.com/ar/realisations.html"/>
     <xhtml:link rel="alternate" hreflang="es" href="https://www.bncoregroup.com/es/realisations.html"/>
     <xhtml:link rel="alternate" hreflang="nl" href="https://www.bncoregroup.com/nl/realisations.html"/>
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.bncoregroup.com/pl/realisations.html"/>
+    <xhtml:link rel="alternate" hreflang="ro" href="https://www.bncoregroup.com/ro/realisations.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.bncoregroup.com/realisations.html"/>
+  </url>
+  <url>
+    <loc>https://www.bncoregroup.com/pl/realisations.html</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.bncoregroup.com/realisations.html"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://www.bncoregroup.com/fr/realisations.html"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://www.bncoregroup.com/zh/realisations.html"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://www.bncoregroup.com/ar/realisations.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://www.bncoregroup.com/es/realisations.html"/>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://www.bncoregroup.com/nl/realisations.html"/>
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.bncoregroup.com/pl/realisations.html"/>
+    <xhtml:link rel="alternate" hreflang="ro" href="https://www.bncoregroup.com/ro/realisations.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.bncoregroup.com/realisations.html"/>
+  </url>
+  <url>
+    <loc>https://www.bncoregroup.com/ro/realisations.html</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.bncoregroup.com/realisations.html"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://www.bncoregroup.com/fr/realisations.html"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://www.bncoregroup.com/zh/realisations.html"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://www.bncoregroup.com/ar/realisations.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://www.bncoregroup.com/es/realisations.html"/>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://www.bncoregroup.com/nl/realisations.html"/>
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.bncoregroup.com/pl/realisations.html"/>
+    <xhtml:link rel="alternate" hreflang="ro" href="https://www.bncoregroup.com/ro/realisations.html"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://www.bncoregroup.com/realisations.html"/>
   </url>
   <url>
@@ -249,6 +393,8 @@
     <xhtml:link rel="alternate" hreflang="ar" href="https://www.bncoregroup.com/ar/contact.html"/>
     <xhtml:link rel="alternate" hreflang="es" href="https://www.bncoregroup.com/es/contact.html"/>
     <xhtml:link rel="alternate" hreflang="nl" href="https://www.bncoregroup.com/nl/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.bncoregroup.com/pl/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="ro" href="https://www.bncoregroup.com/ro/contact.html"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://www.bncoregroup.com/contact.html"/>
   </url>
   <url>
@@ -259,6 +405,8 @@
     <xhtml:link rel="alternate" hreflang="ar" href="https://www.bncoregroup.com/ar/contact.html"/>
     <xhtml:link rel="alternate" hreflang="es" href="https://www.bncoregroup.com/es/contact.html"/>
     <xhtml:link rel="alternate" hreflang="nl" href="https://www.bncoregroup.com/nl/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.bncoregroup.com/pl/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="ro" href="https://www.bncoregroup.com/ro/contact.html"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://www.bncoregroup.com/contact.html"/>
   </url>
   <url>
@@ -269,6 +417,8 @@
     <xhtml:link rel="alternate" hreflang="ar" href="https://www.bncoregroup.com/ar/contact.html"/>
     <xhtml:link rel="alternate" hreflang="es" href="https://www.bncoregroup.com/es/contact.html"/>
     <xhtml:link rel="alternate" hreflang="nl" href="https://www.bncoregroup.com/nl/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.bncoregroup.com/pl/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="ro" href="https://www.bncoregroup.com/ro/contact.html"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://www.bncoregroup.com/contact.html"/>
   </url>
   <url>
@@ -279,6 +429,8 @@
     <xhtml:link rel="alternate" hreflang="ar" href="https://www.bncoregroup.com/ar/contact.html"/>
     <xhtml:link rel="alternate" hreflang="es" href="https://www.bncoregroup.com/es/contact.html"/>
     <xhtml:link rel="alternate" hreflang="nl" href="https://www.bncoregroup.com/nl/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.bncoregroup.com/pl/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="ro" href="https://www.bncoregroup.com/ro/contact.html"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://www.bncoregroup.com/contact.html"/>
   </url>
   <url>
@@ -289,6 +441,8 @@
     <xhtml:link rel="alternate" hreflang="ar" href="https://www.bncoregroup.com/ar/contact.html"/>
     <xhtml:link rel="alternate" hreflang="es" href="https://www.bncoregroup.com/es/contact.html"/>
     <xhtml:link rel="alternate" hreflang="nl" href="https://www.bncoregroup.com/nl/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.bncoregroup.com/pl/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="ro" href="https://www.bncoregroup.com/ro/contact.html"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://www.bncoregroup.com/contact.html"/>
   </url>
   <url>
@@ -299,6 +453,32 @@
     <xhtml:link rel="alternate" hreflang="ar" href="https://www.bncoregroup.com/ar/contact.html"/>
     <xhtml:link rel="alternate" hreflang="es" href="https://www.bncoregroup.com/es/contact.html"/>
     <xhtml:link rel="alternate" hreflang="nl" href="https://www.bncoregroup.com/nl/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.bncoregroup.com/pl/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="ro" href="https://www.bncoregroup.com/ro/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.bncoregroup.com/contact.html"/>
+  </url>
+  <url>
+    <loc>https://www.bncoregroup.com/pl/contact.html</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.bncoregroup.com/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://www.bncoregroup.com/fr/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://www.bncoregroup.com/zh/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://www.bncoregroup.com/ar/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://www.bncoregroup.com/es/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://www.bncoregroup.com/nl/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.bncoregroup.com/pl/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="ro" href="https://www.bncoregroup.com/ro/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.bncoregroup.com/contact.html"/>
+  </url>
+  <url>
+    <loc>https://www.bncoregroup.com/ro/contact.html</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.bncoregroup.com/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://www.bncoregroup.com/fr/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://www.bncoregroup.com/zh/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://www.bncoregroup.com/ar/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://www.bncoregroup.com/es/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://www.bncoregroup.com/nl/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.bncoregroup.com/pl/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="ro" href="https://www.bncoregroup.com/ro/contact.html"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://www.bncoregroup.com/contact.html"/>
   </url>
 </urlset>
